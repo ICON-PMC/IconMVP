@@ -1,0 +1,158 @@
+"use server";
+
+import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
+import sharp from "sharp";
+import { createClient } from "@/lib/supabase/server";
+import { getCurrentUser, isStaff } from "@/lib/auth";
+import { uploadToR2 } from "@/lib/r2";
+
+async function requireStaff() {
+  const session = await getCurrentUser();
+  if (!session?.profile || !isStaff(session.profile)) redirect("/");
+  return session.profile;
+}
+
+function str(formData: FormData, key: string): string | null {
+  const v = formData.get(key);
+  const s = v ? String(v).trim() : "";
+  return s === "" ? null : s;
+}
+
+// Sube la imagen del formulario a R2 (redimensionada) y devuelve la clave, o null.
+async function uploadImage(
+  formData: FormData,
+  keyPrefix: string,
+): Promise<string | null> {
+  const file = formData.get("image");
+  if (!(file instanceof File) || file.size === 0) return null;
+  const buf = Buffer.from(await file.arrayBuffer());
+  const out = await sharp(buf)
+    .resize({ width: 1280, withoutEnlargement: true })
+    .webp({ quality: 80 })
+    .toBuffer();
+  const key = `${keyPrefix}/0.webp`;
+  await uploadToR2(key, out, "image/webp");
+  return key;
+}
+
+export async function createBrand(formData: FormData) {
+  await requireStaff();
+  const supabase = await createClient();
+  const { error } = await supabase.from("brands").insert({
+    name: str(formData, "name") ?? "",
+    slug: str(formData, "slug") ?? "",
+    city_id: str(formData, "city_id"),
+    store_url: str(formData, "store_url"),
+    instagram: str(formData, "instagram"),
+    price_range: (str(formData, "price_range") as never) ?? null,
+    bio: str(formData, "bio"),
+    is_verified: formData.get("is_verified") === "on",
+    is_sustainable: formData.get("is_sustainable") === "on",
+  });
+  if (error) redirect(`/admin?error=${encodeURIComponent(error.message)}`);
+  revalidatePath("/admin");
+  redirect("/admin?ok=marca");
+}
+
+export async function createGarment(formData: FormData) {
+  await requireStaff();
+  const supabase = await createClient();
+
+  const status = (str(formData, "status") ?? "published") as
+    | "pending"
+    | "published"
+    | "archived";
+  const priceRaw = str(formData, "price_cop");
+
+  const { data: garment, error } = await supabase
+    .from("garments")
+    .insert({
+      brand_id: str(formData, "brand_id") ?? "",
+      title: str(formData, "title") ?? "",
+      price_cop: priceRaw ? Number(priceRaw) : null,
+      product_url: str(formData, "product_url"),
+      color: str(formData, "color"),
+      fabric: str(formData, "fabric"),
+      status,
+      source: "team",
+      published_at: status === "published" ? new Date().toISOString() : null,
+    })
+    .select("id")
+    .single();
+  if (error || !garment)
+    redirect(`/admin?error=${encodeURIComponent(error?.message ?? "garment")}`);
+
+  const categoryId = str(formData, "category");
+  if (categoryId) {
+    await supabase
+      .from("garment_tags")
+      .insert({ garment_id: garment.id, tag_id: categoryId });
+  }
+  const sizeIds = formData.getAll("sizes").map(String);
+  if (sizeIds.length) {
+    await supabase
+      .from("garment_sizes")
+      .insert(sizeIds.map((size_id) => ({ garment_id: garment.id, size_id })));
+  }
+  const key = await uploadImage(formData, `garments/${garment.id}`);
+  if (key) {
+    await supabase
+      .from("garment_images")
+      .insert({ garment_id: garment.id, cf_image_id: key, position: 0 });
+  }
+
+  revalidatePath("/admin");
+  redirect("/admin?ok=prenda");
+}
+
+export async function createPost(formData: FormData) {
+  await requireStaff();
+  const supabase = await createClient();
+
+  const status = (str(formData, "status") ?? "published") as
+    | "draft"
+    | "published"
+    | "archived";
+
+  const { data: post, error } = await supabase
+    .from("posts")
+    .insert({
+      author_type: "team",
+      author_brand_id: str(formData, "author_brand_id"),
+      caption: str(formData, "caption"),
+      status,
+      published_at: status === "published" ? new Date().toISOString() : null,
+    })
+    .select("id")
+    .single();
+  if (error || !post)
+    redirect(`/admin?error=${encodeURIComponent(error?.message ?? "post")}`);
+
+  const tagIds = [
+    ...formData.getAll("occasions"),
+    ...formData.getAll("styles"),
+    ...formData.getAll("temperatures"),
+  ].map(String);
+  if (tagIds.length) {
+    await supabase
+      .from("post_tags")
+      .insert(tagIds.map((tag_id) => ({ post_id: post.id, tag_id })));
+  }
+  const garmentIds = formData.getAll("garments").map(String);
+  if (garmentIds.length) {
+    await supabase
+      .from("post_items")
+      .insert(garmentIds.map((garment_id) => ({ post_id: post.id, garment_id })));
+  }
+  const key = await uploadImage(formData, `posts/${post.id}`);
+  if (key) {
+    await supabase
+      .from("post_images")
+      .insert({ post_id: post.id, cf_image_id: key, position: 0 });
+  }
+
+  revalidatePath("/admin");
+  revalidatePath("/feed");
+  redirect("/admin?ok=post");
+}
