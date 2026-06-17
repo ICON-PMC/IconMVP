@@ -30,7 +30,7 @@ export async function signUp(formData: FormData) {
   if (error) redirect(`/signup?error=${encodeURIComponent(error.message)}`);
 
   revalidatePath("/", "layout");
-  redirect("/");
+  redirect("/onboarding");
 }
 
 export async function signOut() {
