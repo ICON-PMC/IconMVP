@@ -1,0 +1,147 @@
+{
+  "brands": [
+    {
+      "slug": "marea",
+      "name": "Marea",
+      "city": "barranquilla",
+      "store_url": "https://example.com/marea",
+      "instagram": "marea.co",
+      "price_range": "200k_350k",
+      "bio": "Resort y baño hechos en la costa caribe.",
+      "is_verified": true,
+      "is_sustainable": true
+    },
+    {
+      "slug": "raiz",
+      "name": "Raíz",
+      "city": "medellin",
+      "store_url": "https://example.com/raiz",
+      "instagram": "raiz.taller",
+      "price_range": "100k_200k",
+      "bio": "Tejidos y accesorios artesanales.",
+      "is_verified": true,
+      "is_sustainable": true
+    },
+    {
+      "slug": "bruma",
+      "name": "Bruma",
+      "city": "bogota",
+      "store_url": "https://example.com/bruma",
+      "instagram": "bruma.studio",
+      "price_range": "350k_500k",
+      "bio": "Sastrería y abrigo minimalista para el frío.",
+      "is_verified": false,
+      "is_sustainable": false
+    }
+  ],
+  "garments": [
+    {
+      "ref": "marea-vestido-lino",
+      "brand": "marea",
+      "title": "Vestido lino coral",
+      "price_cop": 280000,
+      "product_url": "https://example.com/marea/vestido-lino",
+      "color": "Coral",
+      "fabric": "Lino",
+      "category": "vestidos",
+      "sizes": ["S", "M", "L"],
+      "images": ["https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=800"]
+    },
+    {
+      "ref": "marea-bikini-palma",
+      "brand": "marea",
+      "title": "Bikini palma",
+      "price_cop": 180000,
+      "product_url": "https://example.com/marea/bikini-palma",
+      "color": "Verde palma",
+      "category": "swimwear",
+      "sizes": ["XS", "S", "M"],
+      "images": ["https://images.unsplash.com/photo-1570976447640-ac859083963f?w=800"]
+    },
+    {
+      "ref": "raiz-top-tejido",
+      "brand": "raiz",
+      "title": "Top tejido crudo",
+      "price_cop": 150000,
+      "product_url": "https://example.com/raiz/top-tejido",
+      "color": "Crudo",
+      "fabric": "Algodón",
+      "category": "tops",
+      "sizes": ["Onesize"],
+      "images": ["https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?w=800"]
+    },
+    {
+      "ref": "raiz-bolso-wayuu",
+      "brand": "raiz",
+      "title": "Bolso wayuu",
+      "price_cop": 220000,
+      "product_url": "https://example.com/raiz/bolso-wayuu",
+      "color": "Multicolor",
+      "category": "bolsos",
+      "sizes": ["Onesize"],
+      "images": ["https://images.unsplash.com/photo-1591561954557-26941169b49e?w=800"]
+    },
+    {
+      "ref": "bruma-abrigo-lana",
+      "brand": "bruma",
+      "title": "Abrigo lana niebla",
+      "price_cop": 460000,
+      "product_url": "https://example.com/bruma/abrigo-lana",
+      "color": "Gris niebla",
+      "fabric": "Lana",
+      "category": "abrigos-y-tejidos",
+      "sizes": ["S", "M", "L"],
+      "images": ["https://images.unsplash.com/photo-1539533018447-63fcce2678e3?w=800"]
+    },
+    {
+      "ref": "bruma-pantalon-sastre",
+      "brand": "bruma",
+      "title": "Pantalón sastre",
+      "price_cop": 320000,
+      "product_url": "https://example.com/bruma/pantalon-sastre",
+      "color": "Negro",
+      "fabric": "Lana fría",
+      "category": "pantalones",
+      "sizes": ["28", "30", "32"],
+      "images": ["https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=800"]
+    }
+  ],
+  "posts": [
+    {
+      "author": "brand:marea",
+      "caption": "Resort para el finde en la costa.",
+      "occasions": ["beachwear", "brunch"],
+      "styles": ["tropical"],
+      "temperatures": ["calido"],
+      "images": ["https://images.unsplash.com/photo-1583846783214-7229a91b20ed?w=800"],
+      "items": [
+        { "garment": "marea-vestido-lino", "size": "M" },
+        { "garment": "marea-bikini-palma", "size": "S" }
+      ]
+    },
+    {
+      "author": "brand:raiz",
+      "caption": "Look diario, todo hecho a mano.",
+      "occasions": ["casual"],
+      "styles": ["artesanal", "boho"],
+      "temperatures": ["templado"],
+      "images": ["https://images.unsplash.com/photo-1485462537746-965f33f7f6a7?w=800"],
+      "items": [
+        { "garment": "raiz-top-tejido", "size": "Onesize" },
+        { "garment": "raiz-bolso-wayuu" }
+      ]
+    },
+    {
+      "author": "team:bruma",
+      "caption": "Sastrería para días fríos en Bogotá.",
+      "occasions": ["trabajo", "formal"],
+      "styles": ["minimalista", "clasico"],
+      "temperatures": ["frio"],
+      "images": ["https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=800"],
+      "items": [
+        { "garment": "bruma-abrigo-lana", "size": "M" },
+        { "garment": "bruma-pantalon-sastre", "size": "30" }
+      ]
+    }
+  ]
+}
