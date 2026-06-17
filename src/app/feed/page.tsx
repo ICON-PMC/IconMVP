@@ -4,6 +4,7 @@ import { Aurora } from "@/components/aurora";
 import { FeedFilters } from "@/components/feed-filters";
 import { PostCard } from "@/components/post-card";
 import { PRICE_BUCKETS } from "@/lib/taxonomy";
+import { getMySavedIds } from "@/lib/saves";
 
 type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
 
@@ -60,6 +61,7 @@ export default async function FeedPage({
   ];
 
   const posts = feedRes.data ?? [];
+  const saved = await getMySavedIds();
 
   return (
     <>
@@ -84,7 +86,12 @@ export default async function FeedPage({
         ) : (
           <div className="columns-2 gap-4 md:columns-3">
             {posts.map((post) => (
-              <PostCard key={post.id} post={post} />
+              <PostCard
+                key={post.id}
+                post={post}
+                saved={saved.posts.has(post.id)}
+                path="/feed"
+              />
             ))}
           </div>
         )}

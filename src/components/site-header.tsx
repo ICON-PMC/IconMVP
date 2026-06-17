@@ -23,6 +23,12 @@ export async function SiteHeader() {
       <nav className="flex items-center gap-3 text-sm">
         {session ? (
           <>
+            <Link
+              href="/saved"
+              className="font-medium text-ink/70 hover:text-forest"
+            >
+              Guardados
+            </Link>
             {staff && (
               <Link
                 href="/admin"
