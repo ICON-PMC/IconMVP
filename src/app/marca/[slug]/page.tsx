@@ -5,6 +5,7 @@ import { Aurora } from "@/components/aurora";
 import { GlassCard } from "@/components/glass-card";
 import { PostCard } from "@/components/post-card";
 import { GarmentCard } from "@/components/garment-card";
+import { getMySavedIds } from "@/lib/saves";
 
 export default async function BrandPage({
   params,
@@ -54,6 +55,9 @@ export default async function BrandPage({
     : [];
   const imageOf = (gid: string) =>
     gimages.find((x) => x.garment_id === gid)?.cf_image_id ?? null;
+
+  const saved = await getMySavedIds();
+  const path = `/marca/${slug}`;
 
   return (
     <>
@@ -111,7 +115,12 @@ export default async function BrandPage({
         {posts && posts.length > 0 ? (
           <div className="columns-2 gap-4 md:columns-3">
             {posts.map((p) => (
-              <PostCard key={p.id} post={p} />
+              <PostCard
+                key={p.id}
+                post={p}
+                saved={saved.posts.has(p.id)}
+                path={path}
+              />
             ))}
           </div>
         ) : (
@@ -131,6 +140,8 @@ export default async function BrandPage({
                 title={g.title}
                 price_cop={g.price_cop}
                 image={imageOf(g.id)}
+                saved={saved.garments.has(g.id)}
+                path={path}
               />
             ))}
           </div>

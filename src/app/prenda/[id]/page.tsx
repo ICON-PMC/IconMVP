@@ -6,6 +6,8 @@ import { Aurora } from "@/components/aurora";
 import { GlassCard } from "@/components/glass-card";
 import { formatCop } from "@/lib/taxonomy";
 import { imageUrl } from "@/lib/images";
+import { getMySavedIds } from "@/lib/saves";
+import { SaveButton } from "@/components/save-button";
 
 export default async function GarmentPage({
   params,
@@ -74,6 +76,7 @@ export default async function GarmentPage({
 
   const gallery = images?.map((i) => i.cf_image_id) ?? [];
   const meta = [g.color, g.fabric].filter(Boolean).join(" · ");
+  const saved = await getMySavedIds();
 
   return (
     <>
@@ -99,7 +102,15 @@ export default async function GarmentPage({
 
           {/* Info */}
           <div>
-            <GlassCard className="p-6">
+            <GlassCard className="relative p-6">
+              <div className="absolute right-4 top-4">
+                <SaveButton
+                  kind="garment"
+                  id={g.id}
+                  saved={saved.garments.has(g.id)}
+                  path={`/prenda/${g.id}`}
+                />
+              </div>
               {brand && (
                 <Link
                   href={`/marca/${brand.slug}`}

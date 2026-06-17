@@ -6,6 +6,8 @@ import { Aurora } from "@/components/aurora";
 import { GlassCard } from "@/components/glass-card";
 import { formatCop, priceLabel } from "@/lib/taxonomy";
 import { imageUrl } from "@/lib/images";
+import { getMySavedIds } from "@/lib/saves";
+import { SaveButton } from "@/components/save-button";
 
 export default async function PostPage({
   params,
@@ -77,6 +79,8 @@ export default async function PostPage({
       ? [header.image]
       : [];
   const chips = [...header.occasions, ...header.styles, ...header.temperatures];
+  const saved = await getMySavedIds();
+  const path = `/post/${id}`;
 
   return (
     <>
@@ -107,7 +111,15 @@ export default async function PostPage({
 
           {/* Info + prendas */}
           <div className="flex flex-col gap-4">
-            <GlassCard className="p-5">
+            <GlassCard className="relative p-5">
+              <div className="absolute right-4 top-4">
+                <SaveButton
+                  kind="post"
+                  id={id}
+                  saved={saved.posts.has(id)}
+                  path={path}
+                />
+              </div>
               <div className="flex items-center gap-1 text-sm font-medium text-forest">
                 {header.brand_name}
                 {header.brand_verified && (
@@ -177,19 +189,30 @@ export default async function PostPage({
                           .join(" · ")}
                       </span>
                       <div className="mt-auto flex items-center justify-between pt-2">
-                        {g.price_cop != null && (
+                        {g.price_cop != null ? (
                           <span className="text-sm text-ink/80">
                             {formatCop(g.price_cop)}
                           </span>
+                        ) : (
+                          <span />
                         )}
-                        <a
-                          href={`/out/${g.id}?post=${id}&source=post`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="rounded-full bg-forest px-3 py-1.5 text-xs font-medium text-white hover:bg-forest-deep"
-                        >
-                          Ver en la tienda ↗
-                        </a>
+                        <div className="flex items-center gap-2">
+                          <SaveButton
+                            kind="garment"
+                            id={g.id}
+                            sourcePostId={id}
+                            saved={saved.garments.has(g.id)}
+                            path={path}
+                          />
+                          <a
+                            href={`/out/${g.id}?post=${id}&source=post`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="rounded-full bg-forest px-3 py-1.5 text-xs font-medium text-white hover:bg-forest-deep"
+                          >
+                            Ver en la tienda ↗
+                          </a>
+                        </div>
                       </div>
                     </div>
                   </GlassCard>

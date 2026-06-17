@@ -2,16 +2,24 @@ import Link from "next/link";
 import type { Views } from "@/lib/database.types";
 import { priceLabel } from "@/lib/taxonomy";
 import { imageUrl } from "@/lib/images";
+import { SaveButton } from "@/components/save-button";
 
-// Tarjeta del feed masonry. La imagen es un cf_image_id; por ahora es una URL directa
-// (placeholder). Al integrar Cloudflare, aquí se armará la URL desde el id.
-export function PostCard({ post }: { post: Views<"post_feed"> }) {
+export function PostCard({
+  post,
+  saved = false,
+  path = "/feed",
+}: {
+  post: Views<"post_feed">;
+  saved?: boolean;
+  path?: string;
+}) {
   const price = priceLabel(post.min_price, post.max_price);
   const chips = [...post.occasions, ...post.styles].slice(0, 4);
   const img = imageUrl(post.image);
 
   return (
-    <article className="mb-4 break-inside-avoid">
+    <article className="relative mb-4 break-inside-avoid">
+      <SaveButton kind="post" id={post.id} saved={saved} path={path} floating />
       <Link
         href={`/post/${post.id}`}
         className="block glass overflow-hidden rounded-2xl transition hover:opacity-95"
