@@ -147,7 +147,16 @@ export type Database = {
           min_price: number | null;
           max_price: number | null;
           price_ranges: string[];
+          score: number;
         };
+        Relationships: [];
+      };
+      brand_click_counts: {
+        Row: { brand_id: string; brand_name: string; clicks: number };
+        Relationships: [];
+      };
+      garment_click_counts: {
+        Row: { garment_id: string; title: string; brand_id: string; clicks: number };
         Relationships: [];
       };
     };

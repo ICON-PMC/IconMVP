@@ -33,9 +33,7 @@ export default async function FeedPage({
   if (f.style.length) query = query.overlaps("styles", f.style);
   if (f.category.length) query = query.overlaps("categories", f.category);
   if (f.price.length) query = query.overlaps("price_ranges", f.price);
-  const feedQuery = query
-    .order("popularity", { ascending: false })
-    .order("published_at", { ascending: false, nullsFirst: false });
+  const feedQuery = query.order("score", { ascending: false });
 
   const [feedRes, catsRes, occsRes, stylesRes, citiesRes] = await Promise.all([
     feedQuery,
