@@ -58,6 +58,20 @@ export default async function AdminPage({
     { label: "Posts", value: postCount ?? 0 },
   ];
 
+  // Analítica de clics salientes (solo staff puede leer outbound_clicks).
+  const sevenDaysAgo = new Date(Date.now() - 7 * 864e5).toISOString();
+  const [clicksTotal, clicks7d, topBrandsRes, topGarmentsRes] = await Promise.all([
+    supabase.from("outbound_clicks").select("*", { count: "exact", head: true }),
+    supabase
+      .from("outbound_clicks")
+      .select("*", { count: "exact", head: true })
+      .gte("created_at", sevenDaysAgo),
+    supabase.from("brand_click_counts").select("*").order("clicks", { ascending: false }).limit(6),
+    supabase.from("garment_click_counts").select("*").order("clicks", { ascending: false }).limit(6),
+  ]);
+  const topBrands = (topBrandsRes.data ?? []).filter((b) => b.clicks > 0);
+  const topGarments = (topGarmentsRes.data ?? []).filter((g) => g.clicks > 0);
+
   return (
     <>
       <Aurora />
@@ -91,6 +105,57 @@ export default async function AdminPage({
             </GlassCard>
           ))}
         </div>
+
+        {/* Analítica de clics */}
+        <GlassCard className="mt-6 p-6">
+          <h2 className="mb-4 text-lg font-medium text-forest">Clics a la tienda</h2>
+          <div className="mb-5 flex gap-10">
+            <div>
+              <p className="text-3xl font-medium text-coral">{clicksTotal.count ?? 0}</p>
+              <p className="text-xs uppercase tracking-wide text-ink/50">Total</p>
+            </div>
+            <div>
+              <p className="text-3xl font-medium text-coral">{clicks7d.count ?? 0}</p>
+              <p className="text-xs uppercase tracking-wide text-ink/50">Últimos 7 días</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-6">
+            <div>
+              <p className="mb-2 text-xs font-medium uppercase tracking-wide text-ink/50">
+                Top marcas
+              </p>
+              {topBrands.length ? (
+                <ul className="space-y-1">
+                  {topBrands.map((b) => (
+                    <li key={b.brand_id} className="flex justify-between gap-2 text-sm">
+                      <span className="truncate text-ink/80">{b.brand_name}</span>
+                      <span className="font-medium text-forest">{b.clicks}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-sm text-ink/40">Aún no hay clics.</p>
+              )}
+            </div>
+            <div>
+              <p className="mb-2 text-xs font-medium uppercase tracking-wide text-ink/50">
+                Top prendas
+              </p>
+              {topGarments.length ? (
+                <ul className="space-y-1">
+                  {topGarments.map((g) => (
+                    <li key={g.garment_id} className="flex justify-between gap-2 text-sm">
+                      <span className="truncate text-ink/80">{g.title}</span>
+                      <span className="font-medium text-forest">{g.clicks}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-sm text-ink/40">Aún no hay clics.</p>
+              )}
+            </div>
+          </div>
+        </GlassCard>
 
         {/* Crear marca */}
         <GlassCard className="mt-8 p-6">
