@@ -1,4 +1,4 @@
-import { AwsClient } from "aws4fetch";
+import { AwsV4Signer } from "aws4fetch";
 
 // Sube un objeto a Cloudflare R2 (S3 API) y devuelve su clave.
 // Solo servidor: usa R2_ACCESS_KEY_ID / R2_SECRET_ACCESS_KEY (nunca exponer al cliente).
@@ -17,19 +17,39 @@ export async function uploadToR2(
     );
   }
 
-  const aws = new AwsClient({
+  // Normaliza a un Uint8Array respaldado por ArrayBuffer (longitud conocida y sin el
+  // genérico ArrayBufferLike que rechazan BodyInit/BlobPart).
+  const src =
+    typeof body === "string"
+      ? new TextEncoder().encode(body)
+      : body instanceof ArrayBuffer
+        ? new Uint8Array(body)
+        : body;
+  const bytes = new Uint8Array(src);
+
+  const cleanKey = key.replace(/^\//, "");
+  const url = `${endpoint.replace(/\/$/, "")}/${bucket}/${cleanKey}`;
+
+  // Firmamos con los bytes (X-Amz-Content-Sha256 correcto) y enviamos un Blob en un
+  // fetch directo. aws4fetch.fetch envolvía el Buffer en un Request y undici (runtime
+  // de Vercel) lo mandaba con Transfer-Encoding: chunked SIN Content-Length → R2
+  // devolvía 411 MissingContentLength. Un Blob garantiza que undici fije Content-Length.
+  const signer = new AwsV4Signer({
+    url,
+    method: "PUT",
+    headers: { "Content-Type": contentType },
+    body: bytes,
     accessKeyId,
     secretAccessKey,
     region: "auto",
     service: "s3",
   });
+  const signed = await signer.sign();
 
-  const cleanKey = key.replace(/^\//, "");
-  const url = `${endpoint.replace(/\/$/, "")}/${bucket}/${cleanKey}`;
-  const res = await aws.fetch(url, {
-    method: "PUT",
-    body: body as BodyInit,
-    headers: { "Content-Type": contentType },
+  const res = await fetch(signed.url.toString(), {
+    method: signed.method,
+    headers: signed.headers,
+    body: new Blob([bytes]),
   });
 
   if (!res.ok) {
