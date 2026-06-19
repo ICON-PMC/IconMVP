@@ -119,6 +119,7 @@ export async function importGarments(
     insert: {
       brand_id: string;
       title: string;
+      description: string | null;
       price_cop: number | null;
       product_url: string | null;
       color: string | null;
@@ -184,6 +185,7 @@ export async function importGarments(
       insert: {
         brand_id: brandId,
         title: titulo,
+        description: get(row, "descripcion") || null,
         price_cop,
         product_url: get(row, "url_producto") || null,
         color: get(row, "color") || null,

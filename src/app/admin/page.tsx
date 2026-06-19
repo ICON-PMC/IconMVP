@@ -263,6 +263,10 @@ export default async function AdminPage({
               <label className={label}>Tela</label>
               <input className={input} name="fabric" />
             </div>
+            <div className="col-span-2">
+              <label className={label}>Descripción</label>
+              <textarea className={input} name="description" rows={2} />
+            </div>
             <div>
               <label className={label}>Categoría</label>
               <select className={input} name="category" defaultValue="">

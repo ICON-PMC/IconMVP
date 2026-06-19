@@ -50,6 +50,7 @@ export async function createGarment(formData: FormData) {
     .insert({
       brand_id: str(formData, "brand_id") ?? "",
       title: str(formData, "title") ?? "",
+      description: str(formData, "description"),
       price_cop: priceRaw ? Number(priceRaw) : null,
       product_url: str(formData, "product_url"),
       color: str(formData, "color"),
