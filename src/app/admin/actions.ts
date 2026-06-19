@@ -2,7 +2,6 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import sharp from "sharp";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser, isStaff } from "@/lib/auth";
 import { uploadToR2 } from "@/lib/r2";
@@ -26,6 +25,9 @@ async function uploadImage(
 ): Promise<string | null> {
   const file = formData.get("image");
   if (!(file instanceof File) || file.size === 0) return null;
+  // sharp se carga de forma perezosa: importarlo a nivel de módulo hacía que
+  // el simple render de /admin evaluara sharp y diera 500 en Vercel.
+  const { default: sharp } = await import("sharp");
   const buf = Buffer.from(await file.arrayBuffer());
   const out = await sharp(buf)
     .resize({ width: 1280, withoutEnlargement: true })

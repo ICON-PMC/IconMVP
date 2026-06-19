@@ -40,3 +40,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# notas del proyecto (solo local, handoff entre sesiones)
+CLAUDE.md
+
+#mcp
+.mcp.json
