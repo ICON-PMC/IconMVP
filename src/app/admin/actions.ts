@@ -3,14 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { getCurrentUser, isStaff } from "@/lib/auth";
-import { uploadToR2 } from "@/lib/r2";
-
-async function requireStaff() {
-  const session = await getCurrentUser();
-  if (!session?.profile || !isStaff(session.profile)) redirect("/");
-  return session.profile;
-}
+import { requireStaff } from "@/lib/auth";
+import { uploadImageField } from "@/lib/upload";
 
 function str(formData: FormData, key: string): string | null {
   const v = formData.get(key);
@@ -19,24 +13,8 @@ function str(formData: FormData, key: string): string | null {
 }
 
 // Sube la imagen del formulario a R2 (redimensionada) y devuelve la clave, o null.
-async function uploadImage(
-  formData: FormData,
-  keyPrefix: string,
-): Promise<string | null> {
-  const file = formData.get("image");
-  if (!(file instanceof File) || file.size === 0) return null;
-  // sharp se carga de forma perezosa: importarlo a nivel de módulo hacía que
-  // el simple render de /admin evaluara sharp y diera 500 en Vercel.
-  const { default: sharp } = await import("sharp");
-  const buf = Buffer.from(await file.arrayBuffer());
-  const out = await sharp(buf)
-    .resize({ width: 1280, withoutEnlargement: true })
-    .webp({ quality: 80 })
-    .toBuffer();
-  const key = `${keyPrefix}/0.webp`;
-  await uploadToR2(key, out, "image/webp");
-  return key;
-}
+const uploadImage = (formData: FormData, keyPrefix: string) =>
+  uploadImageField(formData, keyPrefix);
 
 export async function createBrand(formData: FormData) {
   await requireStaff();
@@ -72,6 +50,7 @@ export async function createGarment(formData: FormData) {
     .insert({
       brand_id: str(formData, "brand_id") ?? "",
       title: str(formData, "title") ?? "",
+      description: str(formData, "description"),
       price_cop: priceRaw ? Number(priceRaw) : null,
       product_url: str(formData, "product_url"),
       color: str(formData, "color"),

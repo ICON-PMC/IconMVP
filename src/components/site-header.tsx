@@ -29,6 +29,12 @@ export async function SiteHeader() {
             >
               Guardados
             </Link>
+            <Link
+              href="/settings"
+              className="font-medium text-ink/70 hover:text-forest"
+            >
+              Ajustes
+            </Link>
             {staff && (
               <Link
                 href="/admin"
