@@ -6,15 +6,10 @@ import { GlassCard } from "@/components/glass-card";
 import { SiteHeader } from "@/components/site-header";
 import { formatCop } from "@/lib/taxonomy";
 import { ImportForm } from "./import-form";
-import { uploadGarmentImage } from "./actions";
+import { PendingGarments, type PendingItem } from "./pending-garments";
 
-export default async function BulkPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ ok?: string; error?: string }>;
-}) {
+export default async function BulkPage() {
   await requireStaff();
-  const { ok, error } = await searchParams;
   const supabase = await createClient();
 
   // Prendas pendientes (creadas por carga masiva) que aún no tienen foto.
@@ -38,6 +33,14 @@ export default async function BulkPage({
     : { data: [] };
   const brandName = new Map((brandRows ?? []).map((b) => [b.id, b.name]));
 
+  const items: PendingItem[] = needPhoto.map((g) => ({
+    id: g.id,
+    title: g.title,
+    subtitle:
+      (brandName.get(g.brand_id) ?? "—") +
+      (g.price_cop != null ? ` · ${formatCop(g.price_cop)}` : ""),
+  }));
+
   return (
     <>
       <Aurora />
@@ -52,17 +55,6 @@ export default async function BulkPage({
             ← Panel
           </Link>
         </div>
-
-        {ok && (
-          <p className="mt-4 rounded-xl bg-leaf-soft px-3 py-2 text-sm text-forest-deep">
-            ✓ Prenda {ok}.
-          </p>
-        )}
-        {error && (
-          <p className="mt-4 rounded-xl bg-coral/15 px-3 py-2 text-sm text-coral">
-            {error}
-          </p>
-        )}
 
         {/* Paso 1: plantilla + importar */}
         <GlassCard className="mt-6 p-6">
@@ -86,48 +78,15 @@ export default async function BulkPage({
         {/* Paso 2: montar fotos */}
         <GlassCard className="mt-6 mb-12 p-6">
           <h2 className="text-lg font-medium text-forest">
-            2 · Súbeles la foto ({needPhoto.length} por completar)
+            2 · Súbeles la foto ({items.length} por completar)
           </h2>
           <p className="mt-1 text-sm text-ink/60">
-            Al subir la foto, la prenda pasa a <b>publicada</b> y aparece en el feed.
+            Selecciona la foto de cada prenda y pulsa <b>Subir todas</b> (o elimínalas si
+            las importaste por error). Al subir la foto, la prenda pasa a <b>publicada</b>{" "}
+            y aparece en el feed.
           </p>
 
-          {needPhoto.length === 0 ? (
-            <p className="mt-4 text-sm text-ink/50">
-              No hay prendas pendientes de foto. 🎉
-            </p>
-          ) : (
-            <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {needPhoto.map((g) => (
-                <div
-                  key={g.id}
-                  className="glass-input flex flex-col gap-2 rounded-xl p-3"
-                >
-                  <p className="text-sm font-medium text-ink">{g.title}</p>
-                  <p className="text-xs text-ink/60">
-                    {brandName.get(g.brand_id) ?? "—"}
-                    {g.price_cop != null && ` · ${formatCop(g.price_cop)}`}
-                  </p>
-                  <form action={uploadGarmentImage} className="mt-1 flex flex-col gap-2">
-                    <input type="hidden" name="garment_id" value={g.id} />
-                    <input
-                      type="file"
-                      name="image"
-                      accept="image/*"
-                      required
-                      className="text-xs text-ink file:mr-2 file:rounded-full file:border-0 file:bg-forest file:px-2 file:py-1 file:text-xs file:text-white"
-                    />
-                    <button
-                      type="submit"
-                      className="rounded-full bg-forest px-3 py-1.5 text-xs font-medium text-white hover:bg-forest-deep"
-                    >
-                      Subir foto y publicar
-                    </button>
-                  </form>
-                </div>
-              ))}
-            </div>
-          )}
+          <PendingGarments items={items} />
         </GlassCard>
       </div>
     </>
