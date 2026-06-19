@@ -10,51 +10,80 @@ import {
 
 export type PendingItem = { id: string; title: string; subtitle: string };
 
+const MAX_BYTES = 10 * 1024 * 1024; // coincide con serverActions.bodySizeLimit
+
 export function PendingGarments({ items }: { items: PendingItem[] }) {
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
+  const [errors, setErrors] = useState<string[]>([]);
 
   async function uploadAll() {
     const form = formRef.current;
     if (!form) return;
     setBusy(true);
     setMsg(null);
-    const fd = new FormData(form);
-    const jobs: Promise<{ ok: boolean; error?: string }>[] = [];
-    for (const it of items) {
-      const file = fd.get(`image:${it.id}`);
-      if (file instanceof File && file.size > 0) {
-        const sub = new FormData();
-        sub.set("garment_id", it.id);
-        sub.set("image", file);
-        jobs.push(uploadGarmentImageAction(sub));
+    setErrors([]);
+    try {
+      const fd = new FormData(form);
+      const selected = items
+        .map((it) => ({ it, file: fd.get(`image:${it.id}`) }))
+        .filter(
+          (x): x is { it: PendingItem; file: File } =>
+            x.file instanceof File && x.file.size > 0,
+        );
+      if (!selected.length) {
+        setMsg("Selecciona al menos una foto.");
+        return;
       }
-    }
-    if (!jobs.length) {
-      setMsg("Selecciona al menos una foto.");
+
+      const results = await Promise.all(
+        selected.map(async ({ it, file }) => {
+          if (file.size > MAX_BYTES)
+            return { ok: false, error: `${it.title}: imagen muy grande (máx 10 MB)` };
+          try {
+            const sub = new FormData();
+            sub.set("garment_id", it.id);
+            sub.set("image", file);
+            const r = await uploadGarmentImageAction(sub);
+            return r.ok
+              ? { ok: true as const }
+              : { ok: false, error: `${it.title}: ${r.error ?? "error desconocido"}` };
+          } catch (e) {
+            return {
+              ok: false,
+              error: `${it.title}: ${e instanceof Error ? e.message : "fallo de red/servidor"}`,
+            };
+          }
+        }),
+      );
+
+      const errs = results.filter((r) => !r.ok).map((r) => r.error!);
+      const okCount = results.length - errs.length;
+      setErrors(errs);
+      setMsg(
+        errs.length
+          ? `${okCount} publicada(s), ${errs.length} con error.`
+          : `${okCount} foto(s) subida(s) y publicada(s).`,
+      );
+    } finally {
       setBusy(false);
-      return;
+      router.refresh();
     }
-    const res = await Promise.all(jobs);
-    const fails = res.filter((r) => !r.ok).length;
-    setMsg(
-      fails
-        ? `${jobs.length - fails} publicada(s), ${fails} con error.`
-        : `${jobs.length} foto(s) subida(s) y publicada(s).`,
-    );
-    setBusy(false);
-    router.refresh();
   }
 
   async function removeOne(id: string) {
     setBusy(true);
     setMsg(null);
-    const r = await deleteGarmentAction(id);
-    if (!r.ok) setMsg(r.error ?? "Error al eliminar.");
-    setBusy(false);
-    router.refresh();
+    setErrors([]);
+    try {
+      const r = await deleteGarmentAction(id);
+      if (!r.ok) setErrors([r.error ?? "Error al eliminar."]);
+    } finally {
+      setBusy(false);
+      router.refresh();
+    }
   }
 
   async function removeAll() {
@@ -66,10 +95,15 @@ export function PendingGarments({ items }: { items: PendingItem[] }) {
       return;
     setBusy(true);
     setMsg(null);
-    const r = await deleteAllPendingAction();
-    setMsg(r.ok ? `${r.deleted} prenda(s) eliminada(s).` : (r.error ?? "Error."));
-    setBusy(false);
-    router.refresh();
+    setErrors([]);
+    try {
+      const r = await deleteAllPendingAction();
+      setMsg(r.ok ? `${r.deleted} prenda(s) eliminada(s).` : null);
+      if (!r.ok) setErrors([r.error ?? "Error al eliminar."]);
+    } finally {
+      setBusy(false);
+      router.refresh();
+    }
   }
 
   if (!items.length)
@@ -100,6 +134,14 @@ export function PendingGarments({ items }: { items: PendingItem[] }) {
         </button>
         {msg && <span className="text-sm text-ink/70">{msg}</span>}
       </div>
+
+      {errors.length > 0 && (
+        <ul className="mt-3 space-y-1 rounded-xl bg-coral/10 px-3 py-2 text-sm text-coral">
+          {errors.map((e, i) => (
+            <li key={i}>{e}</li>
+          ))}
+        </ul>
+      )}
 
       <form
         ref={formRef}
