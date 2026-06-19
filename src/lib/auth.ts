@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { Tables } from "@/lib/database.types";
 
@@ -31,4 +32,11 @@ export function isStaff(
   profile: Pick<Profile, "role"> | null | undefined,
 ): boolean {
   return profile?.role === "curator" || profile?.role === "admin";
+}
+
+// Exige sesión de staff o redirige a "/". Devuelve el perfil para usar created_by, etc.
+export async function requireStaff(): Promise<Profile> {
+  const session = await getCurrentUser();
+  if (!session?.profile || !isStaff(session.profile)) redirect("/");
+  return session.profile;
 }
