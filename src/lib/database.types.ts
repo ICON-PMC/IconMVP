@@ -186,6 +186,27 @@ export type Database = {
           sim: number;
         }[];
       };
+      search_posts: {
+        Args: { q?: string | null; p_user_city?: string | null };
+        Returns: { id: string; sim: number; same_city: boolean }[];
+      };
+      search_brands: {
+        Args: { q?: string | null; p_user_city?: string | null };
+        Returns: {
+          id: string;
+          slug: string;
+          name: string;
+          bio: string | null;
+          city_name: string | null;
+          is_verified: boolean;
+          is_sustainable: boolean;
+          logo_url: string | null;
+          garments: number;
+          created_at: string;
+          sim: number;
+          same_city: boolean;
+        }[];
+      };
     };
     Enums: {
       user_role: "user" | "curator" | "admin";
