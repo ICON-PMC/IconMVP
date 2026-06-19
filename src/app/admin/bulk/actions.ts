@@ -1,7 +1,6 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 import ExcelJS from "exceljs";
 import { createClient } from "@/lib/supabase/server";
 import { requireStaff } from "@/lib/auth";
@@ -239,19 +238,31 @@ export async function importGarments(
   return { created: pending.length, results };
 }
 
-// Sube la foto de una prenda pendiente y la pasa a published.
-export async function uploadGarmentImage(formData: FormData) {
+export type ActionResult = { ok: boolean; error?: string };
+
+// Sube la foto de una prenda pendiente y la pasa a published. Devuelve resultado
+// (no redirige) para poder llamarla en lote desde el cliente ("subir todas").
+export async function uploadGarmentImageAction(
+  formData: FormData,
+): Promise<ActionResult> {
   await requireStaff();
   const garmentId = String(formData.get("garment_id") ?? "");
-  if (!garmentId) redirect("/admin/bulk?error=Falta la prenda");
+  if (!garmentId) return { ok: false, error: "Falta la prenda" };
 
   const supabase = await createClient();
-  const key = await uploadImageField(formData, `garments/${garmentId}`);
-  if (!key) redirect("/admin/bulk?error=Selecciona una imagen");
+  let key: string | null;
+  try {
+    key = await uploadImageField(formData, `garments/${garmentId}`);
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : "Error al subir" };
+  }
+  if (!key) return { ok: false, error: "Selecciona una imagen" };
 
-  await supabase
+  const { error: imgErr } = await supabase
     .from("garment_images")
     .insert({ garment_id: garmentId, cf_image_id: key, position: 0 });
+  if (imgErr) return { ok: false, error: imgErr.message };
+
   await supabase
     .from("garments")
     .update({ status: "published", published_at: new Date().toISOString() })
@@ -259,5 +270,55 @@ export async function uploadGarmentImage(formData: FormData) {
 
   revalidatePath("/admin/bulk");
   revalidatePath("/feed");
-  redirect("/admin/bulk?ok=publicada");
+  return { ok: true };
+}
+
+// Borra una prenda (cascade limpia imágenes/tags/sizes/post_items).
+export async function deleteGarmentAction(
+  garmentId: string,
+): Promise<ActionResult> {
+  await requireStaff();
+  if (!garmentId) return { ok: false, error: "Falta la prenda" };
+
+  const supabase = await createClient();
+  const { error } = await supabase.from("garments").delete().eq("id", garmentId);
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath("/admin/bulk");
+  revalidatePath("/feed");
+  return { ok: true };
+}
+
+// Borra todas las prendas pendientes sin foto (las recién importadas). Útil para
+// limpiar duplicados al reimportar la misma plantilla.
+export async function deleteAllPendingAction(): Promise<{
+  ok: boolean;
+  deleted: number;
+  error?: string;
+}> {
+  await requireStaff();
+  const supabase = await createClient();
+
+  const { data: pend } = await supabase
+    .from("garments")
+    .select("id")
+    .eq("status", "pending")
+    .limit(1000);
+  const ids = (pend ?? []).map((g) => g.id);
+  if (!ids.length) return { ok: true, deleted: 0 };
+
+  const { data: imgs } = await supabase
+    .from("garment_images")
+    .select("garment_id")
+    .in("garment_id", ids);
+  const withImg = new Set((imgs ?? []).map((i) => i.garment_id));
+  const toDelete = ids.filter((id) => !withImg.has(id));
+  if (!toDelete.length) return { ok: true, deleted: 0 };
+
+  const { error } = await supabase.from("garments").delete().in("id", toDelete);
+  if (error) return { ok: false, deleted: 0, error: error.message };
+
+  revalidatePath("/admin/bulk");
+  revalidatePath("/feed");
+  return { ok: true, deleted: toDelete.length };
 }
