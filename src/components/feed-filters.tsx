@@ -24,10 +24,38 @@ export function FeedFilters({ groups }: { groups: Group[] }) {
     router.push(params.toString() ? `${pathname}?${params}` : pathname);
   }
 
-  const hasAny = groups.some((g) => selected(g.param).length > 0);
+  function setQuery(value: string) {
+    const params = new URLSearchParams(searchParams.toString());
+    const v = value.trim();
+    if (v) params.set("q", v);
+    else params.delete("q");
+    router.push(params.toString() ? `${pathname}?${params}` : pathname);
+  }
+
+  const hasAny =
+    groups.some((g) => selected(g.param).length > 0) ||
+    !!searchParams.get("q");
 
   return (
     <div className="glass rounded-2xl p-4">
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          const fd = new FormData(e.currentTarget);
+          setQuery(String(fd.get("q") ?? ""));
+        }}
+        className="mb-3"
+      >
+        <input
+          key={searchParams.get("q") ?? ""}
+          name="q"
+          type="search"
+          defaultValue={searchParams.get("q") ?? ""}
+          placeholder="Buscar marca o prenda…"
+          aria-label="Buscar"
+          className="glass-input w-full rounded-full px-4 py-2 text-sm text-ink placeholder:text-ink/40"
+        />
+      </form>
       <div className="flex flex-col gap-3">
         {groups.map((g) => (
           <div key={g.param}>
