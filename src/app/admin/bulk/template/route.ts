@@ -25,6 +25,7 @@ export async function GET() {
   ws.columns = [
     { header: "marca", key: "marca", width: 26 },
     { header: "titulo", key: "titulo", width: 30 },
+    { header: "descripcion", key: "descripcion", width: 40 },
     { header: "precio_cop", key: "precio_cop", width: 14 },
     { header: "url_producto", key: "url_producto", width: 34 },
     { header: "color", key: "color", width: 16 },
@@ -36,6 +37,7 @@ export async function GET() {
   ws.addRow({
     marca: brands[0] ?? "Nombre de la marca",
     titulo: "Camiseta oversize",
+    descripcion: "Algodón orgánico, corte holgado, ideal para el día a día",
     precio_cop: 120000,
     url_producto: "https://tienda.com/producto",
     color: "Negro",
@@ -70,7 +72,7 @@ export async function GET() {
   }
   if (categories.length) {
     for (let r = 2; r <= 501; r++) {
-      ws.getCell(`G${r}`).dataValidation = {
+      ws.getCell(`H${r}`).dataValidation = {
         type: "list",
         allowBlank: true,
         formulae: [`${refName}!$B$2:$B$${categories.length + 1}`],
