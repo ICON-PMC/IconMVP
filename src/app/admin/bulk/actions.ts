@@ -254,14 +254,19 @@ export async function uploadGarmentImageAction(
   try {
     key = await uploadImageField(formData, `garments/${garmentId}`);
   } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : "Error al subir" };
+    const msg = e instanceof Error ? e.message : "Error al subir";
+    console.error("[uploadGarmentImage] resize/R2 falló:", msg);
+    return { ok: false, error: msg };
   }
   if (!key) return { ok: false, error: "Selecciona una imagen" };
 
   const { error: imgErr } = await supabase
     .from("garment_images")
     .insert({ garment_id: garmentId, cf_image_id: key, position: 0 });
-  if (imgErr) return { ok: false, error: imgErr.message };
+  if (imgErr) {
+    console.error("[uploadGarmentImage] insert garment_images falló:", imgErr.message);
+    return { ok: false, error: imgErr.message };
+  }
 
   await supabase
     .from("garments")
