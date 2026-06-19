@@ -48,7 +48,7 @@ export type Database = {
         Relationships: [];
       };
       garments: {
-        Row: { id: string; brand_id: string; title: string; description: string | null; price_cop: number | null; price_range: Database["public"]["Enums"]["price_range"] | null; product_url: string | null; color: string | null; fabric: string | null; status: Database["public"]["Enums"]["garment_status"]; source: Database["public"]["Enums"]["garment_source"]; created_by_user_id: string | null; popularity: number; published_at: string | null; created_at: string; updated_at: string };
+        Row: { id: string; brand_id: string; title: string; description: string | null; price_cop: number | null; price_range: Database["public"]["Enums"]["price_range"] | null; product_url: string | null; color: string | null; fabric: string | null; status: Database["public"]["Enums"]["garment_status"]; source: Database["public"]["Enums"]["garment_source"]; created_by_user_id: string | null; popularity: number; published_at: string | null; search_text: string; created_at: string; updated_at: string };
         Insert: { id?: string; brand_id: string; title: string; description?: string | null; price_cop?: number | null; product_url?: string | null; color?: string | null; fabric?: string | null; status?: Database["public"]["Enums"]["garment_status"]; source?: Database["public"]["Enums"]["garment_source"]; created_by_user_id?: string | null; popularity?: number; published_at?: string | null; created_at?: string; updated_at?: string };
         Update: { id?: string; brand_id?: string; title?: string; description?: string | null; price_cop?: number | null; product_url?: string | null; color?: string | null; fabric?: string | null; status?: Database["public"]["Enums"]["garment_status"]; source?: Database["public"]["Enums"]["garment_source"]; created_by_user_id?: string | null; popularity?: number; published_at?: string | null; created_at?: string; updated_at?: string };
         Relationships: [];
@@ -163,6 +163,50 @@ export type Database = {
     Functions: {
       current_user_id: { Args: Record<string, never>; Returns: string };
       is_staff: { Args: Record<string, never>; Returns: boolean };
+      search_garments: {
+        Args: {
+          q?: string | null;
+          p_cities?: string[] | null;
+          p_categories?: string[] | null;
+          p_prices?: string[] | null;
+          p_sort?: string | null;
+          p_user_city?: string | null;
+        };
+        Returns: {
+          id: string;
+          title: string;
+          price_cop: number | null;
+          brand_id: string;
+          brand_name: string;
+          brand_slug: string;
+          city_slug: string | null;
+          city_name: string | null;
+          image: string | null;
+          popularity: number;
+          sim: number;
+        }[];
+      };
+      search_posts: {
+        Args: { q?: string | null; p_user_city?: string | null };
+        Returns: { id: string; sim: number; same_city: boolean }[];
+      };
+      search_brands: {
+        Args: { q?: string | null; p_user_city?: string | null };
+        Returns: {
+          id: string;
+          slug: string;
+          name: string;
+          bio: string | null;
+          city_name: string | null;
+          is_verified: boolean;
+          is_sustainable: boolean;
+          logo_url: string | null;
+          garments: number;
+          created_at: string;
+          sim: number;
+          same_city: boolean;
+        }[];
+      };
     };
     Enums: {
       user_role: "user" | "curator" | "admin";

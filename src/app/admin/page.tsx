@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser, isStaff } from "@/lib/auth";
@@ -78,9 +79,17 @@ export default async function AdminPage({
       <div className="mx-auto w-full max-w-3xl px-4 py-6">
         <SiteHeader />
 
-        <h1 className="mt-8 text-3xl font-medium tracking-tight text-forest">
-          Panel del equipo
-        </h1>
+        <div className="mt-8 flex items-center justify-between gap-3">
+          <h1 className="text-3xl font-medium tracking-tight text-forest">
+            Panel del equipo
+          </h1>
+          <Link
+            href="/admin/bulk"
+            className="rounded-full bg-white/60 px-4 py-2 text-sm font-medium text-forest hover:bg-white"
+          >
+            Carga masiva →
+          </Link>
+        </div>
         <p className="mt-1 text-sm text-ink/60">
           {session.profile?.display_name ?? session.email} · {session.profile?.role}
         </p>
@@ -253,6 +262,10 @@ export default async function AdminPage({
             <div>
               <label className={label}>Tela</label>
               <input className={input} name="fabric" />
+            </div>
+            <div className="col-span-2">
+              <label className={label}>Descripción</label>
+              <textarea className={input} name="description" rows={2} />
             </div>
             <div>
               <label className={label}>Categoría</label>
