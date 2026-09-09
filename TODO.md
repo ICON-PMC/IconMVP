@@ -38,6 +38,50 @@ MVP curado). Lo mínimo para que eso no se sienta roto:
       existen `not-found.tsx` (estaba despriorizado porque "esperaba diseño concreto del UI" — para
       un piloto, aunque sea genérico, es mejor que la página en blanco/error crudo de Next).
 
+## Próxima iniciativa (decidida): catálogo de marca vía Instagram API
+
+Decisión de producto: adelantar lo que hasta ahora estaba en "fuera de alcance" — que una marca cargue
+**su propio catálogo** conectando su cuenta de Instagram, en vez de depender de que el equipo lo cargue
+a mano en `/admin`. Esto no bloquea el piloto (que sigue arrancando con MVP curado), pero es la iniciativa
+que sigue después. La dejo con el detalle técnico de una vez porque tiene piezas no triviales:
+
+- [ ] **Vincular `users` ↔ `brand`.** Hoy no existe (`users.brand_id` no existe, ni una tabla de
+      membresía). Decidir el modelo: `brands.owner_user_id` ya existe en el esquema pero no se usa —
+      puede que alcance con una relación 1:1 marca-dueña para el primer corte, o si varias personas de
+      una marca necesitan acceso, una tabla `brand_members (user_id, brand_id, role)`.
+- [ ] **Rol/capability "marca" + RLS nuevo.** Cada marca solo debe poder ver/editar lo suyo — esto es
+      RLS nuevo sobre `brands`, `garments`, `garment_images`, `posts`, no una extensión de `is_staff()`.
+      Repasar el patrón de policies + GRANT de `20260614120000_init.sql` como plantilla.
+- [ ] **Elegir la vía de la API de Instagram.** Meta retiró la Instagram Basic Display API (dic. 2024);
+      hoy el camino es la **Instagram Platform vía Graph API** (Instagram Login o Facebook Login), que
+      exige que la marca tenga cuenta de Instagram **Business o Creator** (no personal). Definir cuál de
+      los dos flujos de login conviene antes de escribir código de integración.
+- [ ] **Meta App Review.** Los permisos para leer media de una cuenta ajena (`instagram_business_basic`
+      y similares) requieren revisión de la app por parte de Meta — esto puede tardar días a semanas.
+      **Meter la solicitud de review al inicio del desarrollo**, no al final, para que no sea el cuello
+      de botella final del feature.
+- [ ] **Flujo de conexión y ciclo de vida del token.** Pantalla en `/settings` (o una nueva `/marca/panel`)
+      donde la marca autoriza Icon vía OAuth de Instagram. El access token de larga duración expira a los
+      ~60 días y necesita refresh antes de vencer — sin esto, el catálogo de una marca deja de
+      sincronizar en silencio dos meses después de conectarla. Guardar el token solo server-side, nunca
+      en un campo expuesto al cliente.
+- [ ] **Resolver el hueco real: Instagram da fotos y caption, no precio/talla/categoría/`product_url`.**
+      Este es el punto que puede parecer "solo conectar la API" pero no lo es — una foto importada de
+      Instagram no trae nada de lo que hace útil el catálogo de Icon (filtrar por precio, talla, ciudad).
+      Decidir para el primer corte: ¿la marca completa esos campos a mano por cada foto importada antes
+      de publicar (fricción baja pero manual), o se explora extracción asistida por IA más adelante
+      (conecta con la idea de "catalogación con visión" ya planteada para el pitch)? Para este feature,
+      recomiendo empezar con completar a mano — es mucho menos trabajo que construir visión por
+      computadora, y ya reduce la fricción real (la marca ya no arranca desde cero, solo completa datos
+      sobre fotos que ya tiene).
+- [ ] **Moderación de lo importado.** Decidir si el contenido que trae la marca desde Instagram entra
+      como `pending`/`draft` para que el equipo lo revise antes de publicar, o se publica directo y se
+      audita después. La tabla `post_brand_reviews` ya existe en el esquema (sin uso hoy) — vale la pena
+      evaluar si sirve para este flujo de moderación en vez de construir una tabla nueva.
+- [ ] **Manejar la desconexión y el token revocado con gracia en la UI.** Si la marca revoca el acceso
+      desde Instagram (no desde Icon), la próxima sincronización va a fallar — el panel de la marca debe
+      mostrar "reconectar tu Instagram" en vez de fallar en silencio o mostrar un error crudo.
+
 ## Antes de invitar a las primeras usuarias
 
 - [ ] **Onboarding probado de principio a fin en un dispositivo real (celular).** Es la primera
@@ -76,11 +120,11 @@ Estas ayudan pero no impiden lanzar — hacerlas si sobra tiempo antes de invita
 Para que quede explícito qué NO estamos haciendo ahora y por qué — si alguien propone retomarlo antes
 de tener feedback del piloto, esta es la razón para decir "todavía no":
 
-- **Perfiles de marca con acceso propio** (que una marca cargue su propio catálogo). Requiere vincular
-  `users` ↔ `brand` y RLS nuevo — trabajo real de varios días. El MVP curado (equipo carga todo) es
-  suficiente para validar si hay interés antes de construir esto.
 - **Reviews/UGC.** La tabla `post_brand_reviews` existe pero no tiene interfaz. No sirve para validar
   la hipótesis central (¿la gente encuentra y compra ropa colombiana independiente por intención?).
+  **Corrección (2026-09-09):** esto se mantiene fuera de alcance — a diferencia de "perfiles de marca
+  con acceso propio" (que se movió arriba a "Próxima iniciativa", ya no está fuera de alcance), reviews
+  sigue explícitamente pospuesto hasta después del piloto.
 - **PWA instalable** (faltan íconos PNG 192/512 y service worker). Cosmético para un piloto que se usa
   desde el navegador.
 - **Búsqueda semántica cross-idioma** (pgvector/embeddings). La búsqueda actual por trigram ya resuelve
