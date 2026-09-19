@@ -6,6 +6,7 @@ import { signOut } from "@/app/auth/actions";
 export async function SiteHeader() {
   const session = await getCurrentUser();
   const staff = isStaff(session?.profile);
+  const isBrand = session?.profile?.role === "brand";
 
   return (
     <header className="glass flex items-center justify-between gap-3 rounded-full px-5 py-2.5">
@@ -41,6 +42,14 @@ export async function SiteHeader() {
                 className="font-medium text-forest hover:underline"
               >
                 Panel
+              </Link>
+            )}
+            {isBrand && (
+              <Link
+                href="/marca/panel"
+                className="font-medium text-forest hover:underline"
+              >
+                Mi marca
               </Link>
             )}
             <span className="hidden text-ink/60 sm:inline">
