@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/auth";
 
-// Conjuntos de ids guardados por la usuaria actual (vacíos si es anónima).
+// Conjuntos de ids guardados por el usuario actual (vacíos si es anónimo).
 export async function getMySavedIds(): Promise<{
   posts: Set<string>;
   garments: Set<string>;

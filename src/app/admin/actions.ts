@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { requireStaff } from "@/lib/auth";
+import { getCurrentUser, isStaff, requireStaff } from "@/lib/auth";
 import { uploadImageField } from "@/lib/upload";
 
 function str(formData: FormData, key: string): string | null {
@@ -136,4 +136,43 @@ export async function createPost(formData: FormData) {
   revalidatePath("/admin");
   revalidatePath("/feed");
   redirect("/admin?ok=post");
+}
+
+// ============================================================
+// Cola de aprobación de marcas
+// ============================================================
+export type ReviewResult = { ok: true } | { ok: false; error: string };
+
+// A diferencia de requireStaff() (que redirige), estas acciones devuelven un error para que
+// la UI lo muestre; nunca lanzan 500 si las llama alguien sin permiso.
+async function reviewBrand(
+  fn: "approve_brand" | "reject_brand",
+  brandId: string,
+  note?: string,
+): Promise<ReviewResult> {
+  const session = await getCurrentUser();
+  if (!isStaff(session?.profile)) return { ok: false, error: "No tienes permiso para esta acción." };
+
+  const supabase = await createClient();
+  const { error } =
+    fn === "approve_brand"
+      ? await supabase.rpc("approve_brand", { p_brand_id: brandId })
+      : await supabase.rpc("reject_brand", { p_brand_id: brandId, p_note: note ?? null });
+  if (error) {
+    if (error.code === "42501") return { ok: false, error: "No tienes permiso para esta acción." };
+    if (error.code === "P0001") return { ok: false, error: error.message };
+    console.error(`[admin] ${fn} falló:`, error.message);
+    return { ok: false, error: "No se pudo completar la acción. Intenta de nuevo." };
+  }
+
+  revalidatePath("/admin");
+  return { ok: true };
+}
+
+export async function approveBrand(brandId: string): Promise<ReviewResult> {
+  return reviewBrand("approve_brand", brandId);
+}
+
+export async function rejectBrand(brandId: string, note: string): Promise<ReviewResult> {
+  return reviewBrand("reject_brand", brandId, note.slice(0, 500));
 }

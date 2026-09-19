@@ -28,7 +28,7 @@ create index if not exists garments_search_trgm
 
 -- Búsqueda de prendas publicadas. q = texto; filtros por slug de ciudad/categoría y
 -- bucket de precio (derivado de price_cop). p_sort: relevant|new|popular|az.
--- p_user_city (uuid) prioriza la ciudad de la usuaria en el orden 'relevant' sin excluir otras.
+-- p_user_city (uuid) prioriza la ciudad del usuario en el orden 'relevant' sin excluir otras.
 create or replace function public.search_garments(
   q text default null,
   p_cities text[] default null,
