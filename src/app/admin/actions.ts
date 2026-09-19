@@ -148,7 +148,7 @@ export type ReviewResult =
   | { ok: false; error: string };
 
 async function siteOrigin(): Promise<string> {
-  const fixed = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "");
+  const fixed = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "");
   if (fixed) return fixed;
   const h = await headers();
   return `${h.get("x-forwarded-proto") ?? "http"}://${h.get("host")}`;
