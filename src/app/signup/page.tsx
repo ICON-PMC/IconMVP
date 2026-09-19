@@ -7,9 +7,10 @@ import { signUp } from "@/app/auth/actions";
 export default async function SignupPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; tipo?: string }>;
 }) {
-  const { error } = await searchParams;
+  const { error, tipo } = await searchParams;
+  const isBrand = tipo === "marca";
 
   return (
     <>
@@ -17,11 +18,28 @@ export default async function SignupPage({
       <main className="flex min-h-dvh items-center justify-center p-6">
         <GlassCard className="w-full max-w-sm p-8">
           <h1 className="text-3xl font-medium tracking-tight text-forest">
-            Crea tu cuenta
+            {isBrand ? "Registra tu marca" : "Crea tu cuenta"}
           </h1>
-          <p className="mt-1 mb-6 text-sm text-ink/70">
-            Guarda outfits y prendas de marcas colombianas.
+          <p className="mt-1 mb-4 text-sm text-ink/70">
+            {isBrand
+              ? "Primero crea tu cuenta; en el siguiente paso armas el perfil de tu marca."
+              : "Guarda outfits y prendas de marcas colombianas."}
           </p>
+
+          <div className="glass-input mb-5 grid grid-cols-2 rounded-full p-1 text-center text-sm font-medium">
+            <Link
+              href="/signup"
+              className={`rounded-full px-3 py-1.5 ${!isBrand ? "bg-forest text-white" : "text-ink/60"}`}
+            >
+              Soy usuario
+            </Link>
+            <Link
+              href="/signup?tipo=marca"
+              className={`rounded-full px-3 py-1.5 ${isBrand ? "bg-forest text-white" : "text-ink/60"}`}
+            >
+              Soy una marca
+            </Link>
+          </div>
 
           {error && (
             <p className="mb-4 rounded-xl bg-coral/15 px-3 py-2 text-sm text-coral">
@@ -30,11 +48,12 @@ export default async function SignupPage({
           )}
 
           <form action={signUp} className="flex flex-col gap-3">
+            {isBrand && <input type="hidden" name="account_type" value="brand" />}
             <input
               className="glass-input rounded-xl px-4 py-2.5 text-sm"
               type="text"
               name="display_name"
-              placeholder="Nombre"
+              placeholder={isBrand ? "Tu nombre" : "Nombre"}
               autoComplete="name"
             />
             <input
@@ -62,12 +81,16 @@ export default async function SignupPage({
             </button>
           </form>
 
-          <div className="my-5 flex items-center gap-3 text-xs text-ink/40">
-            <span className="h-px flex-1 bg-ink/10" /> o
-            <span className="h-px flex-1 bg-ink/10" />
-          </div>
+          {!isBrand && (
+            <>
+              <div className="my-5 flex items-center gap-3 text-xs text-ink/40">
+                <span className="h-px flex-1 bg-ink/10" /> o
+                <span className="h-px flex-1 bg-ink/10" />
+              </div>
 
-          <GoogleButton />
+              <GoogleButton />
+            </>
+          )}
 
           <p className="mt-6 text-center text-sm text-ink/60">
             ¿Ya tienes cuenta?{" "}

@@ -7,6 +7,8 @@ import { GlassCard } from "@/components/glass-card";
 import { PRICE_BUCKETS } from "@/lib/taxonomy";
 import { SiteHeader } from "@/components/site-header";
 import { createBrand, createGarment, createPost } from "./actions";
+import { AdminTabs } from "./admin-tabs";
+import { PendingBrands, pendingBrandsCount } from "./pending-brands";
 
 const input =
   "glass-input w-full rounded-lg px-3 py-2 text-sm text-ink placeholder:text-ink/40";
@@ -16,15 +18,50 @@ const chip =
 const submit =
   "rounded-full bg-forest px-5 py-2 text-sm font-medium text-white hover:bg-forest-deep";
 
+const REVIEW_NOTICES: Record<string, string> = {
+  aprobada: "✓ Marca aprobada; le enviamos un correo.",
+  rechazada: "✓ Marca rechazada; le enviamos un correo.",
+  "aprobada-sin-correo": "Marca aprobada, pero no pudimos enviar el correo. Avísale por otro medio.",
+  "rechazada-sin-correo": "Marca rechazada, pero no pudimos enviar el correo. Avísale por otro medio.",
+};
+
+// Fuera del componente: react-hooks/purity prohíbe llamar Date.now() durante el render.
+function daysAgoIso(days: number): string {
+  return new Date(Date.now() - days * 864e5).toISOString();
+}
+
 export default async function AdminPage({
   searchParams,
 }: {
-  searchParams: Promise<{ ok?: string; error?: string }>;
+  searchParams: Promise<{ ok?: string; error?: string; tab?: string; aviso?: string }>;
 }) {
   const session = await getCurrentUser();
   if (!session) redirect("/login?next=/admin");
   if (!isStaff(session.profile)) redirect("/");
-  const { ok, error } = await searchParams;
+  const { ok, error, tab, aviso } = await searchParams;
+  const pendingCount = await pendingBrandsCount();
+
+  if (tab === "marcas") {
+    return (
+      <>
+        <Aurora />
+        <div className="mx-auto w-full max-w-3xl px-4 py-6">
+          <SiteHeader />
+          <h1 className="mt-8 text-3xl font-medium tracking-tight text-forest">Panel del equipo</h1>
+          <AdminTabs active="marcas" pendingCount={pendingCount} />
+          {aviso && REVIEW_NOTICES[aviso] && (
+            <p
+              role="status"
+              className={`mt-4 rounded-xl px-3 py-2 text-sm ${aviso.endsWith("sin-correo") ? "bg-honey-soft text-ink" : "bg-leaf-soft text-forest-deep"}`}
+            >
+              {REVIEW_NOTICES[aviso]}
+            </p>
+          )}
+          <PendingBrands />
+        </div>
+      </>
+    );
+  }
 
   const supabase = await createClient();
   const [
@@ -60,7 +97,7 @@ export default async function AdminPage({
   ];
 
   // Analítica de clics salientes (solo staff puede leer outbound_clicks).
-  const sevenDaysAgo = new Date(Date.now() - 7 * 864e5).toISOString();
+  const sevenDaysAgo = daysAgoIso(7);
   const [clicksTotal, clicks7d, topBrandsRes, topGarmentsRes] = await Promise.all([
     supabase.from("outbound_clicks").select("*", { count: "exact", head: true }),
     supabase
@@ -93,6 +130,8 @@ export default async function AdminPage({
         <p className="mt-1 text-sm text-ink/60">
           {session.profile?.display_name ?? session.email} · {session.profile?.role}
         </p>
+
+        <AdminTabs active="panel" pendingCount={pendingCount} />
 
         {ok && (
           <p className="mt-4 rounded-xl bg-leaf-soft px-3 py-2 text-sm text-forest-deep">

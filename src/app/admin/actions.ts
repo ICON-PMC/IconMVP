@@ -3,8 +3,10 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { requireStaff } from "@/lib/auth";
+import { getCurrentUser, isStaff, requireStaff } from "@/lib/auth";
 import { uploadImageField } from "@/lib/upload";
+import { headers } from "next/headers";
+import { sendBrandApprovedEmail, sendBrandRejectedEmail } from "@/lib/brand-emails";
 
 function str(formData: FormData, key: string): string | null {
   const v = formData.get(key);
@@ -136,4 +138,62 @@ export async function createPost(formData: FormData) {
   revalidatePath("/admin");
   revalidatePath("/feed");
   redirect("/admin?ok=post");
+}
+
+// ============================================================
+// Cola de aprobación de marcas
+// ============================================================
+export type ReviewResult =
+  | { ok: true; emailSent: boolean }
+  | { ok: false; error: string };
+
+async function siteOrigin(): Promise<string> {
+  const fixed = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "");
+  if (fixed) return fixed;
+  const h = await headers();
+  return `${h.get("x-forwarded-proto") ?? "http"}://${h.get("host")}`;
+}
+
+// A diferencia de requireStaff() (que redirige), estas acciones devuelven un error para que
+// la UI lo muestre; nunca lanzan 500 si las llama alguien sin permiso. El correo se envía solo
+// tras un RPC exitoso, únicamente al dueño de la marca; si falla, la decisión ya está tomada y
+// se informa con `emailSent: false` (no se revierte).
+async function reviewBrand(
+  fn: "approve_brand" | "reject_brand",
+  brandId: string,
+  note?: string,
+): Promise<ReviewResult> {
+  const session = await getCurrentUser();
+  if (!isStaff(session?.profile)) return { ok: false, error: "No tienes permiso para esta acción." };
+
+  const supabase = await createClient();
+  const { data, error } =
+    fn === "approve_brand"
+      ? await supabase.rpc("approve_brand", { p_brand_id: brandId })
+      : await supabase.rpc("reject_brand", { p_brand_id: brandId, p_note: note ?? null });
+  if (error) {
+    if (error.code === "42501") return { ok: false, error: "No tienes permiso para esta acción." };
+    if (error.code === "P0001") return { ok: false, error: error.message };
+    console.error(`[admin] ${fn} falló:`, error.message);
+    return { ok: false, error: "No se pudo completar la acción. Intenta de nuevo." };
+  }
+
+  revalidatePath("/admin");
+
+  const brand = data?.[0];
+  if (!brand?.owner_email) return { ok: true, emailSent: false };
+  const origin = await siteOrigin();
+  const sent =
+    fn === "approve_brand"
+      ? await sendBrandApprovedEmail(brand.owner_email, brand.brand_name, origin)
+      : await sendBrandRejectedEmail(brand.owner_email, brand.brand_name, note?.trim() || null, origin);
+  return { ok: true, emailSent: sent.ok };
+}
+
+export async function approveBrand(brandId: string): Promise<ReviewResult> {
+  return reviewBrand("approve_brand", brandId);
+}
+
+export async function rejectBrand(brandId: string, note: string): Promise<ReviewResult> {
+  return reviewBrand("reject_brand", brandId, note.slice(0, 500));
 }

@@ -21,6 +21,8 @@ export async function signUp(formData: FormData) {
   const email = String(formData.get("email") ?? "");
   const password = String(formData.get("password") ?? "");
   const displayName = String(formData.get("display_name") ?? "");
+  const isBrand = formData.get("account_type") === "brand";
+  const signupPath = isBrand ? "/signup?tipo=marca" : "/signup";
 
   const h = await headers();
   const origin = `${h.get("x-forwarded-proto") ?? "http"}://${h.get("host")}`;
@@ -34,10 +36,13 @@ export async function signUp(formData: FormData) {
       emailRedirectTo: `${origin}/auth/callback`,
     },
   });
-  if (error) redirect(`/signup?error=${encodeURIComponent(error.message)}`);
+  if (error) {
+    const sep = signupPath.includes("?") ? "&" : "?";
+    redirect(`${signupPath}${sep}error=${encodeURIComponent(error.message)}`);
+  }
 
   revalidatePath("/", "layout");
-  redirect("/onboarding");
+  redirect(isBrand ? "/onboarding/marca" : "/onboarding");
 }
 
 export async function signOut() {

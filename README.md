@@ -37,9 +37,9 @@ La página de inicio consulta la taxonomía sembrada para verificar la conexión
 La taxonomía vive en `tags` (`category` por prenda; `occasion`/`style`/`temperature` por look). Detalle en `supabase/`.
 
 - **Capa MVP (curada):** el equipo carga el contenido con la `service_role` key (omite RLS).
-- **Capa futura (UGC):** posts de usuarias, tagging y verificación de marcas.
+- **Capa futura (UGC):** posts de usuarios, tagging y verificación de marcas.
 
 ## Notas
 
 - Los tipos de la BD están en `src/lib/database.types.ts` (escritos a mano; ver nota en el archivo para regenerarlos).
-- RLS: lectura pública solo de contenido publicado; cada usuaria gestiona sus guardados.
+- RLS: lectura pública solo de contenido publicado; cada usuario gestiona sus guardados.

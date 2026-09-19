@@ -4,6 +4,7 @@ import { requireBrandOwner } from "@/lib/auth";
 import { Aurora } from "@/components/aurora";
 import { GlassCard } from "@/components/glass-card";
 import { SiteHeader } from "@/components/site-header";
+import { BrandStatusBanner } from "@/components/brand-status-banner";
 import { imageUrl } from "@/lib/images";
 import { formatCop } from "@/lib/taxonomy";
 import { updateBrandProfile, createBrandGarment, disconnectInstagram } from "./actions";
@@ -120,11 +121,10 @@ export default async function BrandPanelPage({
 
         <div className="mt-8 flex items-center justify-between gap-3">
           <h1 className="text-3xl font-medium tracking-tight text-forest">Mi marca</h1>
-          {!brand.is_active && (
-            <span className="rounded-full bg-coral/15 px-3 py-1 text-xs font-medium text-coral">
-              En revisión — aún no es visible al público
-            </span>
-          )}
+        </div>
+
+        <div className="mt-4">
+          <BrandStatusBanner brand={brand} />
         </div>
 
         {ok && (
