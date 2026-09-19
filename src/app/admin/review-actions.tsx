@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -15,17 +16,26 @@ import { Textarea } from "@/components/ui/textarea";
 import { approveBrand, rejectBrand } from "./actions";
 
 export function ReviewActions({ brandId, brandName }: { brandId: string; brandName: string }) {
+  const router = useRouter();
   const [pending, start] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
   const [note, setNote] = useState("");
 
-  function run(action: () => ReturnType<typeof approveBrand>, onOk?: () => void) {
+  // La tarjeta desaparece al revalidar, así que el resultado se comunica con ?aviso= en la cola.
+  function run(
+    kind: "aprobada" | "rechazada",
+    action: () => ReturnType<typeof approveBrand>,
+    onOk?: () => void,
+  ) {
     setError(null);
     start(async () => {
       const res = await action();
-      if (res.ok) onOk?.();
-      else setError(res.error);
+      if (!res.ok) return setError(res.error);
+      onOk?.();
+      router.replace(
+        `/admin?tab=marcas&aviso=${kind}${res.emailSent ? "" : "-sin-correo"}`,
+      );
     });
   }
 
@@ -34,7 +44,7 @@ export function ReviewActions({ brandId, brandName }: { brandId: string; brandNa
       <div className="flex gap-2">
         <Button
           disabled={pending}
-          onClick={() => run(() => approveBrand(brandId))}
+          onClick={() => run("aprobada", () => approveBrand(brandId))}
           className="h-9 rounded-full bg-forest px-4 text-white hover:bg-forest-deep"
         >
           Aprobar
@@ -83,7 +93,7 @@ export function ReviewActions({ brandId, brandName }: { brandId: string; brandNa
             <Button
               variant="destructive"
               disabled={pending}
-              onClick={() => run(() => rejectBrand(brandId, note), () => setOpen(false))}
+              onClick={() => run("rechazada", () => rejectBrand(brandId, note), () => setOpen(false))}
             >
               {pending ? "Rechazando…" : "Rechazar marca"}
             </Button>
