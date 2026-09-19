@@ -5,7 +5,7 @@
 -- Capas:
 --   MVP curado (activo): cities, brands, garments, posts (autor team/brand), tags, sizes,
 --                        saved_posts, saved_garments, outbound_clicks.
---   Futuro (UGC):        posts de usuaria, post_items, post_brand_reviews, brands.owner_user_id.
+--   Futuro (UGC):        posts de usuario, post_items, post_brand_reviews, brands.owner_user_id.
 
 -- ============================================================
 -- Extensiones
@@ -68,7 +68,7 @@ create table sizes (
 );
 
 -- ============================================================
--- Usuarias
+-- Usuarios
 -- ============================================================
 create table users (
   id            uuid primary key default gen_random_uuid(),
@@ -130,7 +130,7 @@ create table garments (
   fabric              text,
   status              garment_status not null default 'pending',
   source              garment_source not null default 'team',
-  created_by_user_id  uuid references users (id) on delete set null,  -- prenda propuesta por usuaria
+  created_by_user_id  uuid references users (id) on delete set null,  -- prenda propuesta por usuario
   popularity          numeric not null default 0,
   published_at        timestamptz,
   created_at          timestamptz not null default now(),
@@ -181,7 +181,7 @@ create table posts (
   published_at     timestamptz,
   created_at       timestamptz not null default now(),
   updated_at       timestamptz not null default now(),
-  -- coherencia de autoría: usuaria -> author_user_id; team/brand -> author_brand_id
+  -- coherencia de autoría: usuario -> author_user_id; team/brand -> author_brand_id
   constraint posts_author_chk check (
     (author_type = 'user'  and author_user_id is not null and author_brand_id is null)
     or (author_type in ('team','brand') and author_brand_id is not null and author_user_id is null)
@@ -243,7 +243,7 @@ create table post_brand_reviews (
 create index post_brand_reviews_brand_idx on post_brand_reviews (brand_id, status);
 
 -- ============================================================
--- Interacción de usuarias
+-- Interacción de usuarios
 -- ============================================================
 create table user_preferences (             -- estilos elegidos en el onboarding
   user_id  uuid not null references users (id) on delete cascade,
@@ -282,7 +282,7 @@ create index outbound_clicks_brand_idx   on outbound_clicks (brand_id, created_a
 create index outbound_clicks_garment_idx on outbound_clicks (garment_id, created_at);
 
 -- ============================================================
--- Alta de usuaria: crea public.users al registrarse en auth.users
+-- Alta de usuario: crea public.users al registrarse en auth.users
 -- ============================================================
 create or replace function public.handle_new_user()
 returns trigger language plpgsql security definer set search_path = public as $$
@@ -304,7 +304,7 @@ $$;
 
 -- ============================================================
 -- RLS — Row Level Security
--- Regla general: lectura pública del contenido publicado; cada usuaria gestiona lo suyo.
+-- Regla general: lectura pública del contenido publicado; cada usuario gestiona lo suyo.
 -- El equipo carga contenido con la service_role key (omite RLS).
 -- ============================================================
 alter table cities             enable row level security;
@@ -366,13 +366,13 @@ create policy post_tags_read on post_tags
   for select to anon, authenticated
   using (exists (select 1 from posts p where p.id = post_id and p.status = 'published'));
 
--- Usuaria: ve y edita su propia fila
+-- Usuario: ve y edita su propia fila
 create policy users_select_own on users
   for select to authenticated using (auth_id = auth.uid());
 create policy users_update_own on users
   for update to authenticated using (auth_id = auth.uid()) with check (auth_id = auth.uid());
 
--- Preferencias / guardados: cada usuaria gestiona lo suyo
+-- Preferencias / guardados: cada usuario gestiona lo suyo
 create policy prefs_all on user_preferences
   for all to authenticated
   using (user_id = (select public.current_user_id()))
@@ -388,7 +388,7 @@ create policy saved_garments_all on saved_garments
   using (user_id = (select public.current_user_id()))
   with check (user_id = (select public.current_user_id()));
 
--- Clics salientes: cualquiera puede registrar; no se puede atribuir a otra usuaria
+-- Clics salientes: cualquiera puede registrar; no se puede atribuir a otro usuario
 create policy outbound_clicks_insert on outbound_clicks
   for insert to anon, authenticated
   with check (user_id is null or user_id = (select public.current_user_id()));

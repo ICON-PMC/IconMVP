@@ -1,4 +1,8 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
 
 @theme {
   --font-sans: var(--font-geist-sans);
@@ -15,6 +19,8 @@
   --color-coral-soft: #f6b59b;
   --color-blush: #f3caba;
   --color-sky: #9cc3c9;
+  --color-honey: #f2c94c;
+  --color-honey-soft: #fbeeb8;
 }
 
 html {
@@ -55,4 +61,64 @@ body {
   outline: none;
   background: rgba(255, 255, 255, 0.65);
   border-color: var(--color-forest);
+}
+
+/* ── shadcn/ui ────────────────────────────────────────────────────
+   Los tokens de shadcn se mapean a la paleta Icon (no se introduce un sistema de color
+   paralelo). primary = forest, destructive = coral, etc. */
+@theme inline {
+  --font-heading: var(--font-sans);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-foreground: var(--foreground);
+  --color-background: var(--background);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+:root {
+  --background: var(--color-cream);
+  --foreground: var(--color-ink);
+  --card: var(--color-cream);
+  --card-foreground: var(--color-ink);
+  --popover: var(--color-cream);
+  --popover-foreground: var(--color-ink);
+  --primary: var(--color-forest);
+  --primary-foreground: #fff;
+  --secondary: var(--color-leaf-soft);
+  --secondary-foreground: var(--color-forest);
+  --muted: var(--color-leaf-soft);
+  --muted-foreground: color-mix(in srgb, var(--color-ink) 60%, transparent);
+  --accent: var(--color-leaf-soft);
+  --accent-foreground: var(--color-forest);
+  --destructive: var(--color-coral);
+  --border: color-mix(in srgb, var(--color-ink) 12%, transparent);
+  --input: color-mix(in srgb, var(--color-ink) 12%, transparent);
+  --ring: var(--color-forest);
+  --radius: 0.75rem;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
 }

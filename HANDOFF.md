@@ -11,9 +11,9 @@ Si algo aquí no cuadra con el código, el código manda: este archivo se desact
 
 Plataforma tipo Pinterest para descubrir **moda colombiana independiente** con intención de compra
 (ocasión, ciudad, precio, estilo) — no solo inspiración. MVP **curado**: el equipo carga el contenido,
-no las marcas ni las usuarias. Español primero. Nicho inicial: Barranquilla, Medellín, Bogotá.
+no las marcas ni los usuarios. Español primero. Nicho inicial: Barranquilla, Medellín, Bogotá.
 
-**El objetivo ahora mismo no es construir más funciones — es conseguir que marcas y usuarias reales
+**El objetivo ahora mismo no es construir más funciones — es conseguir que marcas y usuarios reales
 lo usen y nos digan qué falla.** Ver `TODO.md` para el camino a ese punto.
 
 ## Arrancar en 10 minutos
@@ -33,15 +33,17 @@ npm install
 npm run dev                   # http://localhost:3000
 ```
 
-Cuentas de prueba (local, contraseña `icon1234` para todas):
+El seed (`supabase/seed.sql`) **no crea cuentas**. Para probar en local:
 
-| Email | Rol |
-|---|---|
-| `admin@icon.co` | admin |
-| `curadora@icon.co` | curator |
-| `maria@icon.co`, `sofia@icon.co` | user |
-
-Entra a `/admin` con la cuenta admin o curator para cargar contenido de prueba.
+1. Regístrate en `/signup` (con `enable_confirmations = false` entras directo).
+2. Para volverte staff, cambia tu rol en SQL. El trigger `users_protect_role_field` revierte el
+   cambio si no eres staff, así que desactívalo solo para esa sesión:
+   ```bash
+   docker exec $(docker ps --format '{{.Names}}' | grep supabase_db) psql -U postgres -c \
+     "set session_replication_role = replica; update public.users set role = 'curator' where email = 'tu@correo.co';"
+   ```
+3. Con rol `curator`/`admin` entra a `/admin`. Para datos de muestra: `npm run db:import`
+   (necesita `SUPABASE_SERVICE_ROLE_KEY` en `.env.local`; el valor local sale de `supabase status`).
 
 ## El stack, en una tabla
 
@@ -85,16 +87,51 @@ ocasión, estilo, temperatura) vive en una sola tabla, **tags**, distinguida por
 lee la tabla `posts` directo — lee la vista **`post_feed`**, que ya trae todo agregado (tags, precios,
 ciudad, imagen) y un campo `score` (popularidad + qué tan reciente es) para ordenar.
 
-18 tablas, 3 vistas, 3 funciones de búsqueda. El detalle línea por línea está en
+19 tablas, 3 vistas, 3 funciones de búsqueda y 2 RPC de revisión de marcas. El detalle línea por línea está en
 `supabase/migrations/` (es la fuente de verdad) — no lo dupliques leyendo esto, es solo el mapa.
 
-### Los tres roles
+### Los roles
 
 | Rol | Puede |
 |---|---|
 | `user` | Ver contenido publicado, guardar, comentar sus preferencias en onboarding |
-| `curator` | Todo lo anterior + cargar/editar marcas, prendas, posts en `/admin` |
+| `brand` | Ver/editar solo su propia marca, prendas y posts (RLS por `brands.owner_user_id`, `is_brand_owner()`) |
+| `curator` | Todo lo de `user` + cargar/editar marcas, prendas, posts y **aprobar/rechazar marcas** en `/admin` |
 | `admin` | Todo lo anterior + ver analítica de clics |
+
+### Registro de marcas y cola de aprobación
+
+Flujo (spec en `specs/2026-09-19-brand-registration/`):
+
+1. `/signup?tipo=marca` → cuenta + rol `brand`.
+2. `/onboarding/marca`: perfil (paso 1) → portada (paso 2) → primera prenda + "Enviar para aprobación" (paso 3).
+   La marca nace `status = 'pending'`, `is_active = false`; sus prendas quedan `pending`.
+3. `/admin?tab=marcas` (staff): aprobar publica la marca y sus prendas en una transacción
+   (`approve_brand`); rechazar guarda una nota opcional (`reject_brand`). Una marca rechazada edita y
+   reenvía desde el banner de `/marca/panel`.
+
+Reglas que hay que conocer:
+
+- **`brands.status`** (`pending | active | rejected`) manda; `is_active` se deriva de él por trigger.
+  Una marca nunca puede cambiar su propio `status` (salvo reenviar `rejected → pending`), `is_active`,
+  `is_verified` ni `rejection_note`. Los triggers solo restringen a usuarios autenticados; `service_role`
+  y SQL directo pueden gestionar el estado.
+- **`brands.owner_user_id`** es la fuente de verdad de la propiedad; `users.brand_id` es un espejo
+  mantenido por trigger (no lo escribas a mano).
+- Una marca no aprobada no puede publicar prendas: el trigger `garments_protect_status` las deja `pending`.
+- La cola solo lista marcas con `submitted_at` no nulo (los registros a medias no aparecen).
+
+## Lenguaje inclusivo
+
+La audiencia de Icon no es solo mujeres: en UI, docs y comentarios se dice "usuario" (no "usuaria") y
+se usan formulaciones neutras. Ver `specs/constitution.md` §1.
+
+## UI: shadcn/ui
+
+shadcn está instalado (`components.json`, `src/components/ui/`). Sus tokens se mapean a la paleta Icon
+en `globals.css` (primary = forest, destructive = coral): no introduzcas colores paralelos. Ojo: si
+`npx shadcn add …` genera `import { cn } from "cn"`, cámbialo a `@/lib/utils` (el paquete `cn` de npm
+no es el helper de clsx/tailwind-merge) y quita esa dependencia de `package.json`.
 
 ## Gotchas que le van a morder a alguien nuevo
 
@@ -121,7 +158,7 @@ de commits sobre `/admin` y `src/lib/r2.ts`.
 
 ## RLS: el patrón que se repite en cada tabla nueva
 
-Row Level Security está activo en las 18 tablas. Dos reglas fijas:
+Row Level Security está activo en todas las tablas. Dos reglas fijas:
 
 - **Lectura pública solo de lo publicado**: `status = 'published'` en posts/garments, `is_active = true`
   en brands. Todo lo demás requiere ser `curator`/`admin` (función `is_staff()`).
@@ -132,8 +169,9 @@ Row Level Security está activo en las 18 tablas. Dos reglas fijas:
 
 ## Variables de entorno
 
-`.env.local` (nunca se commitea) necesita 9 variables — 3 de Supabase, 6 de R2 (`.env.example` trae
-la lista de nombres). Para apuntar un script a la nube en vez de local:
+`.env.local` (nunca se commitea) necesita 3 variables de Supabase, 6 de R2 y, para los correos de
+aprobación/rechazo de marcas, 5 de SMTP (`SMTP_HOST/PORT/USER/PASS`, `EMAIL_FROM`) — `.env.example`
+trae la lista. En local el SMTP es Mailpit (`127.0.0.1:54325`, bandeja en http://127.0.0.1:54324). Para apuntar un script a la nube en vez de local:
 
 ```bash
 NEXT_PUBLIC_SUPABASE_URL=<url_nube> SUPABASE_SERVICE_ROLE_KEY=<key_nube> npm run db:import
@@ -146,9 +184,9 @@ NEXT_PUBLIC_SUPABASE_URL=<url_nube> SUPABASE_SERVICE_ROLE_KEY=<key_nube> npm run
 
 - `CLAUDE.md` (local, no está en git) — guía más larga si trabajas con Claude Code.
 - `supabase/migrations/` — la verdad sobre el esquema, siempre por encima de lo que diga cualquier doc.
-- `TODO.md` — qué falta para el primer lanzamiento con usuarias y marcas reales.
+- `TODO.md` — qué falta para el primer lanzamiento con usuarios y marcas reales.
 
 ## Contexto de equipo
 
 - Repo: `awangran/Icon` en GitHub.
-- Dueña del proyecto: Ashlee (decide prioridades, config de producción, cuentas externas).
+- Responsable del proyecto: Ashlee (decide prioridades, config de producción, cuentas externas).

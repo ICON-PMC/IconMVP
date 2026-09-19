@@ -43,7 +43,7 @@ export async function requireStaff(): Promise<Profile> {
 
 export type MyBrand = Tables<"brands">;
 
-// La marca que posee la usuaria actual (o null si no tiene ninguna vinculada).
+// La marca que posee el usuario actual (o null si no tiene ninguna vinculada).
 export async function getMyBrand(): Promise<MyBrand | null> {
   const session = await getCurrentUser();
   if (!session?.profile) return null;
