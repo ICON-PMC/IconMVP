@@ -125,6 +125,12 @@ export type Database = {
         Update: { id?: string; garment_id?: string | null; brand_id?: string | null; post_id?: string | null; user_id?: string | null; source?: Database["public"]["Enums"]["click_source"]; created_at?: string };
         Relationships: [];
       };
+      brand_instagram_connections: {
+        Row: { brand_id: string; ig_user_id: string; username: string | null; account_type: string | null; access_token: string; token_expires_at: string; connected_by_user_id: string | null; connected_at: string; updated_at: string };
+        Insert: { brand_id: string; ig_user_id: string; username?: string | null; account_type?: string | null; access_token: string; token_expires_at: string; connected_by_user_id?: string | null; connected_at?: string; updated_at?: string };
+        Update: { brand_id?: string; ig_user_id?: string; username?: string | null; account_type?: string | null; access_token?: string; token_expires_at?: string; connected_by_user_id?: string | null; connected_at?: string; updated_at?: string };
+        Relationships: [];
+      };
     };
     Views: {
       post_feed: {
@@ -209,7 +215,7 @@ export type Database = {
       };
     };
     Enums: {
-      user_role: "user" | "curator" | "admin";
+      user_role: "user" | "curator" | "admin" | "brand";
       price_range: "under_100k" | "100k_200k" | "200k_350k" | "350k_500k" | "over_500k";
       tag_type: "category" | "occasion" | "style" | "temperature";
       garment_status: "pending" | "published" | "archived";
