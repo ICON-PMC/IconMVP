@@ -18,6 +18,13 @@ const chip =
 const submit =
   "rounded-full bg-forest px-5 py-2 text-sm font-medium text-white hover:bg-forest-deep";
 
+const REVIEW_NOTICES: Record<string, string> = {
+  aprobada: "✓ Marca aprobada; le enviamos un correo.",
+  rechazada: "✓ Marca rechazada; le enviamos un correo.",
+  "aprobada-sin-correo": "Marca aprobada, pero no pudimos enviar el correo. Avísale por otro medio.",
+  "rechazada-sin-correo": "Marca rechazada, pero no pudimos enviar el correo. Avísale por otro medio.",
+};
+
 // Fuera del componente: react-hooks/purity prohíbe llamar Date.now() durante el render.
 function daysAgoIso(days: number): string {
   return new Date(Date.now() - days * 864e5).toISOString();
@@ -26,12 +33,12 @@ function daysAgoIso(days: number): string {
 export default async function AdminPage({
   searchParams,
 }: {
-  searchParams: Promise<{ ok?: string; error?: string; tab?: string }>;
+  searchParams: Promise<{ ok?: string; error?: string; tab?: string; aviso?: string }>;
 }) {
   const session = await getCurrentUser();
   if (!session) redirect("/login?next=/admin");
   if (!isStaff(session.profile)) redirect("/");
-  const { ok, error, tab } = await searchParams;
+  const { ok, error, tab, aviso } = await searchParams;
   const pendingCount = await pendingBrandsCount();
 
   if (tab === "marcas") {
@@ -42,6 +49,14 @@ export default async function AdminPage({
           <SiteHeader />
           <h1 className="mt-8 text-3xl font-medium tracking-tight text-forest">Panel del equipo</h1>
           <AdminTabs active="marcas" pendingCount={pendingCount} />
+          {aviso && REVIEW_NOTICES[aviso] && (
+            <p
+              role="status"
+              className={`mt-4 rounded-xl px-3 py-2 text-sm ${aviso.endsWith("sin-correo") ? "bg-honey-soft text-ink" : "bg-leaf-soft text-forest-deep"}`}
+            >
+              {REVIEW_NOTICES[aviso]}
+            </p>
+          )}
           <PendingBrands />
         </div>
       </>

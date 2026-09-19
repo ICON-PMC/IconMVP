@@ -51,10 +51,10 @@ These checks must all pass before merging `feat/brand-registration` → `dev`.
 
 ## Email notifications
 
-- [ ] Approval email is received at the brand's address (check Mailpit on local).
-- [ ] Approval email is in Spanish and contains a link to the brand panel.
-- [ ] Rejection email includes the admin's note (if provided).
-- [ ] No email is sent to regular users or admins when a brand is approved/rejected.
+- [x] Approval email is received at the brand's address (check Mailpit on local).
+- [x] Approval email is in Spanish and contains a link to the brand panel.
+- [x] Rejection email includes the admin's note (if provided).
+- [x] No email is sent to regular users or admins when a brand is approved/rejected.
 
 ---
 

@@ -169,8 +169,8 @@ export type Database = {
     Functions: {
       current_user_id: { Args: Record<string, never>; Returns: string };
       is_staff: { Args: Record<string, never>; Returns: boolean };
-      approve_brand: { Args: { p_brand_id: string }; Returns: undefined };
-      reject_brand: { Args: { p_brand_id: string; p_note?: string | null }; Returns: undefined };
+      approve_brand: { Args: { p_brand_id: string }; Returns: { brand_name: string; owner_email: string | null }[] };
+      reject_brand: { Args: { p_brand_id: string; p_note?: string | null }; Returns: { brand_name: string; owner_email: string | null }[] };
       search_garments: {
         Args: {
           q?: string | null;

@@ -169,8 +169,9 @@ Row Level Security está activo en todas las tablas. Dos reglas fijas:
 
 ## Variables de entorno
 
-`.env.local` (nunca se commitea) necesita 9 variables — 3 de Supabase, 6 de R2 (`.env.example` trae
-la lista de nombres). Para apuntar un script a la nube en vez de local:
+`.env.local` (nunca se commitea) necesita 3 variables de Supabase, 6 de R2 y, para los correos de
+aprobación/rechazo de marcas, 5 de SMTP (`SMTP_HOST/PORT/USER/PASS`, `EMAIL_FROM`) — `.env.example`
+trae la lista. En local el SMTP es Mailpit (`127.0.0.1:54325`, bandeja en http://127.0.0.1:54324). Para apuntar un script a la nube en vez de local:
 
 ```bash
 NEXT_PUBLIC_SUPABASE_URL=<url_nube> SUPABASE_SERVICE_ROLE_KEY=<key_nube> npm run db:import
