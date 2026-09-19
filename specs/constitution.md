@@ -10,8 +10,13 @@
 
 **Plataforma de descubrimiento de moda colombiana independiente con intención de compra.**
 
-No es un feed de inspiración genérica. No es un marketplace. Es el puente entre una usuaria que sabe
+No es un feed de inspiración genérica. No es un marketplace. Es el puente entre un usuario que sabe
 qué quiere llevar a una ocasión específica y las marcas colombianas independientes que lo hacen.
+
+> **Lenguaje inclusivo (regla de producto y de copy).** La audiencia de Icon **no es solo mujeres**.
+> En UI, specs, comentarios y mensajes se usa "usuario" (no "usuaria") y formulaciones neutras
+> ("te damos la bienvenida", "quien…") en vez de femeninos genéricos. Al escribir texto nuevo,
+> no asumir género de usuarios, marcas ni personas del equipo.
 
 **Diferenciadores no negociables:**
 - **Intención** — los filtros (ocasión, ciudad, precio, estilo) son el producto, no un accesorio.
@@ -27,7 +32,7 @@ Una propuesta que no refuerza al menos uno no entra al backlog.
 
 | Pilar | Qué significa en la práctica |
 |---|---|
-| **Intención** | Los filtros deben ser rápidos, precisos y relevantes para el momento de vida de la usuaria |
+| **Intención** | Los filtros deben ser rápidos, precisos y relevantes para el momento de vida del usuario |
 | **Curaduría / estética** | La UI es premium. El contenido que se publica pasa por revisión. La calidad del catálogo vale más que su tamaño |
 | **Local / independiente** | Solo marcas colombianas no masivas. Cada decisión de alcance favorece profundidad en el nicho sobre amplitud geográfica o de categoría |
 
@@ -35,7 +40,7 @@ Una propuesta que no refuerza al menos uno no entra al backlog.
 
 ## 3. Modelo de negocio e hipótesis del piloto
 
-**Hipótesis central:** una usuaria con una necesidad concreta (ej. "vestido para matrimonio en Medellín,
+**Hipótesis central:** un usuario con una necesidad concreta (ej. "vestido para matrimonio en Medellín,
 menos de $300 000") encuentra una prenda de una marca colombiana independiente y hace clic a comprar.
 
 El piloto valida si ese arco completo funciona — no si la gente "pone likes".
@@ -55,7 +60,7 @@ brand           → la marca colombiana independiente
        └─ post  → foto de outfit curado que tagea ≥1 prenda
 ```
 
-Un **post** es la unidad de inspiración. Una **prenda** es la unidad de compra. La usuaria entra por
+Un **post** es la unidad de inspiración. Una **prenda** es la unidad de compra. El usuario entra por
 el post, compra por la prenda.
 
 ### Taxonomía (tabla `tags`)

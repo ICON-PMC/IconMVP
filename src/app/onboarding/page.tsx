@@ -22,7 +22,7 @@ export default async function OnboardingPage() {
       <main className="flex min-h-dvh items-center justify-center p-6">
         <GlassCard className="w-full max-w-lg p-8">
           <h1 className="text-2xl font-medium tracking-tight text-forest">
-            Bienvenida a Icon
+            Te damos la bienvenida a Icon
           </h1>
           <p className="mt-1 mb-6 text-sm text-ink/70">
             Cuéntanos tu estilo para personalizar tu feed.

@@ -36,7 +36,7 @@ create trigger brands_protect_curation_fields
 
 -- ============================================================
 -- Fix de seguridad (no relacionado a marca, encontrado al revisar esta policy): la policy
--- `users_update_own` (init) no restringe columnas — cualquier usuaria autenticada podía
+-- `users_update_own` (init) no restringe columnas — cualquier usuario autenticado podía
 -- hacer PATCH directo a la API REST y ponerse `role: 'admin'` a sí misma, sin pasar por la
 -- UI. El único self-service legítimo que necesitamos es 'user' -> 'brand' (conectar
 -- Instagram); cualquier otro intento de cambiar el rol se ignora en silencio.
@@ -69,7 +69,7 @@ create policy brands_owner_all on brands
 
 -- Policy aparte para el INSERT: is_brand_owner(id) busca una fila ya existente con ese id,
 -- y en un INSERT esa fila todavía no es visible en su propio check (MVCC) — sin esto, una
--- usuaria nunca podría crear su primera marca. Aquí se compara directamente contra la
+-- usuario nunca podría crear su primera marca. Aquí se compara directamente contra la
 -- columna owner_user_id de la fila nueva, sin necesidad de mirar la tabla.
 create policy brands_owner_insert on brands
   for insert to authenticated
@@ -117,7 +117,7 @@ create policy garment_sizes_owner_all on garment_sizes
   ));
 
 -- posts: solo posts de autoría 'brand' (el check constraint de posts ya obliga
--- author_type='brand' + author_brand_id cuando no es de usuaria).
+-- author_type='brand' + author_brand_id cuando no es de usuario).
 create policy posts_owner_all on posts
   for all to authenticated
   using (author_brand_id is not null and public.is_brand_owner(author_brand_id))
@@ -169,7 +169,7 @@ create policy post_tags_owner_all on post_tags
 -- ============================================================
 -- Conexión de Instagram de una marca (1 por marca). El access_token solo lo lee código
 -- de servidor (server actions/route handlers); nunca se serializa de vuelta al cliente.
--- RLS restringe todo a la propia dueña; no hay policy de staff aquí a propósito (ni el
+-- RLS restringe todo al propio dueño de la marca; no hay policy de staff aquí a propósito (ni el
 -- equipo necesita ver el token ajeno para depurar el MVP).
 -- ============================================================
 create table brand_instagram_connections (

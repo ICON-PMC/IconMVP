@@ -32,7 +32,7 @@ export async function GET(
 
   if (!garment) return NextResponse.redirect(new URL("/feed", req.url));
 
-  // Atribuir a la usuaria si hay sesión (si no, queda anónimo).
+  // Atribuir al usuario si hay sesión (si no, queda anónimo).
   const {
     data: { user },
   } = await supabase.auth.getUser();
