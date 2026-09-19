@@ -40,3 +40,29 @@ export async function requireStaff(): Promise<Profile> {
   if (!session?.profile || !isStaff(session.profile)) redirect("/");
   return session.profile;
 }
+
+export type MyBrand = Tables<"brands">;
+
+// La marca que posee la usuaria actual (o null si no tiene ninguna vinculada).
+export async function getMyBrand(): Promise<MyBrand | null> {
+  const session = await getCurrentUser();
+  if (!session?.profile) return null;
+
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("brands")
+    .select("*")
+    .eq("owner_user_id", session.profile.id)
+    .maybeSingle();
+  return data;
+}
+
+// Exige sesión con una marca vinculada o redirige a /login. No exige `role === "brand"`
+// porque la propiedad real la determina `brands.owner_user_id` (la RLS de la base usa lo
+// mismo vía `is_brand_owner()`); el rol es solo para la UI (mostrar el link en el header).
+export async function requireBrandOwner(): Promise<{ profile: Profile; brand: MyBrand | null }> {
+  const session = await getCurrentUser();
+  if (!session?.profile) redirect("/login?next=/marca/panel");
+  const brand = await getMyBrand();
+  return { profile: session.profile, brand };
+}

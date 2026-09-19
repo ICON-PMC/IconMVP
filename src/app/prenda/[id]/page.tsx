@@ -33,9 +33,14 @@ export default async function GarmentPage({
 
   const { data: brand } = await supabase
     .from("brands")
-    .select("id, name, slug, city_id, is_verified, is_sustainable")
+    .select("id, name, slug, city_id, is_verified, is_sustainable, is_active")
     .eq("id", g.brand_id)
     .maybeSingle();
+  // La prenda puede seguir "published" mientras su marca queda desactivada (p.ej. una
+  // marca con acceso propio que aún no pasa la revisión de staff, is_active=false por
+  // defecto) — sin esto, la prenda seguiría visible por URL directa aunque /marca/[slug]
+  // ya dé 404 para esa marca.
+  if (!brand || !brand.is_active) notFound();
 
   let cityName: string | null = null;
   if (brand?.city_id) {
