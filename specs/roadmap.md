@@ -20,6 +20,8 @@ Que un usuario pueda registrarse e interactuar con ese contenido. El perfil púb
       link a sitio/WhatsApp) y sube al menos un post inicial durante el registro. El perfil completo
       entra a una cola de aprobación — la marca no es visible en el feed hasta que un admin apruebe
       su cuenta. Una vez aprobada, sus posts futuros se publican sin revisión individual.
+      *(La marca ve el resultado — pendiente / rechazada con nota / activa — en el banner de su
+      panel. El aviso por correo se difirió: ver "Correo transaccional" en la Fase 2.)*
 - [ ] Catálogo de productos: creación manual (título, precio, talla, categoría, foto, link de compra
       — sitio web o WhatsApp) y carga masiva por plantilla `.xlsx`.
 - [ ] Creación de post de outfit: subir foto, escribir caption, etiquetar **al menos un producto**
@@ -94,6 +96,18 @@ Al menos 3 marcas han recibido tráfico desde un outfit de usuario.
 - [ ] **Reseñas de productos:** los usuarios pueden escribir una reseña de un producto que compraron
       (puntuación + texto). Las reseñas son visibles en la página del producto.
 - [ ] Notificaciones básicas: alguien guardó tu post, alguien te siguió, tu reseña fue publicada.
+- [ ] **Correo transaccional** (diferido desde el registro de marcas): avisar por correo a la marca
+      cuando su perfil es aprobado ("¡Tu marca fue aprobada en Icon!", con link al panel) o rechazado
+      ("Tu solicitud en Icon necesita ajustes", con la nota del equipo y link para editar). Además,
+      sirve de base para las notificaciones de arriba.
+      **Prerrequisito: dominio propio** con SPF/DKIM verificados; sin él, los correos desde una
+      dirección tipo Gmail caen en spam o son rechazados por DMARC.
+      Ya hay una implementación probada en local (nodemailer + SMTP, plantillas en español,
+      envío solo al dueño de la marca, aviso en la cola si el envío falla) en el commit `60c6d4e`
+      (`src/lib/email.ts`, `src/lib/brand-emails.ts`, `reviewBrand()` en `src/app/admin/actions.ts`);
+      se retiró de la rama principal del feature. Las RPC `approve_brand`/`reject_brand` ya devuelven
+      el correo del dueño y el nombre de la marca para este uso. Proveedor sugerido: Resend (con
+      dominio) o Brevo; usar también el mismo SMTP en Supabase Auth.
 - [ ] Sistema de reporte de contenido (posts o reseñas que violan las normas de la comunidad).
 - [ ] Feed personalizado: posts de marcas y usuarios que sigo, priorizados sobre el feed general.
 

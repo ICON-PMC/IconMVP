@@ -191,7 +191,14 @@ export async function setPostTags(formData: FormData) {
 }
 
 export async function publishPost(postId: string) {
-  await requireBrandOwner();
+  const { brand } = await requireBrandOwner();
+  // La base ya impide publicar a una marca no aprobada (trigger posts_protect_status); este
+  // chequeo solo da un mensaje claro en vez de dejar el post en borrador sin explicación.
+  if (brand?.status !== "active") {
+    redirect(
+      `/marca/panel/post/${postId}?error=${encodeURIComponent("Podrás publicar cuando tu marca sea aprobada.")}`,
+    );
+  }
   const supabase = await createClient();
   const { count } = await supabase
     .from("post_items")

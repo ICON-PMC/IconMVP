@@ -10,9 +10,9 @@
 - [x] 3. Brand signup UI — first garment step
 - [x] 4. Brand status banner
 - [x] 5. Admin approval queue
-- [x] 6. Email notifications
-- [ ] 7. RLS + GRANT audit
-- [ ] 8. QA pass
+- [~] 6. Email notifications — **deferred to a later phase** (no custom domain yet; see roadmap Fase 2)
+- [x] 7. RLS + GRANT audit
+- [x] 8. QA pass
 
 ### Regression check (after group 5)
 Against a production build (`next build` + `next start`) on local Supabase with `npm run db:import` sample data: `/feed` loads and hides a pending brand's published post/garment (also absent from search); `/marca/[slug]` renders for active brands and 404s for pending ones; `/prenda/[id]` and `/post/[id]` of a pending brand 404; `/admin`, `/admin/bulk` and `/admin?tab=marcas` return 200 for staff and redirect anon/regular users; regular signup still creates a plain `user` (no brand, not onboarded). No conflicts found. Build and lint pass.
@@ -80,7 +80,7 @@ Against a production build (`next build` + `next start`) on local Supabase with 
 - **Garment form:** nombre, precio (COP, numbers only, `.`/spaces stripped), categoría (`tags` of type `category`, shadcn Select), foto (required, ≤10 MB, image only, preview) and an *optional* "enlace de compra" (`product_url`, useful because `/out/[garmentId]` redirects there). The existing panel/admin garment forms redirect and publish immediately, so a purpose-built action was used instead of reusing them.
 - **Status:** garments are inserted `pending`/`source = 'brand'`; the `garments_protect_status` trigger would force `pending` anyway. No half-created garments: if the category tag or image upload fails, the garment row is deleted and an inline error is shown. Saved garments are listed with thumbnail/price and can be removed ("Quitar") before submitting (removed garments' R2 objects are not cleaned up).
 - **Submit:** "Enviar para aprobación" is disabled until ≥1 garment is saved and is re-checked server-side (`submitBrandForReview` counts garments); it sets `brands.submitted_at = now()` (allowed by the trigger while `pending`). Brand stays `pending`.
-- **Confirmation:** once `submitted_at` is set and the brand is `pending`, `/onboarding/marca` shows "Tu perfil está en revisión. Te avisaremos por correo cuando sea aprobado." with a link to `/marca/panel`. `active`/`rejected` brands are redirected to `/marca/panel` (banner is group 4).
+- **Confirmation:** once `submitted_at` is set and the brand is `pending`, `/onboarding/marca` shows "Tu perfil está en revisión. Vuelve a ingresar a tu panel para ver el estado de tu solicitud." (originally promised an email; changed when emails were deferred) with a link to `/marca/panel`. `active`/`rejected` brands are redirected to `/marca/panel` (banner is group 4).
 - **Verified:** `tsc` + `lint` clean; as an authenticated user under RLS: garment/tag/image insert, count, `submitted_at` update, attempt to self-publish stays `pending`, delete works; pages render for a signed-in brand (step 3 shows the disabled submit + hint, steps 1/2 render). **Not verified:** actual R2 uploads (no credentials locally) and the browser click-through.
 
 ### 4. Brand status banner
@@ -109,7 +109,7 @@ Against a production build (`next build` + `next start`) on local Supabase with 
 
 **✅ Done — implementation notes**
 - **Migration `20260919010000_brand_review_rpcs.sql`:** `approve_brand(uuid)` and `reject_brand(uuid, text)`, `security definer`, staff-only (`is_staff()` → error `42501` otherwise), `EXECUTE` revoked from `public`/`anon` and granted to `authenticated`. Approve sets `status = 'active'`, `is_active = true`, clears the note **and publishes the brand's `pending` garments in the same transaction** (so a brand can never be active with unpublished garments). Reject sets `status = 'rejected'`, `is_active = false` and stores the trimmed note (`null` if empty); garments stay `pending`. Both only act on `status = 'pending'` and raise a Spanish error otherwise (double clicks / two staff members). Added to `database.types.ts`. **Must be applied to Supabase cloud before the code merges.**
-- **Server actions** (`src/app/admin/actions.ts`): `approveBrand(brandId)` / `rejectBrand(brandId, note)` return `{ ok, error }` instead of using `requireStaff()`'s redirect, so a non-staff caller gets an error result, never a 500. Group 6 (emails) hooks in here after a successful RPC.
+- **Server actions** (`src/app/admin/actions.ts`): `approveBrand(brandId)` / `rejectBrand(brandId, note)` return `{ ok, error }` instead of using `requireStaff()`'s redirect, so a non-staff caller gets an error result, never a 500. (Emails were deferred out of this feature; see group 6.)
 - **UI:** `/admin?tab=marcas` ("Marcas pendientes", link-based tab with a count badge; the badge shows on both tabs). The queue tab returns early, so the heavy metrics queries only run on the default tab. Files: `admin-tabs.tsx`, `pending-brands.tsx` (server: name, city, bio, store link, cover thumbnail, submitted date, garment count + thumbnails/titles so staff can judge the catalog), `review-actions.tsx` (client: Aprobar, and a shadcn `Dialog` for Rechazar with an optional note, errors inline). Added shadcn `dialog` + `badge`.
 - **Queue filter:** `status = 'pending' AND submitted_at IS NOT NULL`, oldest first, so half-finished signups don't appear; the badge count uses the same filter.
 - **Verified locally** (curator + regular user, real RLS): non-staff calling either RPC → `42501`; staff approve → brand `active`/`is_active`, both garments `published` with `published_at`; approving twice → "La marca ya no está pendiente de revisión."; staff reject with a padded note → stored trimmed, brand `rejected`, garments still `pending`; anon can read the approved brand but not the rejected one; a regular user visiting `/admin` is redirected; queue lists pending brands, hides half-finished ones. `tsc` + `lint` clean. Not verified: the Rechazar dialog / buttons in a real browser.
@@ -121,7 +121,14 @@ Against a production build (`next build` + `next start`) on local Supabase with 
 - Use Supabase SMTP (already configured in cloud project). Trigger via server action using `supabase.auth.admin.sendRawEmail` or a Supabase Edge Function.
 - Test with Mailpit on local (`:54324`).
 
-**✅ Done — implementation notes**
+**⏸ Deferred — removed from this feature (decision: product)**
+- **Why:** there is no custom domain yet, so no verified sender (SPF/DKIM). In the cloud test, email did not work (a Gmail sender through a third-party SMTP is rejected or spam-filtered by DMARC), and it was not blocking the rest of the flow.
+- **What changed:** the sending code, templates and `nodemailer` dependency were removed; SMTP env vars and the Mailpit config were taken out of `.env.example`, `HANDOFF.md` and `supabase/config.toml`. Approve/reject now show "Verá el resultado al ingresar a su panel; por ahora no enviamos correos." in the queue, and the brand-facing confirmation copy no longer promises an email. Brands find out through the status banner (group 4).
+- **Kept on purpose:** `approve_brand` / `reject_brand` still return `(brand_name, owner_email)` (already deployed; harmless and needed later).
+- **Recoverable:** the full working implementation lives in commit `60c6d4e`. The follow-up is tracked in `specs/roadmap.md` (Fase 2, "Correo transaccional"; prerequisite: own domain).
+- The notes below record the original work and its local verification, for whoever picks it up.
+
+**Original implementation notes (now removed from the code)**
 - **Decision (confirmed with product):** the plan's `supabase.auth.admin.sendRawEmail` does not exist in supabase-js, and Supabase's SMTP only sends *auth* emails (confirmation/reset). Emails are sent with **nodemailer over SMTP** from the server action instead. No new vendor: in the cloud, reuse the same SMTP credentials the Supabase project already has (Auth → SMTP Settings).
 - **Files:** `src/lib/email.ts` (`sendEmail`, reads `SMTP_HOST/PORT/USER/PASS` + `EMAIL_FROM`; if unset it logs and returns an error instead of throwing), `src/lib/brand-emails.ts` (Spanish templates, HTML-escaped, plain-text + HTML), wiring in `reviewBrand()` in `src/app/admin/actions.ts`.
 - **Recipient without service-role:** `approve_brand` / `reject_brand` now return `(brand_name, owner_email)` (edited in place in `20260919010000_brand_review_rpcs.sql`, which had not been deployed yet; `database.types.ts` updated), because staff cannot read another user's `users` row. Emails go **only** to the brand's owner — never to staff or regular users.
@@ -136,11 +143,22 @@ Against a production build (`next build` + `next start`) on local Supabase with 
 - Confirm public reads of `brands` still require `is_active = true` (existing policy).
 - Confirm brand users cannot approve/reject themselves.
 
+**✅ Done — audit results** (local DB, `supabase db reset` from scratch; probed with real user sessions)
+- **RLS/GRANT state:** RLS is on for `brands`, `users`, `garments`, `garment_*`, `posts`. New columns inherit the existing table grants (no new GRANT needed). `approve_brand`/`reject_brand` are `EXECUTE`-able by `authenticated` only (revoked from `anon`/`public`) and re-check `is_staff()` inside. Public reads of `brands` still require `is_active = true`; `users` can only be read by the row's own user (which is why the RPCs return the owner email).
+- **Gap found and fixed — pending brands could publish posts.** `posts_owner_all` let an owner write any `status`, so an unapproved brand could set a post to `published` and it was readable straight from the `posts` table through the API (the feed view and `/post/[id]` hid it, the table did not). New migration `20260919020000_protect_post_status.sql` adds trigger `posts_protect_status` (same rule as garments): non-staff can publish a brand post only if the brand is `active`; otherwise it stays `draft`. The panel's `publishPost` now says "Podrás publicar cuando tu marca sea aprobada." instead of silently doing nothing. **This migration must be applied to the cloud before merging.** Also check for data already leaked there:
+  `select p.id from posts p join brands b on b.id = p.author_brand_id where p.status = 'published' and b.status <> 'active';`
+- **21 probes, all pass:** a brand cannot self-approve/verify/activate by direct update, cannot call `approve_brand`/`reject_brand` (`42501`; `anon` blocked too), cannot change its own `role` or `brand_id`; another user cannot update/delete a brand, add garments to it, or create a brand owned by someone else; a pending brand's garments are forced to `pending`, and neither its garments, its brand row nor its posts are visible to `anon` (nor in `post_feed`); anon cannot insert brands; staff approval publishes the garments and makes the brand public; an active brand can publish posts without review.
+- **Pre-existing, not changed (noting for a later hardening pass):** Supabase's default grants give `anon`/`authenticated` `TRUNCATE`/`TRIGGER`/`REFERENCES` on the public tables (PostgREST does not expose `TRUNCATE`, and RLS applies to everything it does expose); `brands_owner_all` is `FOR ALL`, so a brand owner can delete their own brand; `owner_user_id` is readable in public brand rows.
+
 ### 8. QA pass
 - Local: complete full flow as a new brand user (signup → garment → submit → admin approve → email in Mailpit → banner green).
 - Test rejection + re-submit flow.
 - Verify public feed does NOT show pending/rejected brands.
 - Confirm admin cannot be bypassed (direct DB row edit still needs RLS).
+
+**✅ Done — QA results**
+- **Manual, in the cloud preview (by the product owner):** full flow confirmed — brand signup → profile/cover/garment → submit → staff approve → banner. Cover upload to R2 worked there. Email did not, which led to deferring it (group 6).
+- **Automated, local production build (`next build` + `next start`) with sample data:** banner shown correctly for unsent / pending / active / rejected brands and absent for a regular user; a rejected brand sees the note in onboarding and can resubmit (status back to `pending`, note cleared, new `submitted_at`); queue lists only submitted-and-pending brands, badge shown; approve publishes garments, reject stores the trimmed note, a second click gets "ya no está pendiente"; `/feed` and search hide pending brands; `/marca/[slug]`, `/prenda/[id]`, `/post/[id]` 404 for pending brands and render for active ones; `/admin`, `/admin/bulk`, `/admin?tab=marcas` work for staff and redirect anonymous/regular users; regular signup unchanged. `tsc`, `lint` and `build` clean. Direct DB edits cannot bypass approval (see group 7 probes).
 
 ---
 

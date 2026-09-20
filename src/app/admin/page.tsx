@@ -19,10 +19,8 @@ const submit =
   "rounded-full bg-forest px-5 py-2 text-sm font-medium text-white hover:bg-forest-deep";
 
 const REVIEW_NOTICES: Record<string, string> = {
-  aprobada: "✓ Marca aprobada; le enviamos un correo.",
-  rechazada: "✓ Marca rechazada; le enviamos un correo.",
-  "aprobada-sin-correo": "Marca aprobada, pero no pudimos enviar el correo. Avísale por otro medio.",
-  "rechazada-sin-correo": "Marca rechazada, pero no pudimos enviar el correo. Avísale por otro medio.",
+  aprobada: "✓ Marca aprobada. Verá el resultado al ingresar a su panel; por ahora no enviamos correos.",
+  rechazada: "✓ Marca rechazada. Verá la nota al ingresar a su panel; por ahora no enviamos correos.",
 };
 
 // Fuera del componente: react-hooks/purity prohíbe llamar Date.now() durante el render.
@@ -52,7 +50,7 @@ export default async function AdminPage({
           {aviso && REVIEW_NOTICES[aviso] && (
             <p
               role="status"
-              className={`mt-4 rounded-xl px-3 py-2 text-sm ${aviso.endsWith("sin-correo") ? "bg-honey-soft text-ink" : "bg-leaf-soft text-forest-deep"}`}
+              className="mt-4 rounded-xl bg-leaf-soft px-3 py-2 text-sm text-forest-deep"
             >
               {REVIEW_NOTICES[aviso]}
             </p>

@@ -5,7 +5,7 @@
 ### In scope
 - Brand signup flow: registration form → profile setup → upload ≥1 garment → submit for approval
 - Admin approval queue: review pending brands, approve or reject with optional note
-- Approval notification: transactional email + in-app status banner in brand panel
+- Approval notification: in-app status banner in brand panel (transactional email **deferred** to roadmap Fase 2 — needs a custom domain)
 
 ### Out of scope (separate branch)
 - Brand panel (manage garments, post outfits): `src/app/marca/panel/` — future branch
@@ -21,7 +21,7 @@
 1. A brand visits `/signup` and chooses "Soy una marca" during registration.
 2. They complete a profile form: nombre comercial, bio (≤280 chars), ciudad, foto de portada, link (sitio web o WhatsApp).
 3. They add at least one garment to their catalog (título, precio, categoría, foto). Without this, the "Submit for approval" button is disabled.
-4. They submit. Their account enters `status = pending`. They see a confirmation screen: "Tu perfil está en revisión. Te avisaremos por correo cuando sea aprobado."
+4. They submit. Their account enters `status = pending`. They see a confirmation screen: "Tu perfil está en revisión. Vuelve a ingresar a tu panel para ver el estado de tu solicitud."
 5. They can log back in and see a status banner: "Tu marca está pendiente de aprobación" (yellow) or "Tu marca fue rechazada: {note}" (red) or "Tu marca está activa" (green).
 
 ### Admin
@@ -29,7 +29,7 @@
 1. Admin sees a "Marcas pendientes" tab in `/admin` with a count badge.
 2. Each pending brand shows: name, city, bio, cover photo, garments submitted, submission date.
 3. Admin can Approve → brand.status = 'active', brand and all its content become visible in feed.
-4. Admin can Reject → brand.status = 'rejected', optional note stored, rejection email sent to brand.
+4. Admin can Reject → brand.status = 'rejected', optional note stored; the brand sees it in its panel banner (email deferred).
 
 ---
 
@@ -49,7 +49,7 @@
 - `users` needs a way to link to a brand (`brand_id uuid → brands.id`) so a brand user can only see/edit their own brand.
 - Existing migrations `20260916000000_brand_role.sql` and `20260916010000_brand_self_serve.sql` may already cover some of this — review before writing new migrations.
 - Garments belonging to a pending brand stay `status = 'pending'` until the brand is approved (batch update on approval).
-- Email notification: use Supabase's transactional email (SMTP configured in the project). Template must be in Spanish.
+- Email notification: **deferred** (see plan group 6 and `specs/roadmap.md` Fase 2). Brands learn the outcome from the status banner in their panel.
 
 ---
 

@@ -20,7 +20,7 @@ These checks must all pass before merging `feat/brand-registration` → `dev`.
 
 - [x] `/signup` offers a "Soy una marca" path.
 - [x] Submitting the profile form without all required fields shows inline errors in Spanish.
-- [ ] Uploading a cover photo succeeds and stores an R2 key (not a blob URL).
+- [x] Uploading a cover photo succeeds and stores an R2 key (not a blob URL). *(confirmed in the cloud preview)*
 - [x] "Enviar para aprobación" button is disabled until ≥1 garment is saved.
 - [x] After submission: `brands.status = 'pending'`, `brands.submitted_at` is set, `users.brand_id` is linked.
 - [x] Confirmation screen appears with the correct message in Spanish.
@@ -51,10 +51,12 @@ These checks must all pass before merging `feat/brand-registration` → `dev`.
 
 ## Email notifications
 
-- [x] Approval email is received at the brand's address (check Mailpit on local).
-- [x] Approval email is in Spanish and contains a link to the brand panel.
-- [x] Rejection email includes the admin's note (if provided).
-- [x] No email is sent to regular users or admins when a brand is approved/rejected.
+**Deferred** to a later phase (roadmap Fase 2, "Correo transaccional"): no custom domain yet for a verified sender. Not required for merge; the brand sees the outcome in its status banner instead.
+
+- [ ] ~~Approval email is received at the brand's address.~~ (deferred)
+- [ ] ~~Approval email is in Spanish and contains a link to the brand panel.~~ (deferred)
+- [ ] ~~Rejection email includes the admin's note (if provided).~~ (deferred)
+- [ ] ~~No email is sent to regular users or admins when a brand is approved/rejected.~~ (deferred)
 
 ---
 
@@ -72,4 +74,6 @@ These checks must all pass before merging `feat/brand-registration` → `dev`.
 ## Merge criteria
 
 All checkboxes above are checked, or explicitly deferred with a note explaining why it's safe to defer.
+
+**Status:** all checked except the email notifications, deferred (see that section). Extra check added during the RLS audit: pending brands cannot publish posts (`20260919020000_protect_post_status.sql`) — apply to the cloud before merging.
 No `TODO` or `FIXME` comments in new files without a linked follow-up task.
