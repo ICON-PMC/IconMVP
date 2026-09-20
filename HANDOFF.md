@@ -120,7 +120,7 @@ Reglas que hay que conocer:
   y SQL directo pueden gestionar el estado.
 - **`brands.owner_user_id`** es la fuente de verdad de la propiedad; `users.brand_id` es un espejo
   mantenido por trigger (no lo escribas a mano).
-- Una marca no aprobada no puede publicar prendas: el trigger `garments_protect_status` las deja `pending`.
+- Una marca no aprobada no puede publicar prendas ni posts: los triggers `garments_protect_status` y `posts_protect_status` los dejan en `pending`/`draft` hasta que la marca sea `active`.
 - La cola solo lista marcas con `submitted_at` no nulo (los registros a medias no aparecen).
 
 ## Lenguaje inclusivo
@@ -171,9 +171,9 @@ Row Level Security está activo en todas las tablas. Dos reglas fijas:
 
 ## Variables de entorno
 
-`.env.local` (nunca se commitea) necesita 3 variables de Supabase, 6 de R2 y, para los correos de
-aprobación/rechazo de marcas, 5 de SMTP (`SMTP_HOST/PORT/USER/PASS`, `EMAIL_FROM`) — `.env.example`
-trae la lista. En local el SMTP es Mailpit (`127.0.0.1:54325`, bandeja en http://127.0.0.1:54324). Para apuntar un script a la nube en vez de local:
+`.env.local` (nunca se commitea) necesita las variables de Supabase, R2 e Instagram — `.env.example`
+trae la lista de nombres. Los correos transaccionales (aprobación/rechazo de marcas) aún no existen:
+quedaron para una fase posterior (ver `specs/roadmap.md`); la marca ve el resultado en su panel. Para apuntar un script a la nube en vez de local:
 
 ```bash
 NEXT_PUBLIC_SUPABASE_URL=<url_nube> SUPABASE_SERVICE_ROLE_KEY=<key_nube> npm run db:import
