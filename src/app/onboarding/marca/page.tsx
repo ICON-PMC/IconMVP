@@ -38,7 +38,7 @@ export default async function BrandOnboardingPage({
               Tu perfil está en revisión
             </h1>
             <p className="mt-2 mb-6 text-sm text-ink/70">
-              Te avisaremos por correo cuando sea aprobado.
+              Vuelve a ingresar a tu panel para ver el estado de tu solicitud.
             </p>
             <Button
               nativeButton={false}
