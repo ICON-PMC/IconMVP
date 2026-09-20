@@ -72,6 +72,8 @@ Reglas:
 
 ### Aplicar una migración nueva a la nube
 
+**Orden y re-ejecución:** aplica las migraciones en orden de timestamp y *todas* las anteriores primero. Una migración que solo hace `create or replace` no falla si le falta una dependencia (falla después, en runtime). Si aplicas una migración vieja después de una nueva, puede sobrescribir funciones que la nueva redefinió (`protect_brand_curation_fields`, `protect_user_role_field`): vuelve a correr esas definiciones. Antes de dar por buena una migración en la nube, compara con `select proname from pg_proc` / `pg_policies` / `pg_trigger`.
+
 No hay connection string compartido, así que hay dos caminos:
 - Pegar el SQL en el **SQL Editor** de Supabase (proyecto `oyzvuckkxzbufncvzcvw`), o
 - Usar el **MCP de Supabase** si tu sesión de Claude Code lo tiene conectado (`/mcp` para autenticar).

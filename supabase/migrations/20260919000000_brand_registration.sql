@@ -42,6 +42,7 @@ begin
   return null;
 end; $$;
 
+drop trigger if exists brands_sync_user_brand_id on brands;
 create trigger brands_sync_user_brand_id
   after insert or update of owner_user_id on brands
   for each row execute function public.sync_user_brand_id();
@@ -79,6 +80,7 @@ begin
   return new;
 end; $$;
 
+drop trigger if exists brands_protect_insert on brands;
 create trigger brands_protect_insert
   before insert on brands
   for each row execute function public.protect_brand_insert();
@@ -124,6 +126,7 @@ begin
   return new;
 end; $$;
 
+drop trigger if exists garments_protect_status on garments;
 create trigger garments_protect_status
   before insert or update on garments
   for each row execute function public.protect_garment_status();

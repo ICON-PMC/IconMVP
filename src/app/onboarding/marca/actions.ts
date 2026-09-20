@@ -65,7 +65,10 @@ export async function saveBrandProfile(
 
   if (existing) {
     const { error } = await supabase.from("brands").update(fields).eq("id", existing.id);
-    if (error) return { message: "No pudimos guardar tu perfil. Intenta de nuevo.", values };
+    if (error) {
+      console.error("[onboarding/marca] actualizar marca falló:", error.code, error.message);
+      return { message: "No pudimos guardar tu perfil. Intenta de nuevo.", values };
+    }
   } else {
     const baseSlug = slugify(values.name);
     let created = false;
@@ -76,8 +79,10 @@ export async function saveBrandProfile(
         owner_user_id: session.profile.id,
       });
       if (!error) created = true;
-      else if (error.code !== "23505")
+      else if (error.code !== "23505") {
+        console.error("[onboarding/marca] crear marca falló:", error.code, error.message);
         return { message: "No pudimos crear tu marca. Intenta de nuevo.", values };
+      }
     }
     if (!created)
       return { errors: { name: "Ese nombre ya está en uso. Prueba con otro." }, values };
@@ -120,7 +125,10 @@ export async function saveBrandCover(
     }
     const supabase = await createClient();
     const { error } = await supabase.from("brands").update({ logo_url: key }).eq("id", brand.id);
-    if (error) return { message: "No pudimos guardar la imagen. Intenta de nuevo." };
+    if (error) {
+      console.error("[onboarding/marca] guardar portada falló:", error.code, error.message);
+      return { message: "No pudimos guardar la imagen. Intenta de nuevo." };
+    }
   }
 
   revalidatePath("/", "layout");
@@ -173,8 +181,10 @@ export async function addOnboardingGarment(
     })
     .select("id")
     .single();
-  if (error || !garment)
+  if (error || !garment) {
+    console.error("[onboarding/marca] crear prenda falló:", error?.code, error?.message);
     return { message: "No pudimos guardar la prenda. Intenta de nuevo.", values };
+  }
 
   const { error: tagErr } = await supabase
     .from("garment_tags")
@@ -196,6 +206,7 @@ export async function addOnboardingGarment(
 
   // Sin foto o sin categoría no es una prenda válida: no dejar registros a medias.
   if (tagErr || imgErr) {
+    console.error("[onboarding/marca] categoría/imagen falló:", tagErr?.message, imgErr === true ? "sin clave R2" : imgErr?.message);
     await supabase.from("garments").delete().eq("id", garment.id);
     return { message: "No pudimos subir la foto o la categoría. Intenta de nuevo.", values };
   }
