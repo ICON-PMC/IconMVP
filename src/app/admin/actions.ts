@@ -5,8 +5,6 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser, isStaff, requireStaff } from "@/lib/auth";
 import { uploadImageField } from "@/lib/upload";
-import { headers } from "next/headers";
-import { sendBrandApprovedEmail, sendBrandRejectedEmail } from "@/lib/brand-emails";
 
 function str(formData: FormData, key: string): string | null {
   const v = formData.get(key);
@@ -143,21 +141,12 @@ export async function createPost(formData: FormData) {
 // ============================================================
 // Cola de aprobación de marcas
 // ============================================================
-export type ReviewResult =
-  | { ok: true; emailSent: boolean }
-  | { ok: false; error: string };
-
-async function siteOrigin(): Promise<string> {
-  const fixed = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "");
-  if (fixed) return fixed;
-  const h = await headers();
-  return `${h.get("x-forwarded-proto") ?? "http"}://${h.get("host")}`;
-}
+export type ReviewResult = { ok: true } | { ok: false; error: string };
 
 // A diferencia de requireStaff() (que redirige), estas acciones devuelven un error para que
-// la UI lo muestre; nunca lanzan 500 si las llama alguien sin permiso. El correo se envía solo
-// tras un RPC exitoso, únicamente al dueño de la marca; si falla, la decisión ya está tomada y
-// se informa con `emailSent: false` (no se revierte).
+// la UI lo muestre; nunca lanzan 500 si las llama alguien sin permiso. La marca se entera del
+// resultado al ingresar a su panel (banner de estado); las notificaciones por correo quedan
+// para una fase posterior (ver specs/roadmap.md).
 async function reviewBrand(
   fn: "approve_brand" | "reject_brand",
   brandId: string,
@@ -167,7 +156,7 @@ async function reviewBrand(
   if (!isStaff(session?.profile)) return { ok: false, error: "No tienes permiso para esta acción." };
 
   const supabase = await createClient();
-  const { data, error } =
+  const { error } =
     fn === "approve_brand"
       ? await supabase.rpc("approve_brand", { p_brand_id: brandId })
       : await supabase.rpc("reject_brand", { p_brand_id: brandId, p_note: note ?? null });
@@ -179,15 +168,7 @@ async function reviewBrand(
   }
 
   revalidatePath("/admin");
-
-  const brand = data?.[0];
-  if (!brand?.owner_email) return { ok: true, emailSent: false };
-  const origin = await siteOrigin();
-  const sent =
-    fn === "approve_brand"
-      ? await sendBrandApprovedEmail(brand.owner_email, brand.brand_name, origin)
-      : await sendBrandRejectedEmail(brand.owner_email, brand.brand_name, note?.trim() || null, origin);
-  return { ok: true, emailSent: sent.ok };
+  return { ok: true };
 }
 
 export async function approveBrand(brandId: string): Promise<ReviewResult> {
