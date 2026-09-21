@@ -9,7 +9,7 @@
 ## Progress
 - [x] 1. Foundation: shadcn components + shared primitives
 - [x] 2. Brand panel shell: tabs, header, status, Instagram card
-- [ ] 3. Catalog: list, new-garment sheet, selection mode + bulk action bar
+- [x] 3. Catalog: list, new-garment sheet, selection mode + bulk action bar
 - [x] 4. Looks list + post editor
 - [x] 5. Instagram import picker
 - [x] 6. Admin panel: tabs + collapsed create forms
@@ -56,6 +56,12 @@
 - "Nueva prenda" opens a **Sheet** (bottom on mobile, right on `md+`); form is single-column; sizes via `ChipSelect`; category via shadcn `Select`.
 - **Selection mode:** "Seleccionar" toggle → checkboxes on cards → `StickyActionBar` with count and actions: Publicar, Archivar, Eliminar (ConfirmDialog). Actions call new brand-scoped server actions; result toast shows "n de m".
 - Filter by status (ToggleGroup / tabs) and search-by-title input.
+
+**✅ Done — implementation notes**
+- **Open question resolved:** brand owners already have `garments_owner_all` (`for all` using `is_brand_owner(brand_id)`) and table-level `insert/update/delete` grants, so **no migration/RLS change**. Two gotchas handled in code: (1) the `garments_protect_status` trigger silently downgrades `published` → `pending` for non-approved brands, so "Publicar" is disabled (with a tooltip) and the action returns an error unless `brand.status = 'active'`; (2) `post_items` cascades on garment delete, so `deleteGarments` reverts any published look left with zero garments to draft (same rule as `untagGarmentFromPost`).
+- **New actions** (`marca/panel/actions.ts`): `setGarmentsStatus(ids, 'published'|'archived')` and `deleteGarments(ids)` → `BulkResult { done, skipped }`. They filter by the caller's `brand_id` on top of RLS and count affected rows (`.select("id")`), so foreign ids are "skipped", not errors; max 200 per call.
+- **UI:** `catalog-grid.tsx` (client): search, status filter (`ToggleGroup`: Todas / Publicadas / Pendientes / Archivadas), **"Seleccionar" mode** → `role="checkbox"` tiles, "Seleccionar todas" (visible ones), `StickyActionBar` with Publicar / Archivar / Eliminar, `ConfirmDialog` for delete, toast "n de m". `NewGarmentSheet` wraps `NewGarmentForm` in a `ResponsiveSheet`; it closes and resets when the catalog count changes after the server action's redirect. New `SubmitButton` (`useFormStatus`) and `NativeSelect` shared components.
+- Garment status enum has no `draft` (`pending | published | archived`); filters follow the enum.
 
 ### 4. Looks + post editor
 - Looks tab: grid with status badge, item count, publish state; empty state with CTA.

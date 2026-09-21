@@ -148,7 +148,12 @@ export default async function BrandPanelPage({
             />
           )}
           {tab === "catalogo" && (
-            <CatalogTab garments={catalog} categories={categories ?? []} sizes={sizes ?? []} />
+            <CatalogTab
+              garments={catalog}
+              categories={categories ?? []}
+              sizes={sizes ?? []}
+              canPublish={brand.status === "active"}
+            />
           )}
           {tab === "looks" && <LooksTab looks={looks} canImport={!!connection} />}
           {tab === "perfil" && <ProfileTab brand={brand} />}
