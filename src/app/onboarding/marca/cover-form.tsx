@@ -20,7 +20,7 @@ export function CoverForm({ currentUrl }: { currentUrl: string | null }) {
   return (
     <form action={action} className="flex flex-col gap-4">
       {state.message && (
-        <p className="rounded-xl bg-coral/15 px-3 py-2 text-sm text-coral">{state.message}</p>
+        <p role="alert" className="rounded-xl bg-coral/15 px-3 py-2 text-sm text-coral">{state.message}</p>
       )}
 
       <label
@@ -46,7 +46,7 @@ export function CoverForm({ currentUrl }: { currentUrl: string | null }) {
         />
       </label>
       {state.errors?.cover && (
-        <p id="cover-err" className="-mt-2 text-xs text-coral">
+        <p id="cover-err" role="alert" className="-mt-2 text-xs text-coral">
           {state.errors.cover}
         </p>
       )}
@@ -55,11 +55,11 @@ export function CoverForm({ currentUrl }: { currentUrl: string | null }) {
         <Button
           type="submit"
           disabled={pending}
-          className="h-10 flex-1 rounded-xl bg-forest text-sm text-white hover:bg-forest-deep"
+          size="lg" className="flex-1 rounded-xl bg-forest text-base text-white hover:bg-forest-deep md:text-sm"
         >
           {pending ? "Subiendo…" : "Continuar"}
         </Button>
-        <Link href="/onboarding/marca?paso=1" className="text-sm text-ink/50 hover:underline">
+        <Link href="/onboarding/marca?paso=1" className="inline-flex min-h-11 items-center px-2 text-sm text-ink/60 hover:underline">
           Atrás
         </Link>
       </div>

@@ -1,8 +1,10 @@
 import Link from "next/link";
+import { ChevronLeftIcon } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { requireStaff } from "@/lib/auth";
 import { Aurora } from "@/components/aurora";
 import { GlassCard } from "@/components/glass-card";
+import { PageShell, SectionHeader } from "@/components/page-shell";
 import { SiteHeader } from "@/components/site-header";
 import { formatCop } from "@/lib/taxonomy";
 import { ImportForm } from "./import-form";
@@ -44,51 +46,40 @@ export default async function BulkPage() {
   return (
     <>
       <Aurora />
-      <div className="mx-auto w-full max-w-4xl px-4 py-6">
+      <PageShell width="4xl">
         <SiteHeader />
-
-        <div className="mt-8 flex items-center justify-between gap-3">
-          <h1 className="text-3xl font-medium tracking-tight text-forest">
-            Carga masiva de prendas
-          </h1>
-          <Link href="/admin" className="text-sm font-medium text-coral hover:underline">
-            ← Panel
-          </Link>
-        </div>
+        <Link
+          href="/admin"
+          className="mt-6 -ml-2 inline-flex min-h-11 items-center gap-1 rounded-full px-2 text-sm text-ink/70 hover:text-forest"
+        >
+          <ChevronLeftIcon className="size-4" /> Panel
+        </Link>
+        <h1 className="text-2xl font-medium tracking-tight text-forest sm:text-3xl">
+          Carga masiva de prendas
+        </h1>
 
         {/* Paso 1: plantilla + importar */}
-        <GlassCard className="mt-6 p-6">
-          <h2 className="text-lg font-medium text-forest">1 · Llena y sube la plantilla</h2>
-          <p className="mt-1 text-sm text-ink/60">
-            Descarga la plantilla, complétala (columnas: marca, titulo, precio_cop,
-            url_producto, color, tela, categoria, tallas) y súbela. Las prendas se crean
-            en estado <b>pendiente</b> sin foto.
-          </p>
-          <a
-            href="/admin/bulk/template"
-            className="mt-4 inline-block rounded-full bg-white/60 px-4 py-2 text-sm font-medium text-forest hover:bg-white"
-          >
-            ↓ Descargar plantilla Excel
-          </a>
-          <div className="mt-5 border-t border-ink/10 pt-5">
+        <GlassCard className="mt-6 p-5">
+          <SectionHeader
+            title="Paso 1 de 2 · Sube la plantilla"
+            description="Completa las columnas marca, titulo, precio_cop, url_producto, color, tela, categoria y tallas. Las prendas se crean como pendientes, sin foto."
+          />
+          <div className="mt-4">
             <ImportForm />
           </div>
         </GlassCard>
 
         {/* Paso 2: montar fotos */}
-        <GlassCard className="mt-6 mb-12 p-6">
-          <h2 className="text-lg font-medium text-forest">
-            2 · Súbeles la foto ({items.length} por completar)
-          </h2>
-          <p className="mt-1 text-sm text-ink/60">
-            Selecciona la foto de cada prenda y pulsa <b>Subir todas</b> (o elimínalas si
-            las importaste por error). Al subir la foto, la prenda pasa a <b>publicada</b>{" "}
-            y aparece en el feed.
-          </p>
-
-          <PendingGarments items={items} />
+        <GlassCard className="mt-6 p-5">
+          <SectionHeader
+            title={`Paso 2 de 2 · Agrega las fotos (${items.length})`}
+            description="Elige la foto de cada prenda y pulsa Subir. Al subirla, la prenda pasa a publicada y aparece en el feed. Selecciona las que importaste por error para eliminarlas."
+          />
+          <div className="mt-4">
+            <PendingGarments items={items} />
+          </div>
         </GlassCard>
-      </div>
+      </PageShell>
     </>
   );
 }

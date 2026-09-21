@@ -1,36 +1,31 @@
+import Link from "next/link";
+import { Suspense } from "react";
 import { notFound } from "next/navigation";
+import { ChevronLeftIcon } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { requireBrandOwner } from "@/lib/auth";
 import { Aurora } from "@/components/aurora";
 import { GlassCard } from "@/components/glass-card";
 import { SiteHeader } from "@/components/site-header";
+import { PageShell, SectionHeader } from "@/components/page-shell";
+import { StatusBadge } from "@/components/status-badge";
+import { StickyActionBar } from "@/components/sticky-action-bar";
+import { EmptyState } from "@/components/empty-state";
+import { FlashToast } from "@/components/flash-toast";
+import { Button } from "@/components/ui/button";
 import { imageUrl } from "@/lib/images";
 import { formatCop } from "@/lib/taxonomy";
-import {
-  tagGarmentOnPost,
-  untagGarmentFromPost,
-  setPostTags,
-  publishPost,
-  unpublishPost,
-} from "../../actions";
-
-const input =
-  "glass-input w-full rounded-lg px-3 py-2 text-sm text-ink placeholder:text-ink/40";
-const label = "mb-1 block text-xs font-medium uppercase tracking-wide text-ink/50";
-const chip =
-  "glass-input cursor-pointer rounded-full px-3 py-1 text-xs text-ink/80 peer-checked:bg-forest peer-checked:text-white";
-const submit =
-  "rounded-full bg-forest px-5 py-2 text-sm font-medium text-white hover:bg-forest-deep";
+import { publishPost, unpublishPost } from "../../actions";
+import { GarmentPicker } from "./_components/garment-picker";
+import { TaggedItems } from "./_components/tagged-items";
+import { TagsForm } from "./_components/tags-form";
 
 export default async function BrandPostEditorPage({
   params,
-  searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ error?: string }>;
 }) {
   const { id } = await params;
-  const { error } = await searchParams;
   const { brand } = await requireBrandOwner();
   if (!brand) notFound();
 
@@ -53,15 +48,8 @@ export default async function BrandPostEditorPage({
     { data: myTags },
   ] = await Promise.all([
     supabase.from("post_images").select("cf_image_id").eq("post_id", id).order("position"),
-    supabase
-      .from("post_items")
-      .select("id, garment_id, size_id")
-      .eq("post_id", id),
-    supabase
-      .from("garments")
-      .select("id, title, price_cop")
-      .eq("brand_id", brand.id)
-      .order("title"),
+    supabase.from("post_items").select("id, garment_id, size_id").eq("post_id", id),
+    supabase.from("garments").select("id, title, price_cop").eq("brand_id", brand.id).order("title"),
     supabase.from("sizes").select("id, label").order("sort_order"),
     supabase.from("tags").select("id, name").eq("type", "occasion").order("name"),
     supabase.from("tags").select("id, name").eq("type", "style").order("name"),
@@ -70,168 +58,133 @@ export default async function BrandPostEditorPage({
   ]);
 
   const garmentMap = new Map((myGarments ?? []).map((g) => [g.id, g]));
-  const sizeMap = new Map((sizes ?? []).map((s) => [s.id, s.label]));
-  const selectedTagIds = new Set((myTags ?? []).map((t) => t.tag_id));
+  const taggedIds = new Set((items ?? []).map((it) => it.garment_id));
   const img = imageUrl(images?.[0]?.cf_image_id);
-  const untaggedGarments = (myGarments ?? []).filter(
-    (g) => !(items ?? []).some((it) => it.garment_id === g.id),
-  );
+  const isPublished = post.status === "published";
+
+  const tagged = (items ?? []).map((it) => {
+    const g = garmentMap.get(it.garment_id);
+    return {
+      id: it.id,
+      title: g?.title ?? "(prenda)",
+      price: g?.price_cop != null ? formatCop(g.price_cop) : null,
+      sizeId: it.size_id,
+    };
+  });
+  const pickable = (myGarments ?? [])
+    .filter((g) => !taggedIds.has(g.id))
+    .map((g) => ({
+      id: g.id,
+      label: g.title,
+      hint: g.price_cop != null ? formatCop(g.price_cop) : undefined,
+    }));
+
+  // Por qué no se puede publicar (se muestra junto al botón en vez de fallar al pulsar).
+  const blocker = isPublished
+    ? null
+    : brand.status !== "active"
+      ? "Podrás publicar cuando tu marca sea aprobada."
+      : !tagged.length
+        ? "Taggea al menos una prenda para publicar."
+        : null;
 
   return (
     <>
       <Aurora />
-      <div className="mx-auto w-full max-w-2xl px-4 py-6">
+      <PageShell width="2xl">
         <SiteHeader />
-        <div className="mt-8 flex items-center justify-between gap-3">
+        <Suspense>
+          <FlashToast />
+        </Suspense>
+
+        <Link
+          href="/marca/panel?tab=looks"
+          className="mt-6 -ml-2 inline-flex min-h-11 items-center gap-1 rounded-full px-2 text-sm text-ink/70 hover:text-forest"
+        >
+          <ChevronLeftIcon className="size-4" /> Looks
+        </Link>
+
+        <div className="flex items-center gap-3">
           <h1 className="text-2xl font-medium tracking-tight text-forest">Editar look</h1>
-          <form action={(post.status === "published" ? unpublishPost : publishPost).bind(null, id)}>
-            <button
-              className={
-                post.status === "published"
-                  ? "rounded-full bg-ink/10 px-4 py-2 text-sm font-medium text-ink/70 hover:bg-ink/15"
-                  : submit
-              }
-            >
-              {post.status === "published" ? "Despublicar" : "Publicar"}
-            </button>
-          </form>
+          <StatusBadge status={post.status} />
         </div>
 
-        {error && (
-          <p className="mt-4 rounded-xl bg-coral/15 px-3 py-2 text-sm text-coral">{error}</p>
-        )}
-
-        <div className="mt-5 grid grid-cols-1 gap-6 sm:grid-cols-2">
+        <div className="mt-5 grid grid-cols-1 gap-6 md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
           <div>
             {img && (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={img} alt="" className="w-full rounded-2xl object-cover" />
+              <img
+                src={img}
+                alt={post.caption ?? "Foto del look"}
+                className="mx-auto max-h-[60dvh] w-full rounded-2xl object-cover md:sticky md:top-6 md:max-h-none"
+              />
             )}
             {post.caption && <p className="mt-2 text-sm text-ink/70">{post.caption}</p>}
           </div>
 
-          <div>
-            <GlassCard className="p-4">
-              <h2 className="mb-3 text-sm font-medium text-forest">
-                Prendas taggeadas ({items?.length ?? 0})
-              </h2>
-              {items?.length ? (
-                <ul className="mb-4 space-y-2">
-                  {items.map((it) => {
-                    const g = garmentMap.get(it.garment_id);
-                    return (
-                      <li
-                        key={it.id}
-                        className="flex items-center justify-between gap-2 rounded-lg bg-white/60 px-3 py-2 text-sm"
-                      >
-                        <span className="truncate">
-                          {g?.title ?? "(prenda)"}
-                          {it.size_id && (
-                            <span className="text-ink/50"> · {sizeMap.get(it.size_id)}</span>
-                          )}
-                          {g?.price_cop != null && (
-                            <span className="text-ink/50"> · {formatCop(g.price_cop)}</span>
-                          )}
-                        </span>
-                        <form action={untagGarmentFromPost.bind(null, id, it.id)}>
-                          <button className="text-xs font-medium text-coral hover:underline">
-                            Quitar
-                          </button>
-                        </form>
-                      </li>
-                    );
-                  })}
-                </ul>
-              ) : (
-                <p className="mb-4 text-xs text-ink/50">
-                  Sin prendas todavía. Taggea al menos una para poder publicar.
-                </p>
-              )}
+          <div className="space-y-6">
+            <GlassCard className="p-5">
+              <SectionHeader
+                title={`1 · Prendas (${tagged.length})`}
+                description="Las prendas que se ven en la foto."
+              />
+              <div className="mt-4 space-y-4">
+                {tagged.length ? (
+                  <TaggedItems
+                    postId={id}
+                    items={tagged}
+                    sizes={sizes ?? []}
+                    wasPublished={isPublished}
+                  />
+                ) : (
+                  <EmptyState
+                    title="Aún no hay prendas"
+                    description="Taggea al menos una para poder publicar."
+                  />
+                )}
+                <GarmentPicker postId={id} options={pickable} />
+                {!pickable.length && (
+                  <p className="text-xs text-ink/60">
+                    {myGarments?.length
+                      ? "Ya taggeaste todo tu catálogo en este look."
+                      : "Agrega prendas a tu catálogo primero."}
+                  </p>
+                )}
+              </div>
+            </GlassCard>
 
-              {untaggedGarments.length ? (
-                <form action={tagGarmentOnPost} className="flex flex-col gap-2">
-                  <input type="hidden" name="post_id" value={id} />
-                  <select className={input} name="garment_id" required defaultValue="">
-                    <option value="" disabled>
-                      Elige una prenda
-                    </option>
-                    {untaggedGarments.map((g) => (
-                      <option key={g.id} value={g.id}>
-                        {g.title}
-                      </option>
-                    ))}
-                  </select>
-                  <select className={input} name="size_id" defaultValue="">
-                    <option value="">Talla (opcional)</option>
-                    {(sizes ?? []).map((s) => (
-                      <option key={s.id} value={s.id}>
-                        {s.label}
-                      </option>
-                    ))}
-                  </select>
-                  <button className="rounded-full bg-forest/10 px-4 py-2 text-xs font-medium text-forest hover:bg-forest/20">
-                    + Taggear prenda
-                  </button>
-                </form>
-              ) : (
-                <p className="text-xs text-ink/40">
-                  {myGarments?.length
-                    ? "Ya taggeaste todo tu catálogo en este look."
-                    : "Agrega prendas a tu catálogo primero."}
-                </p>
-              )}
+            <GlassCard className="p-5">
+              <SectionHeader
+                title="2 · Ocasión, estilo y clima"
+                description="Ayudan a que te encuentren por intención."
+              />
+              <div className="mt-4">
+                <TagsForm
+                  postId={id}
+                  occasions={occasions ?? []}
+                  styles={styles ?? []}
+                  temperatures={temperatures ?? []}
+                  selected={(myTags ?? []).map((t) => t.tag_id)}
+                />
+              </div>
             </GlassCard>
           </div>
         </div>
+      </PageShell>
 
-        <GlassCard className="mt-6 mb-12 p-6">
-          <h2 className="mb-4 text-sm font-medium text-forest">Ocasión, estilo y clima</h2>
-          <form action={setPostTags} className="flex flex-col gap-4">
-            <input type="hidden" name="post_id" value={id} />
-            <ChipGroup legend="Ocasión" name="occasions" options={occasions ?? []} selected={selectedTagIds} />
-            <ChipGroup legend="Estilo" name="styles" options={styles ?? []} selected={selectedTagIds} />
-            <ChipGroup legend="Temperatura" name="temperatures" options={temperatures ?? []} selected={selectedTagIds} />
-            <div>
-              <button className={submit} type="submit">
-                Guardar etiquetas
-              </button>
-            </div>
-          </form>
-        </GlassCard>
-      </div>
+      <StickyActionBar label={blocker ?? undefined}>
+        <form action={(isPublished ? unpublishPost : publishPost).bind(null, id)} className="w-full sm:w-auto">
+          <Button
+            type="submit"
+            size="lg"
+            variant={isPublished ? "outline" : "default"}
+            disabled={!!blocker}
+            className="w-full rounded-full sm:w-auto sm:px-8"
+          >
+            {isPublished ? "Despublicar" : "Publicar look"}
+          </Button>
+        </form>
+      </StickyActionBar>
     </>
   );
 }
-
-function ChipGroup({
-  legend,
-  name,
-  options,
-  selected,
-}: {
-  legend: string;
-  name: string;
-  options: { id: string; name: string }[];
-  selected: Set<string>;
-}) {
-  return (
-    <div>
-      <label className={label}>{legend}</label>
-      <div className="flex flex-wrap gap-2">
-        {options.map((o) => (
-          <label key={o.id}>
-            <input
-              type="checkbox"
-              name={name}
-              value={o.id}
-              defaultChecked={selected.has(o.id)}
-              className="peer sr-only"
-            />
-            <span className={chip}>{o.name}</span>
-          </label>
-        ))}
-      </div>
-    </div>
-  );
-}
-
