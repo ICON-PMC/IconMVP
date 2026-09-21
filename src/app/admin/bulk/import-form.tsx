@@ -30,7 +30,7 @@ export function ImportForm() {
           aria-label="Plantilla completada (.xlsx)"
           accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
           required
-          className="sm:max-w-xs"
+          className="h-auto min-h-11 py-2 sm:max-w-xs"
         />
         <Button type="submit" disabled={pending} className="rounded-full sm:px-6">
           {pending ? "Importando…" : "Importar prendas"}

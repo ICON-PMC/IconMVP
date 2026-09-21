@@ -142,13 +142,14 @@ export function PendingGarments({ items }: { items: PendingItem[] }) {
           const st = rows[it.id] ?? { kind: "idle" };
           return (
             <li key={it.id} className="flex items-start gap-3 px-3 py-3">
-              <Checkbox
-                checked={sel.isSelected(it.id)}
-                disabled={busy}
-                onCheckedChange={() => sel.toggle(it.id)}
-                aria-label={`Seleccionar ${it.title}`}
-                className="mt-1"
-              />
+              <label className="-m-1.5 flex size-11 shrink-0 cursor-pointer items-center justify-center">
+                <Checkbox
+                  checked={sel.isSelected(it.id)}
+                  disabled={busy}
+                  onCheckedChange={() => sel.toggle(it.id)}
+                  aria-label={`Seleccionar ${it.title}`}
+                />
+              </label>
               <div className="min-w-0 flex-1 space-y-2">
                 <div>
                   <p className="truncate text-sm font-medium text-ink">{it.title}</p>
@@ -171,6 +172,7 @@ export function PendingGarments({ items }: { items: PendingItem[] }) {
         })}
       </ul>
 
+      {(busy || readyIds.length > 0 || sel.count > 0) && (
       <StickyActionBar label={barLabel}>
         {sel.count > 0 && !busy && (
           <>
@@ -197,6 +199,7 @@ export function PendingGarments({ items }: { items: PendingItem[] }) {
           {busy ? "Procesando…" : `Subir ${readyIds.length} ${readyIds.length === 1 ? "foto" : "fotos"}`}
         </Button>
       </StickyActionBar>
+      )}
 
       <ConfirmDialog
         open={confirmDelete}

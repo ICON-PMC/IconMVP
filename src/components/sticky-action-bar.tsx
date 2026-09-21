@@ -19,7 +19,7 @@ export function StickyActionBar({
   return (
     <div
       className={cn(
-        "glass fixed inset-x-0 bottom-0 z-40 rounded-t-3xl px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]",
+        "glass fixed inset-x-0 bg-cream/95 bottom-0 z-40 rounded-t-3xl px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]",
         "sm:inset-x-auto sm:bottom-4 sm:left-1/2 sm:-translate-x-1/2 sm:rounded-full sm:px-5 sm:py-2.5",
         className,
       )}
