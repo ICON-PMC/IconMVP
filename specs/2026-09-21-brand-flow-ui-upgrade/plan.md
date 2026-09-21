@@ -13,7 +13,7 @@
 - [x] 4. Looks list + post editor
 - [x] 5. Instagram import picker
 - [x] 6. Admin panel: tabs + collapsed create forms
-- [ ] 7. Admin bulk photos (`/admin/bulk`)
+- [x] 7. Admin bulk photos (`/admin/bulk`)
 - [ ] 8. Onboarding (`/onboarding/marca`) polish
 - [ ] 9. QA pass (responsive, a11y, build, lint)
 
@@ -96,6 +96,11 @@
 ### 7. Admin bulk photos
 - `PendingGarments`: list rows (thumbnail-less) with file-pick button, per-row status (pendiente / lista / error), selection for delete, sticky bar "Subir N fotos" / "Eliminar N", `ConfirmDialog` instead of `window.confirm`, progress "n de m".
 - Template + import step collapsed into a compact "Paso 1" card with clear step indicator.
+
+**✅ Done — implementation notes**
+- `pending-garments.tsx` rewritten around a state model instead of one shared `<form>`: files live in client state, each row shows its own state (**Sin foto / nombre del archivo / Subiendo… / error**), rows have checkboxes + "Seleccionar todas", and a `StickyActionBar` shows "N de M con foto" → **Subir N fotos**, or **Eliminar N** when rows are selected. Uploads and deletes run through `runBatch` (3 in parallel) with real "Subiendo n de m…" progress; failed rows keep their file and show the error under the row. `window.confirm` → `ConfirmDialog`. The native file input is hidden behind a 44 px "Elegir foto / Cambiar" button.
+- `deleteAllPendingAction` is no longer called from the UI ("Seleccionar todas" + "Eliminar" replaces it); the server action is left in place.
+- `page.tsx`: back link, "Paso 1 de 2 / Paso 2 de 2" cards with `SectionHeader`; `import-form.tsx` uses `Button`/`Input`, full-width on phones, template download as an outline button. Server actions unchanged.
 
 ### 8. Onboarding polish
 - Step indicator (Perfil → Primera prenda → Enviar), single-column forms with `FormField`, sticky primary button on mobile. No logic changes to `actions.ts`.
