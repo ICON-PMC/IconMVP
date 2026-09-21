@@ -1,26 +1,27 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser, isStaff } from "@/lib/auth";
 import { Aurora } from "@/components/aurora";
-import { GlassCard } from "@/components/glass-card";
-import { PRICE_BUCKETS } from "@/lib/taxonomy";
+import { FlashToast } from "@/components/flash-toast";
+import { PageShell, SectionHeader } from "@/components/page-shell";
 import { SiteHeader } from "@/components/site-header";
-import { createBrand, createGarment, createPost } from "./actions";
-import { AdminTabs } from "./admin-tabs";
+import { Button } from "@/components/ui/button";
+import { AdminTabs, parseAdminTab } from "./admin-tabs";
 import { PendingBrands, pendingBrandsCount } from "./pending-brands";
-
-const input =
-  "glass-input w-full rounded-lg px-3 py-2 text-sm text-ink placeholder:text-ink/40";
-const label = "mb-1 block text-xs font-medium uppercase tracking-wide text-ink/50";
-const chip =
-  "glass-input cursor-pointer rounded-full px-3 py-1 text-xs text-ink/80 peer-checked:bg-forest peer-checked:text-white";
-const submit =
-  "rounded-full bg-forest px-5 py-2 text-sm font-medium text-white hover:bg-forest-deep";
+import { MetricsTab } from "./_components/metrics-tab";
+import { UploadTab, parseUploadForm, type UploadData } from "./_components/upload-tab";
 
 const REVIEW_NOTICES: Record<string, string> = {
   aprobada: "✓ Marca aprobada. Verá el resultado al ingresar a su panel; por ahora no enviamos correos.",
   rechazada: "✓ Marca rechazada. Verá la nota al ingresar a su panel; por ahora no enviamos correos.",
+};
+
+const FLASH = {
+  marca: "Marca creada.",
+  prenda: "Prenda creada.",
+  post: "Post creado.",
 };
 
 // Fuera del componente: react-hooks/purity prohíbe llamar Date.now() durante el render.
@@ -28,417 +29,122 @@ function daysAgoIso(days: number): string {
   return new Date(Date.now() - days * 864e5).toISOString();
 }
 
+async function loadMetrics() {
+  const supabase = await createClient();
+  const sevenDaysAgo = daysAgoIso(7);
+  // Solo staff puede leer outbound_clicks.
+  const [brands, garments, posts, clicksTotal, clicks7d, topBrandsRes, topGarmentsRes] =
+    await Promise.all([
+      supabase.from("brands").select("*", { count: "exact", head: true }),
+      supabase.from("garments").select("*", { count: "exact", head: true }),
+      supabase.from("posts").select("*", { count: "exact", head: true }),
+      supabase.from("outbound_clicks").select("*", { count: "exact", head: true }),
+      supabase
+        .from("outbound_clicks")
+        .select("*", { count: "exact", head: true })
+        .gte("created_at", sevenDaysAgo),
+      supabase.from("brand_click_counts").select("*").order("clicks", { ascending: false }).limit(6),
+      supabase.from("garment_click_counts").select("*").order("clicks", { ascending: false }).limit(6),
+    ]);
+  return {
+    totals: { brands: brands.count ?? 0, garments: garments.count ?? 0, posts: posts.count ?? 0 },
+    clicks: { total: clicksTotal.count ?? 0, last7d: clicks7d.count ?? 0 },
+    topBrands: (topBrandsRes.data ?? [])
+      .filter((b) => b.clicks > 0)
+      .map((b) => ({ id: b.brand_id, name: b.brand_name, clicks: b.clicks })),
+    topGarments: (topGarmentsRes.data ?? [])
+      .filter((g) => g.clicks > 0)
+      .map((g) => ({ id: g.garment_id, name: g.title, clicks: g.clicks })),
+  };
+}
+
+async function loadUploadData(): Promise<UploadData> {
+  const supabase = await createClient();
+  const tags = (type: "category" | "occasion" | "style" | "temperature") =>
+    supabase.from("tags").select("id, name").eq("type", type).order("name");
+  const [cities, categories, occasions, styles, temperatures, sizes, brands, garments] =
+    await Promise.all([
+      supabase.from("cities").select("id, name").order("name"),
+      tags("category"),
+      tags("occasion"),
+      tags("style"),
+      tags("temperature"),
+      supabase.from("sizes").select("id, label").order("sort_order"),
+      supabase.from("brands").select("id, name").order("name"),
+      supabase.from("garments").select("id, title").order("created_at", { ascending: false }),
+    ]);
+  return {
+    cities: cities.data ?? [],
+    categories: categories.data ?? [],
+    occasions: occasions.data ?? [],
+    styles: styles.data ?? [],
+    temperatures: temperatures.data ?? [],
+    sizes: sizes.data ?? [],
+    brands: brands.data ?? [],
+    garments: garments.data ?? [],
+  };
+}
+
 export default async function AdminPage({
   searchParams,
 }: {
-  searchParams: Promise<{ ok?: string; error?: string; tab?: string; aviso?: string }>;
+  searchParams: Promise<{ tab?: string; form?: string; aviso?: string }>;
 }) {
   const session = await getCurrentUser();
   if (!session) redirect("/login?next=/admin");
   if (!isStaff(session.profile)) redirect("/");
-  const { ok, error, tab, aviso } = await searchParams;
+  const { tab: tabParam, form, aviso } = await searchParams;
+  const tab = parseAdminTab(tabParam);
   const pendingCount = await pendingBrandsCount();
-
-  if (tab === "marcas") {
-    return (
-      <>
-        <Aurora />
-        <div className="mx-auto w-full max-w-3xl px-4 py-6">
-          <SiteHeader />
-          <h1 className="mt-8 text-3xl font-medium tracking-tight text-forest">Panel del equipo</h1>
-          <AdminTabs active="marcas" pendingCount={pendingCount} />
-          {aviso && REVIEW_NOTICES[aviso] && (
-            <p
-              role="status"
-              className="mt-4 rounded-xl bg-leaf-soft px-3 py-2 text-sm text-forest-deep"
-            >
-              {REVIEW_NOTICES[aviso]}
-            </p>
-          )}
-          <PendingBrands />
-        </div>
-      </>
-    );
-  }
-
-  const supabase = await createClient();
-  const [
-    { count: brandCount },
-    { count: garmentCount },
-    { count: postCount },
-    { data: cities },
-    { data: categories },
-    { data: occasions },
-    { data: styles },
-    { data: temperatures },
-    { data: sizes },
-    { data: brands },
-    { data: garments },
-  ] = await Promise.all([
-    supabase.from("brands").select("*", { count: "exact", head: true }),
-    supabase.from("garments").select("*", { count: "exact", head: true }),
-    supabase.from("posts").select("*", { count: "exact", head: true }),
-    supabase.from("cities").select("id, name").order("name"),
-    supabase.from("tags").select("id, name").eq("type", "category").order("name"),
-    supabase.from("tags").select("id, name").eq("type", "occasion").order("name"),
-    supabase.from("tags").select("id, name").eq("type", "style").order("name"),
-    supabase.from("tags").select("id, name").eq("type", "temperature").order("name"),
-    supabase.from("sizes").select("id, label").order("sort_order"),
-    supabase.from("brands").select("id, name").order("name"),
-    supabase.from("garments").select("id, title").order("created_at", { ascending: false }),
-  ]);
-
-  const metrics = [
-    { label: "Marcas", value: brandCount ?? 0 },
-    { label: "Prendas", value: garmentCount ?? 0 },
-    { label: "Posts", value: postCount ?? 0 },
-  ];
-
-  // Analítica de clics salientes (solo staff puede leer outbound_clicks).
-  const sevenDaysAgo = daysAgoIso(7);
-  const [clicksTotal, clicks7d, topBrandsRes, topGarmentsRes] = await Promise.all([
-    supabase.from("outbound_clicks").select("*", { count: "exact", head: true }),
-    supabase
-      .from("outbound_clicks")
-      .select("*", { count: "exact", head: true })
-      .gte("created_at", sevenDaysAgo),
-    supabase.from("brand_click_counts").select("*").order("clicks", { ascending: false }).limit(6),
-    supabase.from("garment_click_counts").select("*").order("clicks", { ascending: false }).limit(6),
-  ]);
-  const topBrands = (topBrandsRes.data ?? []).filter((b) => b.clicks > 0);
-  const topGarments = (topGarmentsRes.data ?? []).filter((g) => g.clicks > 0);
 
   return (
     <>
       <Aurora />
-      <div className="mx-auto w-full max-w-3xl px-4 py-6">
+      <PageShell>
         <SiteHeader />
+        <Suspense>
+          <FlashToast messages={FLASH} />
+        </Suspense>
 
-        <div className="mt-8 flex items-center justify-between gap-3">
-          <h1 className="text-3xl font-medium tracking-tight text-forest">
-            Panel del equipo
-          </h1>
-          <Link
-            href="/admin/bulk"
-            className="rounded-full bg-white/60 px-4 py-2 text-sm font-medium text-forest hover:bg-white"
-          >
-            Carga masiva →
-          </Link>
-        </div>
-        <p className="mt-1 text-sm text-ink/60">
-          {session.profile?.display_name ?? session.email} · {session.profile?.role}
-        </p>
+        <SectionHeader
+          as="h1"
+          title="Panel del equipo"
+          description={`${session.profile?.display_name ?? session.email} · ${session.profile?.role}`}
+          className="mt-8"
+          action={
+            <Button
+              nativeButton={false}
+              render={<Link href="/admin/bulk" />}
+              variant="outline"
+              className="rounded-full"
+            >
+              Carga masiva
+            </Button>
+          }
+        />
 
-        <AdminTabs active="panel" pendingCount={pendingCount} />
+        <AdminTabs active={tab} pendingCount={pendingCount} />
 
-        {ok && (
-          <p className="mt-4 rounded-xl bg-leaf-soft px-3 py-2 text-sm text-forest-deep">
-            ✓ {ok} creada/o correctamente.
-          </p>
-        )}
-        {error && (
-          <p className="mt-4 rounded-xl bg-coral/15 px-3 py-2 text-sm text-coral">
-            {error}
-          </p>
-        )}
-
-        {/* Métricas */}
-        <div className="mt-6 grid grid-cols-3 gap-4">
-          {metrics.map((m) => (
-            <GlassCard key={m.label} className="p-4 text-center">
-              <p className="text-3xl font-medium text-forest">{m.value}</p>
-              <p className="text-xs uppercase tracking-wide text-ink/50">{m.label}</p>
-            </GlassCard>
-          ))}
-        </div>
-
-        {/* Analítica de clics */}
-        <GlassCard className="mt-6 p-6">
-          <h2 className="mb-4 text-lg font-medium text-forest">Clics a la tienda</h2>
-          <div className="mb-5 flex gap-10">
-            <div>
-              <p className="text-3xl font-medium text-coral">{clicksTotal.count ?? 0}</p>
-              <p className="text-xs uppercase tracking-wide text-ink/50">Total</p>
-            </div>
-            <div>
-              <p className="text-3xl font-medium text-coral">{clicks7d.count ?? 0}</p>
-              <p className="text-xs uppercase tracking-wide text-ink/50">Últimos 7 días</p>
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-6">
-            <div>
-              <p className="mb-2 text-xs font-medium uppercase tracking-wide text-ink/50">
-                Top marcas
-              </p>
-              {topBrands.length ? (
-                <ul className="space-y-1">
-                  {topBrands.map((b) => (
-                    <li key={b.brand_id} className="flex justify-between gap-2 text-sm">
-                      <span className="truncate text-ink/80">{b.brand_name}</span>
-                      <span className="font-medium text-forest">{b.clicks}</span>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-sm text-ink/40">Aún no hay clics.</p>
+        <div className="mt-6">
+          {tab === "metricas" && <MetricsTab {...(await loadMetrics())} />}
+          {tab === "cargar" && (
+            <UploadTab form={parseUploadForm(form)} data={await loadUploadData()} />
+          )}
+          {tab === "marcas" && (
+            <>
+              {aviso && REVIEW_NOTICES[aviso] && (
+                <p
+                  role="status"
+                  className="rounded-xl bg-leaf-soft px-3 py-2 text-sm text-forest-deep"
+                >
+                  {REVIEW_NOTICES[aviso]}
+                </p>
               )}
-            </div>
-            <div>
-              <p className="mb-2 text-xs font-medium uppercase tracking-wide text-ink/50">
-                Top prendas
-              </p>
-              {topGarments.length ? (
-                <ul className="space-y-1">
-                  {topGarments.map((g) => (
-                    <li key={g.garment_id} className="flex justify-between gap-2 text-sm">
-                      <span className="truncate text-ink/80">{g.title}</span>
-                      <span className="font-medium text-forest">{g.clicks}</span>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-sm text-ink/40">Aún no hay clics.</p>
-              )}
-            </div>
-          </div>
-        </GlassCard>
-
-        {/* Crear marca */}
-        <GlassCard className="mt-8 p-6">
-          <h2 className="mb-4 text-lg font-medium text-forest">Nueva marca</h2>
-          <form action={createBrand} className="grid grid-cols-2 gap-3">
-            <div>
-              <label className={label}>Nombre</label>
-              <input className={input} name="name" required />
-            </div>
-            <div>
-              <label className={label}>Slug</label>
-              <input className={input} name="slug" required placeholder="mi-marca" />
-            </div>
-            <div>
-              <label className={label}>Ciudad</label>
-              <select className={input} name="city_id" defaultValue="">
-                <option value="">—</option>
-                {(cities ?? []).map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className={label}>Rango de precio</label>
-              <select className={input} name="price_range" defaultValue="">
-                <option value="">—</option>
-                {PRICE_BUCKETS.map((b) => (
-                  <option key={b.value} value={b.value}>
-                    {b.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className={label}>URL tienda</label>
-              <input className={input} name="store_url" placeholder="https://" />
-            </div>
-            <div>
-              <label className={label}>Instagram</label>
-              <input className={input} name="instagram" placeholder="marca.co" />
-            </div>
-            <div className="col-span-2">
-              <label className={label}>Bio</label>
-              <input className={input} name="bio" />
-            </div>
-            <label className="flex items-center gap-2 text-sm text-ink/70">
-              <input type="checkbox" name="is_verified" /> Verificada
-            </label>
-            <label className="flex items-center gap-2 text-sm text-ink/70">
-              <input type="checkbox" name="is_sustainable" /> Sostenible
-            </label>
-            <div className="col-span-2">
-              <button className={submit} type="submit">
-                Crear marca
-              </button>
-            </div>
-          </form>
-        </GlassCard>
-
-        {/* Crear prenda */}
-        <GlassCard className="mt-6 p-6">
-          <h2 className="mb-4 text-lg font-medium text-forest">Nueva prenda</h2>
-          <form action={createGarment} className="grid grid-cols-2 gap-3">
-            <div>
-              <label className={label}>Marca</label>
-              <select className={input} name="brand_id" required defaultValue="">
-                <option value="" disabled>
-                  Elige marca
-                </option>
-                {(brands ?? []).map((b) => (
-                  <option key={b.id} value={b.id}>
-                    {b.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className={label}>Título</label>
-              <input className={input} name="title" required />
-            </div>
-            <div>
-              <label className={label}>Precio (COP)</label>
-              <input className={input} name="price_cop" type="number" min="0" />
-            </div>
-            <div>
-              <label className={label}>URL producto</label>
-              <input className={input} name="product_url" placeholder="https://" />
-            </div>
-            <div>
-              <label className={label}>Color</label>
-              <input className={input} name="color" />
-            </div>
-            <div>
-              <label className={label}>Tela</label>
-              <input className={input} name="fabric" />
-            </div>
-            <div className="col-span-2">
-              <label className={label}>Descripción</label>
-              <textarea className={input} name="description" rows={2} />
-            </div>
-            <div>
-              <label className={label}>Categoría</label>
-              <select className={input} name="category" defaultValue="">
-                <option value="">—</option>
-                {(categories ?? []).map((t) => (
-                  <option key={t.id} value={t.id}>
-                    {t.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className={label}>Estado</label>
-              <select className={input} name="status" defaultValue="published">
-                <option value="published">published</option>
-                <option value="pending">pending</option>
-                <option value="archived">archived</option>
-              </select>
-            </div>
-            <div className="col-span-2">
-              <label className={label}>Tallas</label>
-              <div className="flex flex-wrap gap-2">
-                {(sizes ?? []).map((s) => (
-                  <label key={s.id}>
-                    <input
-                      type="checkbox"
-                      name="sizes"
-                      value={s.id}
-                      className="peer sr-only"
-                    />
-                    <span className={chip}>{s.label}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-            <div className="col-span-2">
-              <label className={label}>Foto</label>
-              <input className={input} name="image" type="file" accept="image/*" />
-            </div>
-            <div className="col-span-2">
-              <button className={submit} type="submit">
-                Crear prenda
-              </button>
-            </div>
-          </form>
-        </GlassCard>
-
-        {/* Crear post */}
-        <GlassCard className="mt-6 mb-12 p-6">
-          <h2 className="mb-4 text-lg font-medium text-forest">Nuevo post (look)</h2>
-          <form action={createPost} className="flex flex-col gap-3">
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className={label}>Marca autora</label>
-                <select className={input} name="author_brand_id" required defaultValue="">
-                  <option value="" disabled>
-                    Elige marca
-                  </option>
-                  {(brands ?? []).map((b) => (
-                    <option key={b.id} value={b.id}>
-                      {b.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className={label}>Estado</label>
-                <select className={input} name="status" defaultValue="published">
-                  <option value="published">published</option>
-                  <option value="draft">draft</option>
-                  <option value="archived">archived</option>
-                </select>
-              </div>
-            </div>
-            <div>
-              <label className={label}>Caption</label>
-              <input className={input} name="caption" />
-            </div>
-
-            <FieldChips legend="Ocasión" name="occasions" options={occasions ?? []} chip={chip} labelCls={label} />
-            <FieldChips legend="Estilo" name="styles" options={styles ?? []} chip={chip} labelCls={label} />
-            <FieldChips legend="Temperatura" name="temperatures" options={temperatures ?? []} chip={chip} labelCls={label} />
-
-            <div>
-              <label className={label}>Prendas en el look</label>
-              <div className="flex flex-wrap gap-2">
-                {(garments ?? []).map((g) => (
-                  <label key={g.id}>
-                    <input type="checkbox" name="garments" value={g.id} className="peer sr-only" />
-                    <span className={chip}>{g.title}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <label className={label}>Foto del look</label>
-              <input className={input} name="image" type="file" accept="image/*" />
-            </div>
-            <div>
-              <button className={submit} type="submit">
-                Crear post
-              </button>
-            </div>
-          </form>
-        </GlassCard>
-      </div>
+              <PendingBrands />
+            </>
+          )}
+        </div>
+      </PageShell>
     </>
-  );
-}
-
-function FieldChips({
-  legend,
-  name,
-  options,
-  chip,
-  labelCls,
-}: {
-  legend: string;
-  name: string;
-  options: { id: string; name: string }[];
-  chip: string;
-  labelCls: string;
-}) {
-  return (
-    <div>
-      <label className={labelCls}>{legend}</label>
-      <div className="flex flex-wrap gap-2">
-        {options.map((o) => (
-          <label key={o.id}>
-            <input type="checkbox" name={name} value={o.id} className="peer sr-only" />
-            <span className={chip}>{o.name}</span>
-          </label>
-        ))}
-      </div>
-    </div>
   );
 }

@@ -4,6 +4,8 @@ import { getCurrentUser, getMyBrand } from "@/lib/auth";
 import { imageUrl } from "@/lib/images";
 import { Aurora } from "@/components/aurora";
 import { GlassCard } from "@/components/glass-card";
+import { StickyActionBar } from "@/components/sticky-action-bar";
+import { Stepper } from "./stepper";
 import { ProfileForm } from "./profile-form";
 import { CoverForm } from "./cover-form";
 import { GarmentForm } from "./garment-form";
@@ -43,7 +45,7 @@ export default async function BrandOnboardingPage({
             <Button
               nativeButton={false}
               render={<Link href="/marca/panel" />}
-              className="h-10 rounded-xl bg-forest px-6 text-sm text-white hover:bg-forest-deep"
+              size="lg" className="rounded-xl bg-forest px-6 text-white hover:bg-forest-deep"
             >
               Ir a mi panel
             </Button>
@@ -94,31 +96,15 @@ export default async function BrandOnboardingPage({
   return (
     <>
       <Aurora />
-      <main className="flex min-h-dvh items-center justify-center p-4 sm:p-6">
-        <GlassCard className="w-full max-w-md p-6 sm:p-8">
+      <main className={`flex min-h-dvh items-start justify-center p-4 sm:items-center sm:p-6 ${step === 3 ? "pb-safe-bar" : ""}`}>
+        <GlassCard className="w-full max-w-md p-5 sm:p-8">
           {resubmitting && (
             <div role="status" className="mb-5 rounded-xl bg-coral/15 px-3 py-2 text-sm text-coral">
               <p className="font-medium">Ajusta tu perfil y vuelve a enviarlo.</p>
               {brand?.rejection_note && <p className="mt-1">{brand.rejection_note}</p>}
             </div>
           )}
-          <ol className="mb-6 flex items-center gap-2 text-xs">
-            {STEPS.map((label, i) => (
-              <li
-                key={label}
-                aria-current={i + 1 === step ? "step" : undefined}
-                className={`flex items-center gap-1.5 ${i + 1 <= step ? "font-medium text-forest" : "text-ink/40"}`}
-              >
-                <span
-                  className={`grid size-5 place-items-center rounded-full text-[11px] ${i + 1 <= step ? "bg-forest text-white" : "bg-ink/10"}`}
-                >
-                  {i + 1}
-                </span>
-                {label}
-                {i < STEPS.length - 1 && <span className="mx-1 h-px w-4 bg-ink/15" />}
-              </li>
-            ))}
-          </ol>
+          <Stepper steps={STEPS} current={step} canGoBack={!!brand} />
 
           {step === 1 ? (
             <>
@@ -160,9 +146,9 @@ export default async function BrandOnboardingPage({
                       </div>
                       <form action={removeOnboardingGarment}>
                         <input type="hidden" name="id" value={g.id} />
-                        <button className="px-2 text-xs text-ink/50 hover:text-coral hover:underline">
+                        <Button type="submit" variant="ghost" className="text-xs text-ink/60 hover:text-coral">
                           Quitar
-                        </button>
+                        </Button>
                       </form>
                     </li>
                   ))}
@@ -174,25 +160,28 @@ export default async function BrandOnboardingPage({
               </h2>
               <GarmentForm key={saved.length} categories={categories ?? []} />
 
-              <form action={submitBrandForReview} className="mt-6 border-t border-ink/10 pt-6">
+              <form id="submit-review" action={submitBrandForReview} />
+              <StickyActionBar
+                label={saved.length === 0 ? "Guarda al menos una prenda para enviar." : undefined}
+              >
+                <Button
+                  nativeButton={false}
+                  render={<Link href="/onboarding/marca?paso=2" />}
+                  variant="ghost"
+                  className="rounded-full"
+                >
+                  Atrás
+                </Button>
                 <Button
                   type="submit"
+                  form="submit-review"
+                  size="lg"
                   disabled={saved.length === 0}
-                  className="h-10 w-full rounded-xl bg-coral text-sm text-white hover:bg-coral/90"
+                  className="flex-1 rounded-full bg-coral text-white hover:bg-coral/90 sm:flex-none sm:px-8"
                 >
                   {resubmitting ? "Reenviar para aprobación" : "Enviar para aprobación"}
                 </Button>
-                {saved.length === 0 && (
-                  <p className="mt-2 text-center text-xs text-ink/50">
-                    Guarda al menos una prenda para poder enviar.
-                  </p>
-                )}
-                <p className="mt-3 text-center">
-                  <Link href="/onboarding/marca?paso=2" className="text-xs text-ink/50 hover:underline">
-                    Atrás
-                  </Link>
-                </p>
-              </form>
+              </StickyActionBar>
             </>
           ) : (
             <>
