@@ -117,6 +117,91 @@ export async function createBrandPost(formData: FormData) {
 }
 
 // ============================================================
+// Edición en lote del catálogo (selección múltiple en el panel).
+// ============================================================
+// Cada acción filtra por la marca del usuario además del RLS (`garments_owner_all`): un id ajeno
+// simplemente no coincide y cuenta como "omitido" en vez de dar error.
+export type BulkResult =
+  | { ok: true; done: number; skipped: number }
+  | { ok: false; error: string };
+
+const MAX_BULK = 200;
+
+export async function setGarmentsStatus(
+  ids: string[],
+  status: "published" | "archived",
+): Promise<BulkResult> {
+  const { brand } = await requireBrandOwner();
+  if (!brand) return { ok: false, error: "No tienes una marca." };
+  if (!ids.length) return { ok: false, error: "No seleccionaste prendas." };
+  if (ids.length > MAX_BULK) return { ok: false, error: `Máximo ${MAX_BULK} prendas por vez.` };
+  // Sin este chequeo el trigger protect_garment_status dejaría las prendas en 'pending' sin avisar.
+  if (status === "published" && brand.status !== "active") {
+    return { ok: false, error: "Podrás publicar cuando tu marca sea aprobada." };
+  }
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("garments")
+    .update({
+      status,
+      published_at: status === "published" ? new Date().toISOString() : null,
+    })
+    .in("id", ids)
+    .eq("brand_id", brand.id)
+    .select("id");
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath("/marca/panel");
+  revalidatePath("/feed");
+  const done = data?.length ?? 0;
+  return { ok: true, done, skipped: ids.length - done };
+}
+
+export async function deleteGarments(ids: string[]): Promise<BulkResult> {
+  const { brand } = await requireBrandOwner();
+  if (!brand) return { ok: false, error: "No tienes una marca." };
+  if (!ids.length) return { ok: false, error: "No seleccionaste prendas." };
+  if (ids.length > MAX_BULK) return { ok: false, error: `Máximo ${MAX_BULK} prendas por vez.` };
+
+  const supabase = await createClient();
+  // El borrado en cascada quita las prendas de los looks; guarda cuáles looks quedan afectados.
+  const { data: affected } = await supabase
+    .from("post_items")
+    .select("post_id")
+    .in("garment_id", ids);
+  const postIds = [...new Set((affected ?? []).map((r) => r.post_id))];
+
+  const { data, error } = await supabase
+    .from("garments")
+    .delete()
+    .in("id", ids)
+    .eq("brand_id", brand.id)
+    .select("id");
+  if (error) return { ok: false, error: error.message };
+
+  // Igual que untagGarmentFromPost: un look publicado sin prendas vuelve a borrador.
+  if (postIds.length) {
+    const { data: left } = await supabase.from("post_items").select("post_id").in("post_id", postIds);
+    const stillHave = new Set((left ?? []).map((r) => r.post_id));
+    const emptied = postIds.filter((id) => !stillHave.has(id));
+    if (emptied.length) {
+      await supabase
+        .from("posts")
+        .update({ status: "draft" })
+        .in("id", emptied)
+        .eq("author_brand_id", brand.id)
+        .eq("status", "published");
+    }
+  }
+
+  revalidatePath("/marca/panel");
+  revalidatePath("/feed");
+  const done = data?.length ?? 0;
+  return { ok: true, done, skipped: ids.length - done };
+}
+
+// ============================================================
 // Tagging manual: qué prenda del catálogo propio aparece en un post propio.
 // ============================================================
 // Estos cinco los invoca un <form action={...}> directo desde un server component (mismo
