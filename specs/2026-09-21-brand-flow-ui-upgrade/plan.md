@@ -10,9 +10,9 @@
 - [x] 1. Foundation: shadcn components + shared primitives
 - [x] 2. Brand panel shell: tabs, header, status, Instagram card
 - [ ] 3. Catalog: list, new-garment sheet, selection mode + bulk action bar
-- [ ] 4. Looks list + post editor
-- [ ] 5. Instagram import picker
-- [ ] 6. Admin panel: tabs + collapsed create forms
+- [x] 4. Looks list + post editor
+- [x] 5. Instagram import picker
+- [x] 6. Admin panel: tabs + collapsed create forms
 - [ ] 7. Admin bulk photos (`/admin/bulk`)
 - [ ] 8. Onboarding (`/onboarding/marca`) polish
 - [ ] 9. QA pass (responsive, a11y, build, lint)
@@ -61,14 +61,31 @@
 - Looks tab: grid with status badge, item count, publish state; empty state with CTA.
 - `/marca/panel/post/[id]`: image + primary Publish/Unpublish in a sticky header; sections as an accordion/steps: Prendas taggeadas · Ocasión, estilo y clima. Garment picker as a Sheet with search and multi-select (add several at once); size chosen per item inline. Publish disabled with a clear reason when no garment is tagged.
 
+**✅ Done — implementation notes**
+- Looks list shipped in group 2. Editor `src/app/marca/panel/post/[id]/page.tsx` rewritten: back link, status badge, image (sticky on `md+`), two numbered cards (1 · Prendas, 2 · Ocasión/estilo/clima — stacked cards rather than an accordion, since both are short). **Publicar/Despublicar lives in a `StickyActionBar`**; when publishing is impossible the button is disabled and the bar states why (brand not approved / no garment tagged) instead of failing after the click.
+- **Garment picker:** `GarmentPicker` opens a `ResponsiveSheet` (bottom on phones, side on `md+`) with `SearchableChecklist` to add several garments at once. Size is chosen per tagged item inline (native select). Removing asks for confirmation (`ConfirmDialog`), noting that removing the last garment sends a published look back to draft.
+- **New server actions** in `marca/panel/actions.ts`: `tagGarmentsOnPost` (batch insert) and `setPostItemSize`, both return `ActionResult` and rely on the owner's existing RLS. Existing redirect-based actions are untouched.
+- `TagsForm` saves through the existing `setPostTags` with a toast. `ChipSelect` is fed only its own group's ids (it emits a hidden input per selected id).
+- New shared pieces: `responsive-sheet.tsx`, `searchable-checklist.tsx`, `use-media-query.ts`; `FlashToast` moved to `src/components/` and takes a `messages` prop.
+
 ### 5. Instagram import picker
 - Keep grid selection; add `StickyActionBar` ("Importar N"), select-all, progress ("n de m"), and toast result. Larger tap targets for the check.
+
+**✅ Done — implementation notes**
+- `import-picker.tsx`: tiles are `role="checkbox"` buttons with a larger check, "Seleccionar todas / Quitar selección", `StickyActionBar` with count and **real "Importando n de m…" progress** (photos are imported one call at a time so a failure doesn't stop the rest), toast summary, per-photo errors listed. Page uses `PageShell` + `EmptyState`.
 
 ### 6. Admin panel
 - Extend `AdminTabs` to: Métricas · Cargar contenido · Marcas pendientes (scrollable on mobile).
 - Métricas tab: metric tiles + click analytics only.
 - "Cargar contenido" tab: segmented switch Marca / Prenda / Post, one form visible at a time, single-column on mobile. Reuse `FormField` / `ChipSelect`; replace raw `<select>` with shadcn `Select` where the list is long (brands, garments picker).
 - Pending brands review: cards stack on mobile; approve/reject actions in a dropdown or full-width buttons.
+
+**✅ Done — implementation notes**
+- Tabs are now **Métricas · Cargar contenido · Marcas pendientes** (`?tab=cargar` / `marcas`), built on a new shared `LinkTabs` (also used by the brand panel). Data is only fetched for the visible tab.
+- `?tab=cargar&form=marca|prenda|post` shows one form at a time (`_components/upload-tab.tsx`). Forms use `FormField`/`Input`/`ChipSelect`; status options are now in Spanish (values unchanged). The post form's garment list is a searchable checklist (`GarmentsField`) instead of one chip per garment, which wouldn't scale.
+- Selects stay native (`NativeSelect`): system picker on phones. `admin/actions.ts` only changed redirect targets (+ `tab`/`form`) so users return to the form they used; toasts via `FlashToast`.
+- Pending-brand cards: smaller thumbnail on phones, full-width Aprobar/Rechazar buttons (default 44 px height).
+- Not verified visually (needs a logged-in staff/brand session in a browser). `tsc`, `lint`, `build` clean; anonymous requests to `/admin`, `/marca/panel`, `/marca/panel/import` still redirect to login, `/feed` returns 200.
 
 ### 7. Admin bulk photos
 - `PendingGarments`: list rows (thumbnail-less) with file-pick button, per-row status (pendiente / lista / error), selection for delete, sticky bar "Subir N fotos" / "Eliminar N", `ConfirmDialog` instead of `window.confirm`, progress "n de m".
