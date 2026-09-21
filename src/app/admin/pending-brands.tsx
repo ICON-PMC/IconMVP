@@ -26,7 +26,7 @@ export async function PendingBrands() {
 
   if (!brands?.length) {
     return (
-      <GlassCard className="mt-6 p-8 text-center text-sm text-ink/60">
+      <GlassCard className="p-8 text-center text-sm text-ink/60">
         No hay marcas pendientes de revisión.
       </GlassCard>
     );
@@ -53,15 +53,15 @@ export async function PendingBrands() {
   const imageOf = new Map((images ?? []).map((i) => [i.garment_id, i.cf_image_id]));
 
   return (
-    <ul className="mt-6 flex flex-col gap-4">
+    <ul className="flex flex-col gap-4">
       {brands.map((b) => {
         const mine = (garments ?? []).filter((g) => g.brand_id === b.id);
         const cover = imageUrl(b.logo_url);
         return (
           <li key={b.id}>
-            <GlassCard className="p-5">
-              <div className="flex gap-4">
-                <div className="relative size-24 shrink-0 overflow-hidden rounded-2xl bg-ink/10">
+            <GlassCard className="p-4 sm:p-5">
+              <div className="flex gap-3 sm:gap-4">
+                <div className="relative size-20 shrink-0 sm:size-24 overflow-hidden rounded-2xl bg-ink/10">
                   {cover && <Image src={cover} alt={`Portada de ${b.name}`} fill unoptimized className="object-cover" />}
                 </div>
                 <div className="min-w-0 flex-1">
@@ -103,7 +103,7 @@ export async function PendingBrands() {
                 </ul>
               </div>
 
-              <div className="mt-4 flex justify-end border-t border-ink/10 pt-4">
+              <div className="mt-4 flex border-t border-ink/10 pt-4 sm:justify-end">
                 <ReviewActions brandId={b.id} brandName={b.name} />
               </div>
             </GlassCard>

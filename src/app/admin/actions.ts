@@ -30,9 +30,9 @@ export async function createBrand(formData: FormData) {
     is_verified: formData.get("is_verified") === "on",
     is_sustainable: formData.get("is_sustainable") === "on",
   });
-  if (error) redirect(`/admin?error=${encodeURIComponent(error.message)}`);
+  if (error) redirect(`/admin?tab=cargar&form=marca&error=${encodeURIComponent(error.message)}`);
   revalidatePath("/admin");
-  redirect("/admin?ok=marca");
+  redirect("/admin?tab=cargar&form=marca&ok=marca");
 }
 
 export async function createGarment(formData: FormData) {
@@ -62,7 +62,7 @@ export async function createGarment(formData: FormData) {
     .select("id")
     .single();
   if (error || !garment)
-    redirect(`/admin?error=${encodeURIComponent(error?.message ?? "garment")}`);
+    redirect(`/admin?tab=cargar&form=prenda&error=${encodeURIComponent(error?.message ?? "garment")}`);
 
   const categoryId = str(formData, "category");
   if (categoryId) {
@@ -84,7 +84,7 @@ export async function createGarment(formData: FormData) {
   }
 
   revalidatePath("/admin");
-  redirect("/admin?ok=prenda");
+  redirect("/admin?tab=cargar&form=prenda&ok=prenda");
 }
 
 export async function createPost(formData: FormData) {
@@ -108,7 +108,7 @@ export async function createPost(formData: FormData) {
     .select("id")
     .single();
   if (error || !post)
-    redirect(`/admin?error=${encodeURIComponent(error?.message ?? "post")}`);
+    redirect(`/admin?tab=cargar&form=post&error=${encodeURIComponent(error?.message ?? "post")}`);
 
   const tagIds = [
     ...formData.getAll("occasions"),
@@ -135,7 +135,7 @@ export async function createPost(formData: FormData) {
 
   revalidatePath("/admin");
   revalidatePath("/feed");
-  redirect("/admin?ok=post");
+  redirect("/admin?tab=cargar&form=post&ok=post");
 }
 
 // ============================================================
