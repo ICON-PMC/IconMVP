@@ -14,7 +14,7 @@
 - [x] 5. Instagram import picker
 - [x] 6. Admin panel: tabs + collapsed create forms
 - [x] 7. Admin bulk photos (`/admin/bulk`)
-- [ ] 8. Onboarding (`/onboarding/marca`) polish
+- [x] 8. Onboarding (`/onboarding/marca`) polish
 - [ ] 9. QA pass (responsive, a11y, build, lint)
 
 ## Task groups
@@ -104,6 +104,11 @@
 
 ### 8. Onboarding polish
 - Step indicator (Perfil → Primera prenda → Enviar), single-column forms with `FormField`, sticky primary button on mobile. No logic changes to `actions.ts`.
+
+**✅ Done — implementation notes**
+- Already had shadcn + per-field errors, so this was polish only; `onboarding/marca/actions.ts` untouched. New `stepper.tsx`: "Paso n de 3", a progress bar (`role="progressbar"`) and labels; completed steps show a check and link back to `?paso=n` once the brand exists.
+- Fields are 44 px tall with **16 px text below `md`** (the old `text-sm` override defeated the responsive size and would trigger the iOS zoom); buttons use `size="lg"`; garment form grid is one column below `sm`; error messages carry `role="alert"`; "Quitar" and "Atrás" are ≥ 44 px targets.
+- Step 3: **"Enviar para aprobación" is in a `StickyActionBar`** (with "Atrás"), wired to an empty `<form id="submit-review">` via the `form` attribute; it stays disabled with the hint "Guarda al menos una prenda para enviar." until one is saved. Layout is top-aligned on phones (centered from `sm`).
 
 ### 9. QA pass
 - See `validations.md`. Fix regressions; update this plan's progress and add implementation notes per group as done.

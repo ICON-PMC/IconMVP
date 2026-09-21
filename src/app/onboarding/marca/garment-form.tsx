@@ -7,11 +7,11 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { addOnboardingGarment, type GarmentFormState } from "./actions";
 
-const field = "glass-input h-10 rounded-xl px-4 text-sm";
+const field = "glass-input h-11 rounded-xl px-4 text-base md:h-10 md:text-sm";
 
 function FieldError({ id, msg }: { id: string; msg?: string }) {
   return msg ? (
-    <p id={id} className="mt-1 text-xs text-coral">
+    <p id={id} role="alert" className="mt-1 text-xs text-coral">
       {msg}
     </p>
   ) : null;
@@ -33,7 +33,7 @@ export function GarmentForm({ categories }: { categories: { id: string; name: st
   return (
     <form action={action} className="flex flex-col gap-4" noValidate>
       {state.message && (
-        <p className="rounded-xl bg-coral/15 px-3 py-2 text-sm text-coral">{state.message}</p>
+        <p role="alert" className="rounded-xl bg-coral/15 px-3 py-2 text-sm text-coral">{state.message}</p>
       )}
 
       <div>
@@ -43,7 +43,7 @@ export function GarmentForm({ categories }: { categories: { id: string; name: st
         <FieldError id="title-err" msg={e.title} />
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-3">
         <div>
           <Label htmlFor="price" className="mb-1 text-ink/60">Precio (COP)</Label>
           <Input id="price" name="price" className={field} defaultValue={v.price} inputMode="numeric"
@@ -89,7 +89,7 @@ export function GarmentForm({ categories }: { categories: { id: string; name: st
       </div>
 
       <Button type="submit" disabled={pending}
-        className="h-10 rounded-xl bg-forest text-sm text-white hover:bg-forest-deep">
+        size="lg" className="rounded-xl bg-forest text-base text-white hover:bg-forest-deep md:text-sm">
         {pending ? "Guardando…" : "Guardar prenda"}
       </Button>
     </form>
