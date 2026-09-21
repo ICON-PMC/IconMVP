@@ -141,6 +141,43 @@ export async function tagGarmentOnPost(formData: FormData) {
   revalidatePath(`/marca/panel/post/${postId}`);
 }
 
+// Variantes para el editor de looks (cliente + toast): devuelven resultado en vez de redirigir.
+export type ActionResult = { ok: true } | { ok: false; error: string };
+
+// Taggea varias prendas de una vez. Usa el RLS del dueño igual que tagGarmentOnPost.
+export async function tagGarmentsOnPost(
+  postId: string,
+  garmentIds: string[],
+): Promise<ActionResult> {
+  await requireBrandOwner();
+  if (!postId || !garmentIds.length) return { ok: false, error: "Elige al menos una prenda." };
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("post_items")
+    .insert(garmentIds.map((garment_id) => ({ post_id: postId, garment_id })));
+  if (error) return { ok: false, error: error.message };
+  revalidatePath(`/marca/panel/post/${postId}`);
+  revalidatePath("/marca/panel");
+  return { ok: true };
+}
+
+export async function setPostItemSize(
+  postId: string,
+  itemId: string,
+  sizeId: string | null,
+): Promise<ActionResult> {
+  await requireBrandOwner();
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("post_items")
+    .update({ size_id: sizeId })
+    .eq("id", itemId)
+    .eq("post_id", postId);
+  if (error) return { ok: false, error: error.message };
+  revalidatePath(`/marca/panel/post/${postId}`);
+  return { ok: true };
+}
+
 export async function untagGarmentFromPost(postId: string, itemId: string) {
   await requireBrandOwner();
   const supabase = await createClient();
