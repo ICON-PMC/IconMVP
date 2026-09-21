@@ -7,11 +7,13 @@ import { PageShell, SectionHeader } from "@/components/page-shell";
 import { SiteHeader } from "@/components/site-header";
 import { BrandStatusBanner } from "@/components/brand-status-banner";
 import { PanelTabs, parseTab } from "./_components/panel-tabs";
-import { FlashToast } from "./_components/flash-toast";
+import { FlashToast } from "@/components/flash-toast";
 import { OverviewTab } from "./_components/overview-tab";
 import { CatalogTab } from "./_components/catalog-tab";
 import { LooksTab } from "./_components/looks-tab";
 import { ProfileTab } from "./_components/profile-tab";
+
+const FLASH = { perfil: "Perfil guardado.", prenda: "Prenda agregada." };
 
 export default async function BrandPanelPage({
   searchParams,
@@ -123,7 +125,7 @@ export default async function BrandPanelPage({
       <PageShell>
         <SiteHeader />
         <Suspense>
-          <FlashToast />
+          <FlashToast messages={FLASH} />
         </Suspense>
 
         <SectionHeader as="h1" title="Mi marca" description={brand.name} className="mt-8" />
