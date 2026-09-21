@@ -34,9 +34,9 @@ export async function updateBrandProfile(formData: FormData) {
       bio: str(formData, "bio"),
     })
     .eq("id", brandId);
-  if (error) redirect(`/marca/panel?error=${encodeURIComponent(error.message)}`);
+  if (error) redirect(`/marca/panel?tab=perfil&error=${encodeURIComponent(error.message)}`);
   revalidatePath("/marca/panel");
-  redirect("/marca/panel?ok=perfil");
+  redirect("/marca/panel?tab=perfil&ok=perfil");
 }
 
 // ============================================================
@@ -64,7 +64,7 @@ export async function createBrandGarment(formData: FormData) {
     .select("id")
     .single();
   if (error || !garment)
-    redirect(`/marca/panel?error=${encodeURIComponent(error?.message ?? "prenda")}`);
+    redirect(`/marca/panel?tab=catalogo&error=${encodeURIComponent(error?.message ?? "prenda")}`);
 
   const categoryId = str(formData, "category");
   if (categoryId) {
@@ -84,7 +84,7 @@ export async function createBrandGarment(formData: FormData) {
   }
 
   revalidatePath("/marca/panel");
-  redirect("/marca/panel?ok=prenda");
+  redirect("/marca/panel?tab=catalogo&ok=prenda");
 }
 
 // ============================================================

@@ -8,7 +8,7 @@
 
 ## Progress
 - [x] 1. Foundation: shadcn components + shared primitives
-- [ ] 2. Brand panel shell: tabs, header, status, Instagram card
+- [x] 2. Brand panel shell: tabs, header, status, Instagram card
 - [ ] 3. Catalog: list, new-garment sheet, selection mode + bulk action bar
 - [ ] 4. Looks list + post editor
 - [ ] 5. Instagram import picker
@@ -43,6 +43,13 @@
 - **Resumen:** status banner, counts (prendas, looks, borradores), Instagram connection as one compact card, quick actions ("Nueva prenda", "Importar fotos").
 - **Perfil:** single-column form with `FormField`, sticky Save on mobile.
 - Split large page into per-tab components under `src/app/marca/panel/_components/`.
+
+**✅ Done — implementation notes**
+- `src/app/marca/panel/page.tsx` is now a thin server component: fetches data, renders header + `BrandStatusBanner` + `PanelTabs`, then one tab component from `src/app/marca/panel/_components/` (`overview-tab`, `catalog-tab`, `looks-tab`, `profile-tab`). Tabs are `<Link>`s (`?tab=resumen|catalogo|looks|perfil`, invalid → Resumen), horizontally scrollable on phones, with counts on Catálogo/Looks. Categories/sizes are only queried for the Catálogo tab.
+- **Flash messages:** `FlashToast` (client) turns `?ok=`/`?error=` from server-action redirects into a sonner toast and strips them from the URL. `updateBrandProfile` / `createBrandGarment` redirects now include `tab=` so users land back where they were (the only change to `actions.ts`; DB behavior identical).
+- **Perfil:** single-column `FormField` + `Input`; "Guardar cambios" lives in a `StickyActionBar` wired via `form=` attribute. **Resumen:** count tiles + compact Instagram card (full-width buttons on mobile).
+- **Catálogo:** status badges, 2→4 col grid, empty state. "Nueva prenda" is still an inline `<details>` (`new-garment-form.tsx`, extracted so group 3 can wrap it in a Sheet). Category/size stay native `<select>`/`ChipSelect` (native select is the best mobile picker for short lists).
+- Not verified visually yet (needs a logged-in brand owner in a browser) — covered by group 9. `tsc`, `lint`, `build` clean.
 
 ### 3. Catalog
 - Responsive grid (2 cols mobile → 4 desktop) of garment cards with `StatusBadge`, price, image.
