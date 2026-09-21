@@ -15,7 +15,7 @@
 - [x] 6. Admin panel: tabs + collapsed create forms
 - [x] 7. Admin bulk photos (`/admin/bulk`)
 - [x] 8. Onboarding (`/onboarding/marca`) polish
-- [ ] 9. QA pass (responsive, a11y, build, lint)
+- [x] 9. QA pass (responsive, a11y, build, lint) — automated pass done; manual device pass still recommended (see below)
 
 ## Task groups
 
@@ -116,3 +116,11 @@
 ## Open questions
 - Do brand owners already have RLS `UPDATE`/`DELETE` on their own `garments` rows (needed for bulk publish/archive/delete)? Verify in group 3 before writing actions; if not, surface as a follow-up rather than changing policies here.
 - Toast library: `sonner` via shadcn assumed; confirm it works with the installed base-nova style.
+
+**✅ Done — QA results (group 9)**
+- `tsc`, `lint`, `build` clean; no "usuaria" in `src/`.
+- **Browser pass** (headless Chrome, real logins as a QA brand owner and a QA admin against *local* Supabase; seed data removed afterwards) at **360 / 768 / 1280 px** on `/marca/panel` (4 tabs), `/marca/panel/post/[id]` (draft + published) and `/admin` (Métricas, 3 create forms, Marcas pendientes), `/admin/bulk`: no horizontal overflow, no redirects/HTTP errors; the only console error is the Vercel Analytics script 404 that only exists off-Vercel. Interactive elements are ≥ 44 px on mobile (the only sub-40 px hits are checkbox glyphs inside 44–48 px label rows).
+- **Interactions verified against the DB:** header menu; catalog selection mode → bulk **Archivar** changed exactly the 2 selected garments; delete confirm dialog → **Cancelar** kept the item; New-garment bottom sheet; garment picker sheet → 2 garments tagged (`post_items` = 2); Publish button enables once a garment is tagged.
+- **RLS probe:** as brand A (JWT via PostgREST) `PATCH`/`DELETE` on brand B's garment returned 0 rows and the row was unchanged.
+- **Found and fixed during QA:** (1) the shared `SiteHeader` overflowed on phones for signed-in users (6 inline items) → new `mobile-nav.tsx` (role link + menu button below `md`); (2) my first overflow check was blind on mobile emulation (browser widens `innerWidth`), so widths are now measured against the intended viewport; (3) `/admin/bulk` row checkboxes were bare 16 px targets → 44 px label hit area; (4) selection bar was too translucent (buttons collided with tiles behind it) → `bg-cream/95`; duplicate "n seleccionadas" removed; (5) bulk bar hidden when there is nothing to act on.
+- **Not verified (no way to do it locally):** `/onboarding/marca` (needs a brand mid-registration) and `/marca/panel/import` (needs a live Instagram connection) were only checked by type-check/build; creating a garment with a photo (R2 not configured locally); bulk **Publicar** and confirmed **Eliminar**; the Instagram import progress flow; keyboard/focus-trap behavior (relies on Base UI dialogs, not tested by hand); a real phone. Do a quick manual pass of these before merging.

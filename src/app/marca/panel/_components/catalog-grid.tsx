@@ -125,7 +125,7 @@ export function CatalogGrid({
 
       {selecting && visible.length > 0 && (
         <div className="flex items-center justify-between text-sm text-ink/70">
-          <span>{sel.count} seleccionadas</span>
+          <span>{sel.count ? "Elige lo que quieras cambiar" : "Toca las prendas para elegirlas"}</span>
           <Button
             type="button"
             variant="ghost"
