@@ -69,7 +69,7 @@
 - [x] `garment_likes` tiene PK compuesta `(user_id, garment_id)`, sus dos FK cascadean, RLS con policies separadas (escritura del dueño, lectura pública) y GRANT a `authenticated`. **[CLI]** — verificado con `information_schema` y `pg_policies` (espejo de `post_likes`)
 - [x] `feed_items.like_count` cuenta los likes de prendas: 1 fila en `garment_likes` → `like_count = 1` en la rama de prendas. **[CLI]**
 - [x] Dar like a una prenda **no** modifica `garments.popularity` (decisión 6). **[CLI]** — 0 triggers en `garment_likes`
-- [ ] El corazón funciona en prendas en todas las pantallas: feed, `/prenda/[id]`, `/saved` y `/marca/[slug]`. **[manual]**
+- [ ] El corazón funciona en prendas en todas las pantallas: feed, `/prenda/[id]`, `/saved` y `/marca/[slug]`. **[manual]** — **DIFERIDO**: necesita navegador con la nube ya migrada. Lo verificable sin navegador queda arriba: el contador de prendas se probó punta a punta contra `get_feed` y las policies/RLS por CLI.
 
 ---
 
@@ -104,10 +104,20 @@
 
 - [x] Like y guardar sobre el mismo post: ambos estados persisten de forma independiente.
       **[CLI]** — ver Grupo 5
-- [ ] Unfollow / unlike cuando la fila no existía: no es error; el estado final es correcto.
-- [ ] Acción sobre un id inexistente: el server action no revienta; el UI revierte.
-- [ ] Post archivado / marca inactiva no aparece en `/saved` (la vista filtra `published`).
-- [ ] Ninguna interacción de seguir/like produce un 500 en el servidor.
+- [x] Unfollow / unlike cuando la fila no existía: no es error; el estado final es correcto.
+      **[CLI]** — `delete` de una fila inexistente en `post_likes` y en `garment_likes` →
+      `DELETE 0`, sin excepción
+- [x] Acción sobre un id inexistente: el server action no revienta; el UI revierte.
+      **[build]** — revisión de código: la violación de FK vuelve como `error` de PostgREST
+      (no como excepción), el action responde `{ ok: false, error }` y `LikeButton` revierte
+      corazón y contador con `setLiked(!next)`
+- [x] Post archivado / marca inactiva no aparece en `/saved` (la vista filtra `published`).
+      **[build]** — `post_feed` y `feed_items` filtran `p.status = 'published'` (9 ocurrencias
+      en las migraciones) y la query de prendas de `/saved` agrega `.eq("status", "published")`
+- [x] Ninguna interacción de seguir/like produce un 500 en el servidor.
+      **[build]** — revisión de código: `likePost`/`unlikePost`/`likeGarment`/`unlikeGarment`/
+      `toggleFollow` devuelven `{ ok: false, error }` en vez de lanzar; el caso anónimo ni
+      llega al action (renderiza un enlace a `/login`) y `SaveButton` redirige sin sesión
 
 ---
 
@@ -117,27 +127,53 @@
 - [x] `npm run lint` pasa. **[build]**
 - [x] `post_feed` devuelve `like_count` sin romper campos existentes. **[CLI]**
       (que el feed *cargue* en el navegador: **[manual]** — verificado en navegador 22/09)
-- [ ] `/post/[id]`, `/marca/[slug]`, `/prenda/[id]` renderizan sin errores.
-- [ ] Las rutas de admin y la carga masiva siguen funcionando.
-- [ ] Los tokens glass/tropical siguen intactos (`--color-forest` presente en `globals.css`).
-- [ ] Para usuarias anónimas, seguir/like no aparecen como elementos interactivos (son
-      enlaces a `/login`).
+- [ ] `/post/[id]`, `/marca/[slug]`, `/prenda/[id]` renderizan sin errores. **[manual]** —
+      **DIFERIDO**: las 3 rutas compilan en `npm run build`, pero el render en runtime se
+      verifica como smoke test contra producción después del merge `dev → main`
+- [ ] Las rutas de admin y la carga masiva siguen funcionando. **[manual]** — **DIFERIDO**:
+      requiere sesión de staff, no es automatizable desde este entorno. No fueron tocadas por
+      ninguno de los cambios de este release
+- [x] Los tokens glass/tropical siguen intactos (`--color-forest` presente en `globals.css`).
+      **[build]** — `--color-forest` (`#1f5638`), `--color-forest-deep`, `--color-coral` y
+      `--color-coral-soft` presentes en `src/app/globals.css`
+- [x] Para usuarias anónimas, seguir/like no aparecen como elementos interactivos (son
+      enlaces a `/login`). **[build]** — `FollowButton` y `LikeButton` renderizan
+      `<Link href="/login?next=…">` cuando `isLoggedIn` es false
 
 ---
 
 ## Criterio de merge
 
-- [ ] Todos los checkboxes de arriba están marcados o diferidos con una nota escrita.
+- [x] Todos los checkboxes de arriba están marcados o diferidos con una nota escrita.
+      Quedan **3 diferidos**, cada uno con su nota: el check manual del corazón en prendas
+      (Grupo 3), `renderizan sin errores` y `rutas de admin` (Regresión). Los tres necesitan
+      navegador y/o sesión de staff, y ninguno depende de las migraciones de este release.
 - [x] La migración `20260922000000_user_social_actions.sql` está aplicada en Supabase
       cloud (proyecto `oyzvuckkxzbufncvzcvw`), además de local. Aplicada el 2026-09-22
       pegando el SQL en el SQL Editor. Verificado con `information_schema.tables`
       (existen `brand_follows` y `post_likes`) y confirmando que la migración anterior
       en orden (`20260919020000_protect_post_status`) ya estaba presente, para
       descartar aplicación fuera de orden.
-- [ ] `database.types.ts` reconciliado con `origin/dev` (conflicto esperado; resolver a mano).
-- [ ] No queda ningún `TODO` sin un follow-up enlazado en los specs o el roadmap.
-- [ ] Las decisiones 6 (like no afecta el feed) y 7 (sin contador de seguidores) se respetan
-      en el código final.
+- [x] Las migraciones `20260923000000_feed_items_like_count.sql` y
+      `20260924000000_garment_likes.sql` están aplicadas en la nube **antes** del merge
+      (regla 2 de `HANDOFF.md`). El usuario las aplicó por el SQL Editor y lo confirmó.
+      **Aviso de honestidad:** no pude verificarlas desde el repo — no hay `.supabase/`
+      ni `SUPABASE_ACCESS_TOKEN` local, así que nada en este repo consulta la nube.
+      La verificación independiente queda como smoke test de `/feed` en producción
+      después del merge: si `feed_items.like_count` no existiera, el contador no
+      renderizaría ningún número.
+- [x] `database.types.ts` reconciliado con `origin/dev` (conflicto esperado; resolver a mano).
+      **[build]** — el merge ya ocurrió (`6d4033e`) y el archivo tiene `brand_follows`,
+      `post_likes` y `garment_likes` en `Tables`, más `like_count` en sus 3 lugares
+      (`get_feed.Returns` y `Views.feed_items.Row`).
+- [x] No queda ningún `TODO` sin un follow-up enlazado en los specs o el roadmap.
+      **[build]** — 0 `TODO:`/`FIXME`/`HACK` en `src` (las coincidencias de "todo" son la
+      palabra en español: "Limpiar todo", "Ya taggeaste todo tu catálogo"). Lo pendiente vive
+      en `specs/roadmap.md` y `TODO.md`.
+- [x] Las decisiones 6 (like no afecta el feed) y 7 (sin contador de seguidores) se respetan
+      en el código final. **[CLI]** — 0 triggers en `post_likes`, `garment_likes` y
+      `brand_follows`; 0 columnas `%follower%` en `public`; `popularity` intacto tras likear
+      (`follower_count` solo aparece en un comentario de migración que documenta su ausencia).
 
 ---
 
