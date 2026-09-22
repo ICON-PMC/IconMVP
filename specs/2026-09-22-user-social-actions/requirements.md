@@ -37,8 +37,9 @@ parcialmente superseded en esos grupos.
 
 ## 3. Decisiones de scope
 
-Estas decisiones se tomaron explícitamente antes de escribir el plan. No se reabren sin
-una nota nueva en este archivo.
+Estas decisiones se tomaron explícitamente antes de escribir el plan, salvo las marcadas
+como posteriores (12-13), que surgieron al revisar la UI. No se reabren sin una nota nueva
+en este archivo.
 
 | # | Decisión | Elección | Por qué |
 |---|---|---|---|
@@ -53,6 +54,8 @@ una nota nueva en este archivo.
 | 9 | Interacción | **Optimistic UI** (client component con rollback) | La interacción debe sentirse instantánea |
 | 10 | Dónde va el like | **Feed (`PostCard`) y `/post/[id]`** | Es la señal principal de engagement del post |
 | 11 | Contenido del tab Guardados | **Posts + prendas** (lo que ya existe) | No perder funcionalidad actual de `/saved` |
+| 12 | Ícono del botón de guardar | **Marcador/bookmark** (`Bookmark` de lucide), no corazón | El `♥`/`♡` era idéntico al corazón del like: dos íconos iguales en la misma tarjeta se confunden a simple vista |
+| 13 | Ubicación de los botones en la tarjeta | **Guardar + like juntos en una fila al pie** (`justify-between` + `gap`), fuera del `<Link>`; se elimina el botón flotante | El guardar era `absolute` sobre la imagen, así que en tarjetas sin imagen (o con imagen muy baja) se superponía con el like |
 
 ### Decisiones ya dadas por el usuario (contexto original)
 
@@ -142,7 +145,7 @@ post_likes
 - **Guardados** muestra los posts guardados y las prendas guardadas (lo que ya existía).
 - **Siguiendo** muestra las marcas que la usuaria sigue, con enlace a `/marca/[slug]`.
 - Cada tab tiene su estado vacío en español:
-  - Guardados: "Aún no has guardado nada. Toca el ♡ en un look o una prenda."
+  - Guardados: "Aún no has guardado nada. Toca el marcador en un look o una prenda."
   - Siguiendo: "Aún no sigues ninguna marca."
 - El header (`SiteHeader`) mantiene el enlace "Guardados" apuntando a `/saved`.
 

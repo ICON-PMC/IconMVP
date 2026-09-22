@@ -78,7 +78,7 @@
       enlazable/recargable.
 - [ ] El tab **Guardados** muestra posts guardados **y** prendas guardadas (sin regresión).
 - [ ] El tab **Siguiendo** lista las marcas seguidas, cada una enlaza a `/marca/[slug]`.
-- [ ] Estado vacío de Guardados: "Aún no has guardado nada. Toca el ♡ en un look o una prenda."
+- [ ] Estado vacío de Guardados: "Aún no has guardado nada. Toca el marcador en un look o una prenda."
 - [ ] Estado vacío de Siguiendo: "Aún no sigues ninguna marca."
 - [ ] `SiteHeader` mantiene el enlace "Guardados" → `/saved`.
 
