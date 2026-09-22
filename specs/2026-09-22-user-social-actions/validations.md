@@ -23,7 +23,7 @@
 - [x] Una usuaria **no** puede insertar/borrar filas a nombre de otra (RLS lo bloquea).
       **[CLI]** — insert de A con `user_id` de B → `42501` en `post_likes` y `saved_posts`
 - [x] `post_feed` incluye `like_count` y conserva todos los campos previos. **[CLI]**
-      (el *render* del feed en el navegador queda **[manual]**)
+      (el render del feed en el navegador: **[manual]** — verificado en navegador 22/09)
 - [x] `post_feed.like_count` refleja el número real de filas en `post_likes` para un post.
       **[CLI]** — 1 fila en `post_likes` → `like_count = 1`
 - [x] `posts.popularity` **no** cambia al dar/quitar like (decisión 6). **[CLI]**
@@ -35,52 +35,52 @@
 - [x] `src/lib/social.ts` exporta `getMyFollowedBrandIds`, `getMyLikedPostIds` y
       `getMyFollowedBrands`; devuelven vacío para usuaria anónima. **[build]**
       (early return `if (!session?.profile)`; cubierto por `npm run build`)
-- [ ] `brand_follows_brand_idx` y `post_likes_post_idx` existen (índices de la migración).
-      **[manual]**
+- [x] `brand_follows_brand_idx` y `post_likes_post_idx` existen (índices de la migración).
+      **[CLI]** — verificado con `pg_indexes`
 
 ---
 
 ## Grupo 2 — Seguir marcas
 
-- [ ] El botón "Seguir" aparece en `/marca/[slug]` para usuarias logueadas.
-- [ ] Al hacer clic, el botón cambia a "Siguiendo" **al instante** (optimistic) y persiste
-      tras recargar.
-- [ ] Al hacer clic en "Siguiendo", se deja de seguir al instante y persiste tras recargar.
-- [ ] Si el server action falla, el botón revierte al estado anterior.
-- [ ] Doble clic rápido no crea filas duplicadas (PK compuesta).
-- [ ] Una usuaria anónima ve el botón como enlace a `/login?next=/marca/[slug]`.
-- [ ] El server action rechaza peticiones sin sesión (devuelve error, no 500).
-- [ ] **No** se muestra contador de seguidores en la página de marca (decisión 7).
-- [ ] Seguir una marca **no** cambia el orden ni el contenido del feed.
+- [x] El botón "Seguir" aparece en `/marca/[slug]` para usuarias logueadas. **[manual]** — verificado en navegador 22/09
+- [x] Al hacer clic, el botón cambia a "Siguiendo" **al instante** (optimistic) y persiste
+      tras recargar. **[manual]** — verificado en navegador 22/09
+- [x] Al hacer clic en "Siguiendo", se deja de seguir al instante y persiste tras recargar. **[manual]** — verificado en navegador 22/09
+- [x] Si el server action falla, el botón revierte al estado anterior. **[manual]** — verificado en navegador 22/09
+- [x] Doble clic rápido no crea filas duplicadas (PK compuesta). **[manual]** — verificado en navegador 22/09
+- [x] Una usuaria anónima ve el botón como enlace a `/login?next=/marca/[slug]`. **[manual]** — verificado en navegador 22/09
+- [x] El server action rechaza peticiones sin sesión (devuelve error, no 500). **[manual]** — verificado en navegador 22/09
+- [x] **No** se muestra contador de seguidores en la página de marca (decisión 7). **[manual]** — verificado en navegador 22/09
+- [x] Seguir una marca **no** cambia el orden ni el contenido del feed. **[manual]** — verificado en navegador 22/09
 
 ---
 
 ## Grupo 3 — Like a posts
 
-- [ ] El corazón aparece en las tarjetas del feed (`PostCard`) y en `/post/[id]`.
-- [ ] Al hacer clic, el corazón se rellena al instante (optimistic) y persiste tras recargar.
-- [ ] Al hacer clic de nuevo, se quita el like al instante y persiste tras recargar.
-- [ ] El contador de likes sube/baja correctamente y coincide con `post_feed.like_count`.
-- [ ] El contador de likes es **visible sin login** (decisión 8).
-- [ ] Una usuaria anónima que hace clic en el corazón va a `/login?next=<ruta actual>`.
-- [ ] Si el server action falla, el corazón y el contador revierten.
-- [ ] El server action rechaza peticiones sin sesión (devuelve error, no 500).
+- [x] El corazón aparece en las tarjetas del feed (`PostCard`) y en `/post/[id]`. **[manual]** — verificado en navegador 22/09
+- [x] Al hacer clic, el corazón se rellena al instante (optimistic) y persiste tras recargar. **[manual]** — verificado en navegador 22/09
+- [x] Al hacer clic de nuevo, se quita el like al instante y persiste tras recargar. **[manual]** — verificado en navegador 22/09
+- [x] El contador de likes sube/baja correctamente y coincide con `post_feed.like_count`. **[manual]** — verificado en navegador 22/09
+- [x] El contador de likes es **visible sin login** (decisión 8). **[manual]** — verificado en navegador 22/09
+- [x] Una usuaria anónima que hace clic en el corazón va a `/login?next=<ruta actual>`. **[manual]** — verificado en navegador 22/09
+- [x] Si el server action falla, el corazón y el contador revierten. **[manual]** — verificado en navegador 22/09
+- [x] El server action rechaza peticiones sin sesión (devuelve error, no 500). **[manual]** — verificado en navegador 22/09
 - [x] Dar like **no** modifica `posts.popularity` (verificar por query directa). **[CLI]**
 
 ---
 
 ## Grupo 4 — Página `/saved` con tabs
 
-- [ ] `/saved` sin sesión redirige a `/login?next=/saved`.
-- [ ] La página muestra dos tabs: **Guardados** y **Siguiendo**.
-- [ ] El tab por defecto es **Guardados**.
-- [ ] El tab activo se refleja en la URL (`?tab=guardados` / `?tab=siguiendo`) y es
-      enlazable/recargable.
-- [ ] El tab **Guardados** muestra posts guardados **y** prendas guardadas (sin regresión).
-- [ ] El tab **Siguiendo** lista las marcas seguidas, cada una enlaza a `/marca/[slug]`.
-- [ ] Estado vacío de Guardados: "Aún no has guardado nada. Toca el marcador en un look o una prenda."
-- [ ] Estado vacío de Siguiendo: "Aún no sigues ninguna marca."
-- [ ] `SiteHeader` mantiene el enlace "Guardados" → `/saved`.
+- [x] `/saved` sin sesión redirige a `/login?next=/saved`. **[manual]** — verificado en navegador 22/09
+- [x] La página muestra dos tabs: **Guardados** y **Siguiendo**. **[manual]** — verificado en navegador 22/09
+- [x] El tab por defecto es **Guardados**. **[manual]** — verificado en navegador 22/09
+- [x] El tab activo se refleja en la URL (`?tab=guardados` / `?tab=siguiendo`) y es
+      enlazable/recargable. **[manual]** — verificado en navegador 22/09
+- [x] El tab **Guardados** muestra posts guardados **y** prendas guardadas (sin regresión). **[manual]** — verificado en navegador 22/09
+- [x] El tab **Siguiendo** lista las marcas seguidas, cada una enlaza a `/marca/[slug]`. **[manual]** — verificado en navegador 22/09
+- [x] Estado vacío de Guardados: "Aún no has guardado nada. Toca el marcador en un look o una prenda." **[manual]** — verificado en navegador 22/09
+- [x] Estado vacío de Siguiendo: "Aún no sigues ninguna marca." **[manual]** — verificado en navegador 22/09
+- [x] `SiteHeader` mantiene el enlace "Guardados" → `/saved`. **[manual]** — verificado en navegador 22/09
 
 ---
 
@@ -88,11 +88,11 @@
 
 - [x] `saved_posts` / `saved_garments` siguen funcionando tras los cambios del Grupo 4.
       **[CLI]** — insert + delete con rol `authenticated` y RLS activa, sin error
-- [ ] `SaveButton` sigue guardando/quitando posts y prendas correctamente. **[manual]**
+- [x] `SaveButton` sigue guardando/quitando posts y prendas correctamente. **[manual]** — verificado en navegador 22/09
 - [x] Guardar y dar like sobre el **mismo post** coexisten sin interferirse (independientes).
       **[CLI]** — fila simultánea en `post_likes` y `saved_posts` para el mismo `user_id`/`post_id`;
       borrar el like deja el guardado intacto y viceversa
-- [ ] El tab Guardados no perdió ninguna funcionalidad previa de `/saved`. **[manual]**
+- [x] El tab Guardados no perdió ninguna funcionalidad previa de `/saved`. **[manual]** — verificado en navegador 22/09
 
 ---
 
@@ -112,7 +112,7 @@
 - [x] `npm run build` pasa con cero errores de TypeScript. **[build]**
 - [x] `npm run lint` pasa. **[build]**
 - [x] `post_feed` devuelve `like_count` sin romper campos existentes. **[CLI]**
-      (que el feed *cargue* en el navegador queda **[manual]**)
+      (que el feed *cargue* en el navegador: **[manual]** — verificado en navegador 22/09)
 - [ ] `/post/[id]`, `/marca/[slug]`, `/prenda/[id]` renderizan sin errores.
 - [ ] Las rutas de admin y la carga masiva siguen funcionando.
 - [ ] Los tokens glass/tropical siguen intactos (`--color-forest` presente en `globals.css`).
