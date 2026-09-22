@@ -7,7 +7,10 @@ import { GlassCard } from "@/components/glass-card";
 import { formatCop } from "@/lib/taxonomy";
 import { imageUrl } from "@/lib/images";
 import { getMySavedIds } from "@/lib/saves";
+import { getGarmentLikeCounts, getMyLikedGarmentIds } from "@/lib/social";
+import { getCurrentUser } from "@/lib/auth";
 import { SaveButton } from "@/components/save-button";
+import { LikeButton } from "@/components/like-button";
 
 export default async function GarmentPage({
   params,
@@ -81,7 +84,13 @@ export default async function GarmentPage({
 
   const gallery = images?.map((i) => i.cf_image_id) ?? [];
   const meta = [g.color, g.fabric].filter(Boolean).join(" · ");
-  const saved = await getMySavedIds();
+  const [saved, likedGarmentIds, session] = await Promise.all([
+    getMySavedIds(),
+    getMyLikedGarmentIds(),
+    getCurrentUser(),
+  ]);
+  const isLoggedIn = Boolean(session?.profile);
+  const garmentLikeCounts = await getGarmentLikeCounts([g.id]);
 
   return (
     <>
@@ -108,7 +117,15 @@ export default async function GarmentPage({
           {/* Info */}
           <div>
             <GlassCard className="relative p-6">
-              <div className="absolute right-4 top-4">
+              <div className="absolute right-4 top-4 flex items-center gap-2">
+                <LikeButton
+                  kind="garment"
+                  itemId={g.id}
+                  initialLiked={likedGarmentIds.has(g.id)}
+                  initialCount={garmentLikeCounts.get(g.id) ?? 0}
+                  path={`/prenda/${g.id}`}
+                  isLoggedIn={isLoggedIn}
+                />
                 <SaveButton
                   kind="garment"
                   id={g.id}

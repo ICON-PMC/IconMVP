@@ -119,6 +119,24 @@ export type Database = {
         Update: { user_id?: string; garment_id?: string; source_post_id?: string | null; created_at?: string };
         Relationships: [];
       };
+      brand_follows: {
+        Row: { user_id: string; brand_id: string; created_at: string };
+        Insert: { user_id: string; brand_id: string; created_at?: string };
+        Update: { user_id?: string; brand_id?: string; created_at?: string };
+        Relationships: [];
+      };
+      post_likes: {
+        Row: { user_id: string; post_id: string; created_at: string };
+        Insert: { user_id: string; post_id: string; created_at?: string };
+        Update: { user_id?: string; post_id?: string; created_at?: string };
+        Relationships: [];
+      };
+      garment_likes: {
+        Row: { user_id: string; garment_id: string; created_at: string };
+        Insert: { user_id: string; garment_id: string; created_at?: string };
+        Update: { user_id?: string; garment_id?: string; created_at?: string };
+        Relationships: [];
+      };
       outbound_clicks: {
         Row: { id: string; garment_id: string | null; brand_id: string | null; post_id: string | null; user_id: string | null; source: Database["public"]["Enums"]["click_source"]; created_at: string };
         Insert: { id?: string; garment_id?: string | null; brand_id?: string | null; post_id?: string | null; user_id?: string | null; source: Database["public"]["Enums"]["click_source"]; created_at?: string };
@@ -153,6 +171,7 @@ export type Database = {
           min_price: number | null;
           max_price: number | null;
           price_ranges: string[];
+          like_count: number;
           score: number;
         };
         Relationships: [];
@@ -189,6 +208,7 @@ export type Database = {
           max_price: number | null;
           price_ranges: string[];
           score: number;
+          like_count: number;
         };
         Relationships: [];
       };
@@ -280,6 +300,7 @@ export type Database = {
           max_price: number | null;
           price_ranges: string[];
           score: number;
+          like_count: number;
         }[];
       };
     };
