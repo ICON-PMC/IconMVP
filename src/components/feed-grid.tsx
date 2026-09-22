@@ -19,17 +19,22 @@ export function FeedGrid({
   initialItems,
   initialNextOffset,
   initialSaved,
+  initialLiked,
+  isLoggedIn,
   tagNames,
 }: {
   initialItems: FeedItem[];
   initialNextOffset: number | null;
   initialSaved: SavedIds;
+  initialLiked: Set<string>;
+  isLoggedIn: boolean;
   tagNames: Record<string, string>;
 }) {
   const searchParams = useSearchParams();
   const [items, setItems] = useState(initialItems);
   const [nextOffset, setNextOffset] = useState(initialNextOffset);
   const [saved, setSaved] = useState(initialSaved);
+  const [liked, setLiked] = useState(initialLiked);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
@@ -53,6 +58,7 @@ export function FeedGrid({
         posts: new Set([...prev.posts, ...((data.savedPosts as string[]) ?? [])]),
         garments: new Set([...prev.garments, ...((data.savedGarments as string[]) ?? [])]),
       }));
+      setLiked((prev) => new Set([...prev, ...((data.likedPosts as string[]) ?? [])]));
       setNextOffset(data.nextOffset ?? null);
     } catch {
       setError("No pudimos cargar más contenido. Intenta de nuevo.");
@@ -96,6 +102,8 @@ export function FeedGrid({
             item={item}
             tagNames={tagNames}
             saved={item.kind === "post" ? saved.posts.has(item.id) : saved.garments.has(item.id)}
+            liked={liked.has(item.id)}
+            isLoggedIn={isLoggedIn}
             path="/feed"
           />
         ))}

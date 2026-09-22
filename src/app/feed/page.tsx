@@ -10,6 +10,7 @@ import { FeedCard } from "@/components/feed-card";
 import { BrandCard } from "@/components/brand-card";
 import { PRICE_BUCKETS } from "@/lib/taxonomy";
 import { getMySavedIds } from "@/lib/saves";
+import { getMyLikedPostIds } from "@/lib/social";
 import { getCurrentUser } from "@/lib/auth";
 import { getSuggestionChips } from "@/lib/suggestions";
 import { parseFeedParams, getFeedPage, type FeedItem } from "@/lib/feed";
@@ -85,11 +86,16 @@ export default async function FeedPage({ searchParams }: { searchParams: SearchP
   const tagNames: Record<string, string> = {};
   for (const t of [...(occsRes.data ?? []), ...(stylesRes.data ?? [])]) tagNames[t.slug] = t.name;
 
-  const saved = await getMySavedIds();
+  // Una sola tanda: la sesión se reusa en los dos modos y en los FeedCard.
+  const [saved, liked, session] = await Promise.all([
+    getMySavedIds(),
+    getMyLikedPostIds(),
+    getCurrentUser(),
+  ]);
+  const isLoggedIn = Boolean(session?.profile);
 
   // ===================== Modo búsqueda: pestañas Todo / Prendas / Outfits / Marcas =====================
   if (q) {
-    const session = await getCurrentUser();
     const userCity = session?.profile?.home_city_id ?? undefined;
 
     // Contadores por tipo (solo por texto, sin filtros); se reusan como fuente de datos
@@ -208,6 +214,8 @@ export default async function FeedPage({ searchParams }: { searchParams: SearchP
                 item={item}
                 tagNames={tagNames}
                 saved={saved.posts.has(item.id)}
+                liked={liked.has(item.id)}
+                isLoggedIn={isLoggedIn}
                 path="/feed"
               />
             ))}
@@ -237,6 +245,8 @@ export default async function FeedPage({ searchParams }: { searchParams: SearchP
                 item={item}
                 tagNames={tagNames}
                 saved={saved.garments.has(item.id)}
+                liked={liked.has(item.id)}
+                isLoggedIn={isLoggedIn}
                 path="/feed"
               />
             ))}
@@ -266,6 +276,8 @@ export default async function FeedPage({ searchParams }: { searchParams: SearchP
                 item={item}
                 tagNames={tagNames}
                 saved={item.kind === "post" ? saved.posts.has(item.id) : saved.garments.has(item.id)}
+                liked={liked.has(item.id)}
+                isLoggedIn={isLoggedIn}
                 path="/feed"
               />
             ))}
@@ -299,6 +311,8 @@ export default async function FeedPage({ searchParams }: { searchParams: SearchP
           initialItems={items}
           initialNextOffset={nextOffset}
           initialSaved={saved}
+          initialLiked={liked}
+          isLoggedIn={isLoggedIn}
           tagNames={tagNames}
         />
       )}

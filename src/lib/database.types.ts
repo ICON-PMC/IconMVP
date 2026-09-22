@@ -202,6 +202,7 @@ export type Database = {
           max_price: number | null;
           price_ranges: string[];
           score: number;
+          like_count: number;
         };
         Relationships: [];
       };
@@ -293,6 +294,7 @@ export type Database = {
           max_price: number | null;
           price_ranges: string[];
           score: number;
+          like_count: number;
         }[];
       };
     };
