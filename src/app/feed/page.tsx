@@ -8,6 +8,7 @@ import { GarmentCard } from "@/components/garment-card";
 import { BrandCard } from "@/components/brand-card";
 import { PRICE_BUCKETS } from "@/lib/taxonomy";
 import { getMySavedIds } from "@/lib/saves";
+import { getMyLikedPostIds } from "@/lib/social";
 import { getCurrentUser } from "@/lib/auth";
 import type { Views } from "@/lib/database.types";
 
@@ -74,11 +75,15 @@ export default async function FeedPage({
   const occasionGroup: Group = { param: "occasion", label: "Ocasión", options: toOpts(occsRes.data) };
   const styleGroup: Group = { param: "style", label: "Estilo", options: toOpts(stylesRes.data) };
 
-  const saved = await getMySavedIds();
+  const [saved, liked, session] = await Promise.all([
+    getMySavedIds(),
+    getMyLikedPostIds(),
+    getCurrentUser(),
+  ]);
+  const isLoggedIn = Boolean(session?.profile);
 
   // ===================== Modo búsqueda: pestañas Prendas / Outfits / Marcas =====================
   if (q) {
-    const session = await getCurrentUser();
     const userCity = session?.profile?.home_city_id ?? undefined;
 
     // Contadores por tipo (solo por texto, sin filtros).
@@ -190,6 +195,8 @@ export default async function FeedPage({
                 key={post.id}
                 post={post}
                 saved={saved.posts.has(post.id)}
+                liked={liked.has(post.id)}
+                isLoggedIn={isLoggedIn}
                 path="/feed"
               />
             ))}
@@ -267,7 +274,14 @@ export default async function FeedPage({
       ) : (
         <div className="columns-2 gap-4 md:columns-3">
           {posts.map((post) => (
-            <PostCard key={post.id} post={post} saved={saved.posts.has(post.id)} path="/feed" />
+            <PostCard
+              key={post.id}
+              post={post}
+              saved={saved.posts.has(post.id)}
+              liked={liked.has(post.id)}
+              isLoggedIn={isLoggedIn}
+              path="/feed"
+            />
           ))}
         </div>
       )}
