@@ -32,12 +32,17 @@ export async function getMyLikedPostIds(): Promise<Set<string>> {
   return new Set((data ?? []).map((r) => r.post_id));
 }
 
-// Marcas que sigue el usuario actual, con lo mínimo para listarlas en "Siguiendo".
+// Marcas que sigue el usuario actual, con todo lo que necesita el `BrandCard` del
+// tab "Siguiendo" de /saved (Grupo 4).
 export type FollowedBrand = {
   id: string;
   name: string;
   slug: string;
+  bio: string | null;
   city_name: string | null;
+  is_verified: boolean;
+  is_sustainable: boolean;
+  garments: number; // prendas PUBLICADAS de la marca (mismo criterio que search_brands)
 };
 
 export async function getMyFollowedBrands(): Promise<FollowedBrand[]> {
@@ -54,9 +59,10 @@ export async function getMyFollowedBrands(): Promise<FollowedBrand[]> {
   const brandIds = (follows ?? []).map((f) => f.brand_id);
   if (brandIds.length === 0) return [];
 
+  // `is_active = true` deja fuera una marca dada de baja después de seguirla.
   const { data: brands } = await supabase
     .from("brands")
-    .select("id, name, slug, city_id")
+    .select("id, name, slug, city_id, bio, is_verified, is_sustainable")
     .in("id", brandIds)
     .eq("is_active", true);
 
@@ -69,6 +75,18 @@ export async function getMyFollowedBrands(): Promise<FollowedBrand[]> {
   const cityName = (id: string | null) =>
     id ? (cities.find((c) => c.id === id)?.name ?? null) : null;
 
+  // Conteo de prendas publicadas por marca: una sola query (solo trae brand_id) y se
+  // cuenta en JS. Mismo criterio que el `garments` del RPC search_brands.
+  const { data: garmentRows } = await supabase
+    .from("garments")
+    .select("brand_id")
+    .in("brand_id", brandIds)
+    .eq("status", "published");
+  const garmentCount = new Map<string, number>();
+  for (const g of garmentRows ?? []) {
+    garmentCount.set(g.brand_id, (garmentCount.get(g.brand_id) ?? 0) + 1);
+  }
+
   // Preserva el orden de follows (más reciente primero).
   const byId = new Map((brands ?? []).map((b) => [b.id, b]));
   return brandIds
@@ -78,6 +96,10 @@ export async function getMyFollowedBrands(): Promise<FollowedBrand[]> {
       id: b.id,
       name: b.name,
       slug: b.slug,
+      bio: b.bio,
       city_name: cityName(b.city_id),
+      is_verified: b.is_verified,
+      is_sustainable: b.is_sustainable,
+      garments: garmentCount.get(b.id) ?? 0,
     }));
 }
