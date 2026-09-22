@@ -55,9 +55,9 @@
 
 ---
 
-## Grupo 3 — Like a posts
+## Grupo 3 — Like (posts y prendas)
 
-- [x] El corazón aparece en las tarjetas del feed (`PostCard`) y en `/post/[id]`. **[manual]** — verificado en navegador 22/09
+- [x] El corazón aparece en las tarjetas del feed (`FeedCard` y `PostCard`) y en `/post/[id]`. **[manual]** — verificado en navegador 22/09
 - [x] Al hacer clic, el corazón se rellena al instante (optimistic) y persiste tras recargar. **[manual]** — verificado en navegador 22/09
 - [x] Al hacer clic de nuevo, se quita el like al instante y persiste tras recargar. **[manual]** — verificado en navegador 22/09
 - [x] El contador de likes sube/baja correctamente y coincide con `post_feed.like_count`. **[manual]** — verificado en navegador 22/09
@@ -66,6 +66,10 @@
 - [x] Si el server action falla, el corazón y el contador revierten. **[manual]** — verificado en navegador 22/09
 - [x] El server action rechaza peticiones sin sesión (devuelve error, no 500). **[manual]** — verificado en navegador 22/09
 - [x] Dar like **no** modifica `posts.popularity` (verificar por query directa). **[CLI]**
+- [x] `garment_likes` tiene PK compuesta `(user_id, garment_id)`, sus dos FK cascadean, RLS con policies separadas (escritura del dueño, lectura pública) y GRANT a `authenticated`. **[CLI]** — verificado con `information_schema` y `pg_policies` (espejo de `post_likes`)
+- [x] `feed_items.like_count` cuenta los likes de prendas: 1 fila en `garment_likes` → `like_count = 1` en la rama de prendas. **[CLI]**
+- [x] Dar like a una prenda **no** modifica `garments.popularity` (decisión 6). **[CLI]** — 0 triggers en `garment_likes`
+- [ ] El corazón funciona en prendas en todas las pantallas: feed, `/prenda/[id]`, `/saved` y `/marca/[slug]`. **[manual]**
 
 ---
 

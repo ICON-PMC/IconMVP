@@ -1,7 +1,7 @@
 # Requirements — Fase 0: Flujo de usuario (guardar · seguir · like)
 
 > Subconjunto del "Flujo de usuario" de la Fase 0 (`specs/roadmap.md`): guardar (favoritos),
-> seguir marcas y dar like a posts, más una página donde la usuaria ve lo suyo.
+> seguir marcas y dar like (a outfits y a prendas), más una página donde la usuaria ve lo suyo.
 > Este spec **no** cubre infraestructura (shadcn, cuotas R2, 404, errores en español) —
 > eso vive en `specs/2026-09-19-fase0-social-infra/`.
 
@@ -13,10 +13,10 @@
 |---|---|---|
 | Guardar (favoritos) posts y productos | **Ya implementado** | `saved_posts` / `saved_garments` + `/saved` + `SaveButton` existen desde `20260614120000_init.sql`. Aquí solo se documenta y valida. |
 | Seguir marcas | **Nuevo** | Tabla `brand_follows` + botón en `/marca/[slug]`. |
-| Dar like a posts | **Nuevo** | Tabla `post_likes` + botón en feed y detalle. |
+| Dar like (outfits y prendas) | **Nuevo** | Tablas `post_likes` y `garment_likes` + botón en las tarjetas del feed, `/post/[id]`, `/prenda/[id]`, `/saved` y `/marca/[slug]` (decisión 14). |
 | Página "mis guardados" / "siguiendo" | **Nuevo** | `/saved` pasa a tener dos tabs. |
 
-**No incluye:** seguir usuarios (Fase 1), like a prendas, contador de seguidores visible,
+**No incluye:** seguir usuarios (Fase 1), contador de seguidores visible,
 notificaciones, feed personalizado, ni que seguir/like alteren el orden del feed.
 
 ---
@@ -38,7 +38,7 @@ parcialmente superseded en esos grupos.
 ## 3. Decisiones de scope
 
 Estas decisiones se tomaron explícitamente antes de escribir el plan, salvo las marcadas
-como posteriores (12-13), que surgieron al revisar la UI. No se reabren sin una nota nueva
+como posteriores (12-14), que surgieron al revisar la UI. No se reabren sin una nota nueva
 en este archivo.
 
 | # | Decisión | Elección | Por qué |
@@ -47,7 +47,7 @@ en este archivo.
 | 2 | ¿Rehacer "guardar"? | **No** — ya está hecho; solo documentar y validar | `saved_posts`/`saved_garments` + `/saved` + `SaveButton` ya funcionan |
 | 3 | Página de lo guardado/seguido | **Una sola `/saved` con dos tabs** (Guardados \| Siguiendo) | Un solo destino en el header; menos rutas nuevas |
 | 4 | ¿Seguir usuarios? | **No** — solo marcas en esta fase | Seguir usuarios es Fase 1 (`roadmap.md`) |
-| 5 | ¿Like a prendas? | **No** — solo posts | El roadmap dice "dar like a posts" |
+| 5 | ¿Like a prendas? | **No** — solo posts | El roadmap dice "dar like a posts". **Superada por la 14.** |
 | 6 | ¿El like afecta el feed? | **No** — solo contador visible | Coherente con "seguir no afecta el feed todavía"; el orden es de una fase posterior |
 | 7 | Contador de seguidores | **No** se muestra en esta fase | Solo el botón Seguir/Siguiendo; el contador llega con el feed personalizado |
 | 8 | Contador de likes | **Público** (visible sin login) | La señal social es pública; solo la acción requiere sesión |
@@ -56,6 +56,7 @@ en este archivo.
 | 11 | Contenido del tab Guardados | **Posts + prendas** (lo que ya existe) | No perder funcionalidad actual de `/saved` |
 | 12 | Ícono del botón de guardar | **Marcador/bookmark** (`Bookmark` de lucide), no corazón | El `♥`/`♡` era idéntico al corazón del like: dos íconos iguales en la misma tarjeta se confunden a simple vista |
 | 13 | Ubicación de los botones en la tarjeta | **Guardar + like juntos en una fila al pie** (`justify-between` + `gap`), fuera del `<Link>`; se elimina el botón flotante | El guardar era `absolute` sobre la imagen, así que en tarjetas sin imagen (o con imagen muy baja) se superponía con el like |
+| 14 | ¿Like a prendas? (revisión de la 5) | **Sí** — el like aplica a los dos tipos: `garment_likes` (espejo de `post_likes`) y `LikeButton` con `kind: post \| garment`, igual que `SaveButton` | El feed mixto resultó ser casi todo prendas y, sin outfits publicados, el like quedaba invisible; si una prenda se puede guardar, likearla es lo natural. Se mantiene el patrón de una tabla por tipo (`saved_posts`/`saved_garments`) en vez de una tabla polimórfica |
 
 ### Decisiones ya dadas por el usuario (contexto original)
 

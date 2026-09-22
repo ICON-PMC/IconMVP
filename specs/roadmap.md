@@ -39,7 +39,7 @@ Que un usuario pueda registrarse e interactuar con ese contenido. El perfil púb
 - [ ] Registro y onboarding (ciudad + estilos preferidos).
 - [ ] Guardar (favoritos) posts y productos de marcas.
 - [ ] Seguir marcas.
-- [ ] Dar like a posts.
+- [ ] Dar like a posts y prendas.
 
 ### Flujo de búsqueda y feed
 
