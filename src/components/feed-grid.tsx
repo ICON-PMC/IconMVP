@@ -7,6 +7,7 @@ import { FeedCard } from "@/components/feed-card";
 import type { FeedItem } from "@/lib/feed";
 
 type SavedIds = { posts: Set<string>; garments: Set<string> };
+type LikedIds = { posts: Set<string>; garments: Set<string> };
 
 function itemKey(item: FeedItem) {
   return `${item.kind}:${item.id}`;
@@ -19,17 +20,22 @@ export function FeedGrid({
   initialItems,
   initialNextOffset,
   initialSaved,
+  initialLiked,
+  isLoggedIn,
   tagNames,
 }: {
   initialItems: FeedItem[];
   initialNextOffset: number | null;
   initialSaved: SavedIds;
+  initialLiked: LikedIds;
+  isLoggedIn: boolean;
   tagNames: Record<string, string>;
 }) {
   const searchParams = useSearchParams();
   const [items, setItems] = useState(initialItems);
   const [nextOffset, setNextOffset] = useState(initialNextOffset);
   const [saved, setSaved] = useState(initialSaved);
+  const [liked, setLiked] = useState(initialLiked);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
@@ -52,6 +58,10 @@ export function FeedGrid({
       setSaved((prev) => ({
         posts: new Set([...prev.posts, ...((data.savedPosts as string[]) ?? [])]),
         garments: new Set([...prev.garments, ...((data.savedGarments as string[]) ?? [])]),
+      }));
+      setLiked((prev) => ({
+        posts: new Set([...prev.posts, ...((data.likedPosts as string[]) ?? [])]),
+        garments: new Set([...prev.garments, ...((data.likedGarments as string[]) ?? [])]),
       }));
       setNextOffset(data.nextOffset ?? null);
     } catch {
@@ -96,6 +106,8 @@ export function FeedGrid({
             item={item}
             tagNames={tagNames}
             saved={item.kind === "post" ? saved.posts.has(item.id) : saved.garments.has(item.id)}
+            liked={item.kind === "post" ? liked.posts.has(item.id) : liked.garments.has(item.id)}
+            isLoggedIn={isLoggedIn}
             path="/feed"
           />
         ))}

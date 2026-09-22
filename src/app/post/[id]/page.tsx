@@ -8,6 +8,9 @@ import { formatCop, priceLabel } from "@/lib/taxonomy";
 import { imageUrl } from "@/lib/images";
 import { getMySavedIds } from "@/lib/saves";
 import { SaveButton } from "@/components/save-button";
+import { LikeButton } from "@/components/like-button";
+import { getMyLikedPostIds } from "@/lib/social";
+import { getCurrentUser } from "@/lib/auth";
 
 export default async function PostPage({
   params,
@@ -79,8 +82,13 @@ export default async function PostPage({
       ? [header.image]
       : [];
   const chips = [...header.occasions, ...header.styles, ...header.temperatures];
-  const saved = await getMySavedIds();
+  const [saved, likedPostIds, session] = await Promise.all([
+    getMySavedIds(),
+    getMyLikedPostIds(),
+    getCurrentUser(),
+  ]);
   const path = `/post/${id}`;
+  const isLoggedIn = Boolean(session?.profile);
 
   return (
     <>
@@ -112,7 +120,14 @@ export default async function PostPage({
           {/* Info + prendas */}
           <div className="flex flex-col gap-4">
             <GlassCard className="relative p-5">
-              <div className="absolute right-4 top-4">
+              <div className="absolute right-4 top-4 flex items-center gap-2">
+                <LikeButton
+                  itemId={id}
+                  initialLiked={likedPostIds.has(id)}
+                  initialCount={header.like_count}
+                  path={path}
+                  isLoggedIn={isLoggedIn}
+                />
                 <SaveButton
                   kind="post"
                   id={id}
