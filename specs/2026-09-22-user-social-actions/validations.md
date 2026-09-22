@@ -69,7 +69,7 @@
 - [x] `garment_likes` tiene PK compuesta `(user_id, garment_id)`, sus dos FK cascadean, RLS con policies separadas (escritura del dueño, lectura pública) y GRANT a `authenticated`. **[CLI]** — verificado con `information_schema` y `pg_policies` (espejo de `post_likes`)
 - [x] `feed_items.like_count` cuenta los likes de prendas: 1 fila en `garment_likes` → `like_count = 1` en la rama de prendas. **[CLI]**
 - [x] Dar like a una prenda **no** modifica `garments.popularity` (decisión 6). **[CLI]** — 0 triggers en `garment_likes`
-- [ ] El corazón funciona en prendas en todas las pantallas: feed, `/prenda/[id]`, `/saved` y `/marca/[slug]`. **[manual]** — **DIFERIDO**: necesita navegador con la nube ya migrada. Lo verificable sin navegador queda arriba: el contador de prendas se probó punta a punta contra `get_feed` y las policies/RLS por CLI.
+- [ ] El corazón funciona en prendas en todas las pantallas: feed, `/prenda/[id]`, `/saved` y `/marca/[slug]`. **[manual]** — **DIFERIDO (parcial)**: el render del corazón ya quedó verificado en `/feed` (6 tarjetas de prenda en producción), `/prenda/[id]` y `/marca/[slug]`; falta `/saved` (requiere sesión) y el clic real en el navegador. El contador de prendas sí se probó punta a punta contra `get_feed` y las policies/RLS por CLI.
 
 ---
 
@@ -127,9 +127,12 @@
 - [x] `npm run lint` pasa. **[build]**
 - [x] `post_feed` devuelve `like_count` sin romper campos existentes. **[CLI]**
       (que el feed *cargue* en el navegador: **[manual]** — verificado en navegador 22/09)
-- [ ] `/post/[id]`, `/marca/[slug]`, `/prenda/[id]` renderizan sin errores. **[manual]** —
-      **DIFERIDO**: las 3 rutas compilan en `npm run build`, pero el render en runtime se
-      verifica como smoke test contra producción después del merge `dev → main`
+- [x] `/post/[id]`, `/marca/[slug]`, `/prenda/[id]` renderizan sin errores. **[manual]** —
+      smoke test tras el merge `dev → main` (release `b101485`): `/prenda/[id]` HTTP 200 en
+      producción (1 corazón + 1 bookmark en el header); `/post/[id]` HTTP 200 (1 corazón +
+      3 bookmarks) y `/marca/[slug]` HTTP 200 (3 corazones + 3 bookmarks) contra el build de
+      producción servido en local. `/feed` también: HTTP 200, 6 tarjetas, cada una con su
+      corazón y su marcador en la misma fila al pie.
 - [ ] Las rutas de admin y la carga masiva siguen funcionando. **[manual]** — **DIFERIDO**:
       requiere sesión de staff, no es automatizable desde este entorno. No fueron tocadas por
       ninguno de los cambios de este release
@@ -145,9 +148,10 @@
 ## Criterio de merge
 
 - [x] Todos los checkboxes de arriba están marcados o diferidos con una nota escrita.
-      Quedan **3 diferidos**, cada uno con su nota: el check manual del corazón en prendas
-      (Grupo 3), `renderizan sin errores` y `rutas de admin` (Regresión). Los tres necesitan
-      navegador y/o sesión de staff, y ninguno depende de las migraciones de este release.
+      Quedan **2 diferidos**, cada uno con su nota: el clic real del corazón en prendas
+      (`/saved` necesita sesión; el resto de las pantallas ya se verificó en el smoke test) y
+      las rutas de admin con la carga masiva (necesitan sesión de staff). Ninguno depende de
+      las migraciones de este release.
 - [x] La migración `20260922000000_user_social_actions.sql` está aplicada en Supabase
       cloud (proyecto `oyzvuckkxzbufncvzcvw`), además de local. Aplicada el 2026-09-22
       pegando el SQL en el SQL Editor. Verificado con `information_schema.tables`
@@ -157,11 +161,13 @@
 - [x] Las migraciones `20260923000000_feed_items_like_count.sql` y
       `20260924000000_garment_likes.sql` están aplicadas en la nube **antes** del merge
       (regla 2 de `HANDOFF.md`). El usuario las aplicó por el SQL Editor y lo confirmó.
-      **Aviso de honestidad:** no pude verificarlas desde el repo — no hay `.supabase/`
-      ni `SUPABASE_ACCESS_TOKEN` local, así que nada en este repo consulta la nube.
-      La verificación independiente queda como smoke test de `/feed` en producción
-      después del merge: si `feed_items.like_count` no existiera, el contador no
-      renderizaría ningún número.
+      **Aviso:** el repo por sí solo no puede consultarlo (no hay `.supabase/` ni
+      `SUPABASE_ACCESS_TOKEN`), así que la fuente inicial fue el usuario. Pero el smoke test de
+      `/feed` en la producción ya desplegada (release `b101485`) lo confirma desde afuera: el
+      HTML trae `<a aria-label="0 me gusta — inicia sesión para dar like" …>`. Si
+      `feed_items.like_count` no existiera en la vista de la nube, `initialCount` sería
+      `undefined` y el `aria-label` saldría como "undefined me gusta". Que salga **`0`** prueba
+      que la columna existe en la nube.
 - [x] `database.types.ts` reconciliado con `origin/dev` (conflicto esperado; resolver a mano).
       **[build]** — el merge ya ocurrió (`6d4033e`) y el archivo tiene `brand_follows`,
       `post_likes` y `garment_likes` en `Tables`, más `like_count` en sus 3 lugares
