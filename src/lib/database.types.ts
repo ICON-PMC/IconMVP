@@ -178,6 +178,33 @@ export type Database = {
         Row: { garment_id: string; title: string; brand_id: string; clicks: number };
         Relationships: [];
       };
+      feed_items: {
+        Row: {
+          kind: "post" | "garment";
+          id: string;
+          title: string | null;
+          popularity: number;
+          published_at: string | null;
+          created_at: string;
+          brand_id: string;
+          brand_name: string;
+          brand_slug: string;
+          brand_verified: boolean;
+          city_slug: string | null;
+          city_name: string | null;
+          image: string | null;
+          image_width: number | null;
+          image_height: number | null;
+          occasions: string[];
+          styles: string[];
+          categories: string[];
+          min_price: number | null;
+          max_price: number | null;
+          price_ranges: string[];
+          score: number;
+        };
+        Relationships: [];
+      };
     };
     Functions: {
       current_user_id: { Args: Record<string, never>; Returns: string };
@@ -226,6 +253,46 @@ export type Database = {
           created_at: string;
           sim: number;
           same_city: boolean;
+        }[];
+      };
+      popular_content_tags: {
+        Args: { p_limit?: number | null };
+        Returns: { slug: string; name: string; type: string }[];
+      };
+      get_feed: {
+        Args: {
+          p_cities?: string[] | null;
+          p_occasions?: string[] | null;
+          p_styles?: string[] | null;
+          p_categories?: string[] | null;
+          p_prices?: string[] | null;
+          p_sort?: string | null;
+          p_limit?: number | null;
+          p_offset?: number | null;
+        };
+        Returns: {
+          kind: "post" | "garment";
+          id: string;
+          title: string | null;
+          popularity: number;
+          published_at: string | null;
+          created_at: string;
+          brand_id: string;
+          brand_name: string;
+          brand_slug: string;
+          brand_verified: boolean;
+          city_slug: string | null;
+          city_name: string | null;
+          image: string | null;
+          image_width: number | null;
+          image_height: number | null;
+          occasions: string[];
+          styles: string[];
+          categories: string[];
+          min_price: number | null;
+          max_price: number | null;
+          price_ranges: string[];
+          score: number;
         }[];
       };
     };

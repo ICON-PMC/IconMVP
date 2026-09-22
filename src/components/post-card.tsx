@@ -12,6 +12,7 @@ export function PostCard({
   likeCount,
   isLoggedIn = false,
   path = "/feed",
+  tagNames = {},
 }: {
   post: Views<"post_feed">;
   saved?: boolean;
@@ -19,9 +20,12 @@ export function PostCard({
   likeCount?: number;
   isLoggedIn?: boolean;
   path?: string;
+  tagNames?: Record<string, string>;
 }) {
   const price = priceLabel(post.min_price, post.max_price);
-  const chips = [...post.occasions, ...post.styles].slice(0, 4);
+  const chips = [...post.occasions, ...post.styles]
+    .map((slug) => tagNames[slug] ?? slug)
+    .slice(0, 4);
   const img = imageUrl(post.image);
 
   return (

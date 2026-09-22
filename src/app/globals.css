@@ -122,3 +122,18 @@ body {
     @apply border-border outline-ring/50;
   }
 }
+
+/* ── Móvil ────────────────────────────────────────────────────────
+   `pb-safe-bar`: aire inferior suficiente para una barra fija (StickyActionBar) + área segura. */
+@utility pb-safe-bar {
+  padding-bottom: calc(6rem + env(safe-area-inset-bottom));
+}
+
+/* Inputs `glass-input` de 16px en móvil: evita el zoom automático de iOS al enfocar. */
+@media (max-width: 767px) {
+  input.glass-input,
+  select.glass-input,
+  textarea.glass-input {
+    font-size: 16px;
+  }
+}
