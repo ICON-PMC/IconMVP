@@ -1,6 +1,8 @@
+import { Bookmark } from "lucide-react";
 import { toggleSavedPost, toggleSavedGarment } from "@/app/saved/actions";
 
-// Botón de guardar (corazón). Server component: el form llama a un server action.
+// Botón de guardar (marcador/bookmark). Server component: el form llama a un server action.
+// Ícono a propósito distinto del corazón del LikeButton, para no confundirlos.
 // Si no hay sesión, el action redirige a /login.
 export function SaveButton({
   kind,
@@ -30,11 +32,11 @@ export function SaveButton({
         type="submit"
         aria-label={saved ? "Quitar de guardados" : "Guardar"}
         title={saved ? "Quitar de guardados" : "Guardar"}
-        className={`glass flex h-9 w-9 items-center justify-center rounded-full text-lg leading-none transition hover:scale-105 ${
+        className={`glass flex h-9 w-9 items-center justify-center rounded-full transition hover:scale-105 ${
           saved ? "text-coral" : "text-ink/60"
         }`}
       >
-        {saved ? "♥" : "♡"}
+        <Bookmark className={`h-4 w-4 ${saved ? "fill-current" : ""}`} aria-hidden />
       </button>
     </form>
   );

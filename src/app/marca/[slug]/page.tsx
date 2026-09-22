@@ -5,7 +5,10 @@ import { Aurora } from "@/components/aurora";
 import { GlassCard } from "@/components/glass-card";
 import { PostCard } from "@/components/post-card";
 import { GarmentCard } from "@/components/garment-card";
+import { FollowButton } from "@/components/follow-button";
 import { getMySavedIds } from "@/lib/saves";
+import { getMyFollowedBrandIds, getMyLikedPostIds } from "@/lib/social";
+import { getCurrentUser } from "@/lib/auth";
 
 export default async function BrandPage({
   params,
@@ -56,8 +59,15 @@ export default async function BrandPage({
   const imageOf = (gid: string) =>
     gimages.find((x) => x.garment_id === gid)?.cf_image_id ?? null;
 
-  const saved = await getMySavedIds();
+  const [saved, followedBrandIds, likedPostIds, session] = await Promise.all([
+    getMySavedIds(),
+    getMyFollowedBrandIds(),
+    getMyLikedPostIds(),
+    getCurrentUser(),
+  ]);
   const path = `/marca/${slug}`;
+  const isFollowing = followedBrandIds.has(brand.id);
+  const isLoggedIn = Boolean(session?.profile);
 
   return (
     <>
@@ -84,7 +94,13 @@ export default async function BrandPage({
           </div>
           {cityName && <p className="mt-1 text-sm text-ink/50">{cityName}</p>}
           {brand.bio && <p className="mt-3 max-w-xl text-ink/70">{brand.bio}</p>}
-          <div className="mt-4 flex flex-wrap gap-3 text-sm">
+          <div className="mt-4 flex flex-wrap items-center gap-3 text-sm">
+            <FollowButton
+              brandId={brand.id}
+              slug={slug}
+              initialFollowing={isFollowing}
+              isLoggedIn={isLoggedIn}
+            />
             {brand.store_url && (
               <a
                 href={brand.store_url}
@@ -119,6 +135,8 @@ export default async function BrandPage({
                 key={p.id}
                 post={p}
                 saved={saved.posts.has(p.id)}
+                liked={likedPostIds.has(p.id)}
+                isLoggedIn={isLoggedIn}
                 path={path}
               />
             ))}
