@@ -122,7 +122,7 @@ export default async function SavedPage({
 
         {empty && (
           <p className="text-sm text-ink/60">
-            Aún no has guardado nada. Toca el ♡ en un look o una prenda.
+            Aún no has guardado nada. Toca el marcador en un look o una prenda.
           </p>
         )}
 

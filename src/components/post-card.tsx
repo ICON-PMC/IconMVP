@@ -25,8 +25,7 @@ export function PostCard({
   const img = imageUrl(post.image);
 
   return (
-    <article className="relative mb-4 break-inside-avoid">
-      <SaveButton kind="post" id={post.id} saved={saved} path={path} floating />
+    <article className="mb-4 break-inside-avoid">
       <div className="glass overflow-hidden rounded-2xl">
         <Link
           href={`/post/${post.id}`}
@@ -70,10 +69,12 @@ export function PostCard({
             )}
           </div>
         </Link>
-        {/* El like va FUERA del <Link>: un <button> dentro de un <a> es HTML inválido y
-            el clic dispararía la navegación. Va aquí, dentro de la tarjeta, y no pegado al
-            SaveButton flotante para no dejar dos corazones contiguos y confundibles. */}
-        <div className="flex items-center justify-end px-3 pb-3">
+        {/* Fila de acciones al pie: guardar y like juntos, y FUERA del <Link> (un
+            <button> dentro de un <a> es HTML inválido y el clic navegaría). Con
+            justify-between + gap quedan separados en los extremos; al no haber ya
+            botón flotante sobre la imagen, no pueden superponerse. */}
+        <div className="flex items-center justify-between gap-2 px-3 pb-3">
+          <SaveButton kind="post" id={post.id} saved={saved} path={path} />
           <LikeButton
             postId={post.id}
             initialLiked={liked}
