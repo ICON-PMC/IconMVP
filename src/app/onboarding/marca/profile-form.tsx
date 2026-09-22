@@ -14,11 +14,11 @@ type Props = {
   defaults: { name: string; bio: string; city: string; link: string };
 };
 
-const field = "glass-input h-10 rounded-xl px-4 text-sm";
+const field = "glass-input h-11 rounded-xl px-4 text-base md:h-10 md:text-sm";
 
 function FieldError({ id, msg }: { id: string; msg?: string }) {
   return msg ? (
-    <p id={id} className="mt-1 text-xs text-coral">
+    <p id={id} role="alert" className="mt-1 text-xs text-coral">
       {msg}
     </p>
   ) : null;
@@ -38,7 +38,7 @@ export function ProfileForm({ cities, defaults }: Props) {
   return (
     <form action={action} className="flex flex-col gap-4" noValidate>
       {state.message && (
-        <p className="rounded-xl bg-coral/15 px-3 py-2 text-sm text-coral">{state.message}</p>
+        <p role="alert" className="rounded-xl bg-coral/15 px-3 py-2 text-sm text-coral">{state.message}</p>
       )}
 
       <div>
@@ -65,7 +65,7 @@ export function ProfileForm({ cities, defaults }: Props) {
           id="bio"
           name="bio"
           rows={3}
-          className="glass-input min-h-20 resize-none rounded-xl px-4 py-2.5 text-sm"
+          className="glass-input min-h-24 resize-none rounded-xl px-4 py-2.5 text-base md:text-sm"
           defaultValue={v.bio}
           onChange={(ev) => setBioLen(ev.target.value.length)}
           aria-invalid={!!e.bio}
@@ -126,7 +126,7 @@ export function ProfileForm({ cities, defaults }: Props) {
       <Button
         type="submit"
         disabled={pending}
-        className="mt-1 h-10 rounded-xl bg-forest text-sm text-white hover:bg-forest-deep"
+        size="lg" className="mt-1 rounded-xl bg-forest text-base text-white hover:bg-forest-deep md:text-sm"
       >
         {pending ? "Guardando…" : "Continuar"}
       </Button>

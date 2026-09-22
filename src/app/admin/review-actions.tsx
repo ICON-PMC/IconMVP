@@ -38,12 +38,12 @@ export function ReviewActions({ brandId, brandName }: { brandId: string; brandNa
   }
 
   return (
-    <div className="flex flex-col items-end gap-2">
+    <div className="flex w-full flex-col items-stretch gap-2 sm:w-auto sm:items-end">
       <div className="flex gap-2">
         <Button
           disabled={pending}
           onClick={() => run("aprobada", () => approveBrand(brandId))}
-          className="h-9 rounded-full bg-forest px-4 text-white hover:bg-forest-deep"
+          className="flex-1 rounded-full sm:flex-none sm:px-5"
         >
           Aprobar
         </Button>
@@ -51,7 +51,7 @@ export function ReviewActions({ brandId, brandName }: { brandId: string; brandNa
           variant="destructive"
           disabled={pending}
           onClick={() => setOpen(true)}
-          className="h-9 rounded-full px-4"
+          className="flex-1 rounded-full sm:flex-none sm:px-5"
         >
           Rechazar
         </Button>
