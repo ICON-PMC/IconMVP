@@ -85,11 +85,15 @@ para que el repo quede en sync con lo que ya corrió en la nube.
 
 Un **post** es una foto de outfit. Sus prendas se taggean en **post_items** (con la talla que se
 compró), y cada prenda es un **garment** del catálogo de una **brand**. La taxonomía (categoría,
-ocasión, estilo, temperatura) vive en una sola tabla, **tags**, distinguida por `type`. El feed no
-lee la tabla `posts` directo — lee la vista **`post_feed`**, que ya trae todo agregado (tags, precios,
-ciudad, imagen) y un campo `score` (popularidad + qué tan reciente es) para ordenar.
+ocasión, estilo, temperatura) vive en una sola tabla, **tags**, distinguida por `type`. `/feed`
+(el masonry mixto de outfits + prendas) no lee `posts` ni `garments` directo — llama al RPC
+**`get_feed`**, sobre la vista **`feed_items`** (un row por post o por prenda, con `kind`), que ya
+trae todo agregado (tags, precios, ciudad, imagen) y un campo `score` (popularidad + qué tan
+reciente es) para ordenar. Las prendas heredan ocasión/estilo de los posts publicados que las
+taggean (no tienen esas etiquetas propias). La vista `post_feed` original se mantiene (la usan las
+pestañas de búsqueda y otras páginas).
 
-19 tablas, 3 vistas, 3 funciones de búsqueda y 2 RPC de revisión de marcas. El detalle línea por línea está en
+19 tablas, 4 vistas, 5 funciones de búsqueda/feed y 2 RPC de revisión de marcas. El detalle línea por línea está en
 `supabase/migrations/` (es la fuente de verdad) — no lo dupliques leyendo esto, es solo el mapa.
 
 ### Los roles

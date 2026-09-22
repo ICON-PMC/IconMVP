@@ -2,56 +2,63 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { SiteHeader } from "@/components/site-header";
 import { Aurora } from "@/components/aurora";
-import { FeedFilters } from "@/components/feed-filters";
-import { PostCard } from "@/components/post-card";
-import { GarmentCard } from "@/components/garment-card";
+import { FeedTopBar } from "@/components/feed/top-bar";
+import { FeedActiveChips } from "@/components/feed/active-chips";
+import { FeedSuggestions } from "@/components/feed/suggestions";
+import { FeedGrid } from "@/components/feed-grid";
+import { FeedCard } from "@/components/feed-card";
 import { BrandCard } from "@/components/brand-card";
 import { PRICE_BUCKETS } from "@/lib/taxonomy";
 import { getMySavedIds } from "@/lib/saves";
 import { getCurrentUser } from "@/lib/auth";
-import type { Views } from "@/lib/database.types";
+import { getSuggestionChips } from "@/lib/suggestions";
+import { parseFeedParams, getFeedPage, type FeedItem } from "@/lib/feed";
+import type { FilterGroup } from "@/components/feed/filter-panel";
 
 type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
-type Group = { param: string; label: string; options: { value: string; label: string }[] };
 
-const SORTS = new Set(["relevant", "new", "popular", "az"]);
-const TYPES = new Set(["garments", "posts", "brands"]);
+const TYPES = new Set(["all", "garments", "posts", "brands"]);
 
-type PostMeta = { sim: number; same_city: boolean };
+type Meta = { sim: number; same_city: boolean };
 
-function sortPosts(rows: Views<"post_feed">[], sort: string, meta: Map<string, PostMeta>) {
-  rows.sort((a, b) => {
+function sortFeedItems(items: FeedItem[], sort: string, meta: Map<string, Meta>) {
+  items.sort((a, b) => {
     if (sort === "az") return a.brand_name.localeCompare(b.brand_name);
     if (sort === "new") return (b.published_at ?? "").localeCompare(a.published_at ?? "");
     if (sort === "popular") return (b.popularity ?? 0) - (a.popularity ?? 0);
-    const ca = meta.get(a.id)?.same_city ? 1 : 0;
-    const cb = meta.get(b.id)?.same_city ? 1 : 0;
+    const key = (it: FeedItem) => `${it.kind}:${it.id}`;
+    const ca = meta.get(key(a))?.same_city ? 1 : 0;
+    const cb = meta.get(key(b))?.same_city ? 1 : 0;
     if (cb !== ca) return cb - ca;
-    return (meta.get(b.id)?.sim ?? 0) - (meta.get(a.id)?.sim ?? 0);
+    return (meta.get(key(b))?.sim ?? 0) - (meta.get(key(a))?.sim ?? 0);
   });
 }
 
-export default async function FeedPage({
-  searchParams,
-}: {
-  searchParams: SearchParams;
-}) {
-  const sp = await searchParams;
-  const parse = (k: string) =>
-    sp[k] ? String(sp[k]).split(",").filter(Boolean) : [];
+// Trae de `feed_items` las filas de un `kind` cuyo id está en `ids`, con los filtros
+// activos aplicados (para las pestañas de búsqueda "Todo" / "Outfits").
+async function fetchFeedItemsByIds(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  kind: "post" | "garment",
+  ids: string[],
+  f: { city: string[]; occasion: string[]; style: string[]; category: string[]; price: string[] },
+): Promise<FeedItem[]> {
+  if (ids.length === 0) return [];
+  let q = supabase.from("feed_items").select("*").eq("kind", kind).in("id", ids);
+  if (f.city.length) q = q.in("city_slug", f.city);
+  if (f.occasion.length) q = q.overlaps("occasions", f.occasion);
+  if (f.style.length) q = q.overlaps("styles", f.style);
+  if (f.category.length) q = q.overlaps("categories", f.category);
+  if (f.price.length) q = q.overlaps("price_ranges", f.price);
+  const { data } = await q;
+  return data ?? [];
+}
 
-  const f = {
-    category: parse("category"),
-    occasion: parse("occasion"),
-    style: parse("style"),
-    city: parse("city"),
-    price: parse("price"),
-  };
+export default async function FeedPage({ searchParams }: { searchParams: SearchParams }) {
+  const sp = await searchParams;
+  const { filters: f, sort } = parseFeedParams(sp);
   const q = (sp.q ? String(sp.q) : "").trim();
-  const sortRaw = sp.sort ? String(sp.sort) : "relevant";
-  const sort = SORTS.has(sortRaw) ? sortRaw : "relevant";
-  const typeRaw = sp.type ? String(sp.type) : "garments";
-  const type = TYPES.has(typeRaw) ? typeRaw : "garments";
+  const typeRaw = sp.type ? String(sp.type) : "all";
+  const type = TYPES.has(typeRaw) ? typeRaw : "all";
 
   const supabase = await createClient();
 
@@ -64,30 +71,36 @@ export default async function FeedPage({
   const toOpts = (rows: { slug: string; name: string }[] | null) =>
     (rows ?? []).map((r) => ({ value: r.slug, label: r.name }));
 
-  const cityGroup: Group = { param: "city", label: "Ciudad", options: toOpts(citiesRes.data) };
-  const priceGroup: Group = {
+  const cityGroup: FilterGroup = { param: "city", label: "Ciudad", options: toOpts(citiesRes.data) };
+  const priceGroup: FilterGroup = {
     param: "price",
     label: "Precio",
     options: PRICE_BUCKETS.map((b) => ({ value: b.value, label: b.label })),
   };
-  const categoryGroup: Group = { param: "category", label: "Categoría", options: toOpts(catsRes.data) };
-  const occasionGroup: Group = { param: "occasion", label: "Ocasión", options: toOpts(occsRes.data) };
-  const styleGroup: Group = { param: "style", label: "Estilo", options: toOpts(stylesRes.data) };
+  const categoryGroup: FilterGroup = { param: "category", label: "Categoría", options: toOpts(catsRes.data) };
+  const occasionGroup: FilterGroup = { param: "occasion", label: "Ocasión", options: toOpts(occsRes.data) };
+  const styleGroup: FilterGroup = { param: "style", label: "Estilo", options: toOpts(stylesRes.data) };
+  const allGroups = [occasionGroup, cityGroup, priceGroup, categoryGroup, styleGroup];
+
+  const tagNames: Record<string, string> = {};
+  for (const t of [...(occsRes.data ?? []), ...(stylesRes.data ?? [])]) tagNames[t.slug] = t.name;
 
   const saved = await getMySavedIds();
 
-  // ===================== Modo búsqueda: pestañas Prendas / Outfits / Marcas =====================
+  // ===================== Modo búsqueda: pestañas Todo / Prendas / Outfits / Marcas =====================
   if (q) {
     const session = await getCurrentUser();
     const userCity = session?.profile?.home_city_id ?? undefined;
 
-    // Contadores por tipo (solo por texto, sin filtros).
+    // Contadores por tipo (solo por texto, sin filtros); se reusan como fuente de datos
+    // de las pestañas "Todo" y "Outfits" para no repetir la búsqueda.
     const [gCount, pCount, bCount] = await Promise.all([
       supabase.rpc("search_garments", { q }),
       supabase.rpc("search_posts", { q }),
       supabase.rpc("search_brands", { q }),
     ]);
     const counts = {
+      all: (gCount.data?.length ?? 0) + (pCount.data?.length ?? 0),
       garments: gCount.data?.length ?? 0,
       posts: pCount.data?.length ?? 0,
       brands: bCount.data?.length ?? 0,
@@ -97,10 +110,11 @@ export default async function FeedPage({
       const params = new URLSearchParams();
       params.set("q", q);
       if (sort !== "relevant") params.set("sort", sort);
-      if (t !== "garments") params.set("type", t);
+      if (t !== "all") params.set("type", t);
       return `/feed?${params}`;
     };
     const TAB_LABELS: [string, string][] = [
+      ["all", "Todo"],
       ["garments", "Prendas"],
       ["posts", "Outfits"],
       ["brands", "Marcas"],
@@ -126,8 +140,15 @@ export default async function FeedPage({
       </div>
     );
 
-    let groups: Group[] = [];
+    let groups: FilterGroup[] = [];
     let body: React.ReactNode;
+    const clearFiltersHref = (() => {
+      const params = new URLSearchParams();
+      params.set("q", q);
+      if (sort !== "relevant") params.set("sort", sort);
+      if (type !== "all") params.set("type", type);
+      return `/feed?${params}`;
+    })();
 
     if (type === "brands") {
       const { data, error } = await supabase.rpc("search_brands", { q, p_user_city: userCity });
@@ -140,10 +161,13 @@ export default async function FeedPage({
         if (cb !== ca) return cb - ca;
         return b.sim - a.sim;
       });
+      if (error) console.error("[feed] search_brands falló:", error.message);
       body = error ? (
-        <p className="text-sm text-coral">{error.message}</p>
+        <p className="text-sm text-ink/60">
+          No pudimos cargar marcas en este momento. Intenta de nuevo.
+        </p>
       ) : rows.length === 0 ? (
-        <p className="text-sm text-ink/60">No encontramos marcas para «{q}».</p>
+        <EmptyState text={`No encontramos marcas para «${q}».`} />
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {rows.map((b) => (
@@ -161,127 +185,147 @@ export default async function FeedPage({
         </div>
       );
     } else if (type === "posts") {
-      groups = [occasionGroup, cityGroup, priceGroup, categoryGroup, styleGroup];
-      const { data: matches } = await supabase.rpc("search_posts", { q, p_user_city: userCity });
-      const ids = (matches ?? []).map((m) => m.id);
-      const meta = new Map<string, PostMeta>(
-        (matches ?? []).map((m) => [m.id, { sim: m.sim, same_city: m.same_city }]),
+      groups = allGroups;
+      const matches = pCount.data ?? [];
+      const meta = new Map<string, Meta>(
+        matches.map((m) => [`post:${m.id}`, { sim: m.sim, same_city: m.same_city }]),
       );
-      let rows: Views<"post_feed">[] = [];
-      if (ids.length) {
-        let pq = supabase.from("post_feed").select("*").in("id", ids);
-        if (f.city.length) pq = pq.in("city_slug", f.city);
-        if (f.occasion.length) pq = pq.overlaps("occasions", f.occasion);
-        if (f.style.length) pq = pq.overlaps("styles", f.style);
-        if (f.category.length) pq = pq.overlaps("categories", f.category);
-        if (f.price.length) pq = pq.overlaps("price_ranges", f.price);
-        rows = (await pq).data ?? [];
-        sortPosts(rows, sort, meta);
-      }
+      const rows = await fetchFeedItemsByIds(
+        supabase,
+        "post",
+        matches.map((m) => m.id),
+        f,
+      );
+      sortFeedItems(rows, sort, meta);
       body =
         rows.length === 0 ? (
-          <p className="text-sm text-ink/60">
-            No encontramos outfits para «{q}». Prueba con otro término o quita filtros.
-          </p>
+          <EmptyState text={`No encontramos outfits para «${q}». Prueba con otro término o quita filtros.`} clearHref={clearFiltersHref} />
         ) : (
           <div className="columns-2 gap-4 md:columns-3">
-            {rows.map((post) => (
-              <PostCard
-                key={post.id}
-                post={post}
-                saved={saved.posts.has(post.id)}
+            {rows.map((item) => (
+              <FeedCard
+                key={`${item.kind}:${item.id}`}
+                item={item}
+                tagNames={tagNames}
+                saved={saved.posts.has(item.id)}
+                path="/feed"
+              />
+            ))}
+          </div>
+        );
+    } else if (type === "garments") {
+      groups = [cityGroup, priceGroup, categoryGroup];
+      const matches = gCount.data ?? [];
+      const meta = new Map<string, Meta>(
+        matches.map((m) => [`garment:${m.id}`, { sim: m.sim, same_city: false }]),
+      );
+      const rows = await fetchFeedItemsByIds(
+        supabase,
+        "garment",
+        matches.map((m) => m.id),
+        f,
+      );
+      sortFeedItems(rows, sort, meta);
+      body =
+        rows.length === 0 ? (
+          <EmptyState text={`No encontramos prendas para «${q}». Prueba con otro término o quita filtros.`} clearHref={clearFiltersHref} />
+        ) : (
+          <div className="columns-2 gap-4 md:columns-3">
+            {rows.map((item) => (
+              <FeedCard
+                key={`${item.kind}:${item.id}`}
+                item={item}
+                tagNames={tagNames}
+                saved={saved.garments.has(item.id)}
                 path="/feed"
               />
             ))}
           </div>
         );
     } else {
-      // garments (default)
-      groups = [cityGroup, priceGroup, categoryGroup];
-      const { data, error } = await supabase.rpc("search_garments", {
-        q,
-        p_cities: f.city.length ? f.city : undefined,
-        p_categories: f.category.length ? f.category : undefined,
-        p_prices: f.price.length ? f.price : undefined,
-        p_sort: sort,
-        p_user_city: userCity,
-      });
-      const items = data ?? [];
-      body = error ? (
-        <p className="text-sm text-coral">{error.message}</p>
-      ) : items.length === 0 ? (
-        <p className="text-sm text-ink/60">
-          No encontramos prendas para «{q}». Prueba con otro término o quita filtros.
-        </p>
-      ) : (
-        <div className="columns-2 gap-4 md:columns-3">
-          {items.map((g) => (
-            <div key={g.id} className="mb-4 break-inside-avoid">
-              <GarmentCard
-                id={g.id}
-                title={g.title}
-                price_cop={g.price_cop}
-                image={g.image}
-                saved={saved.garments.has(g.id)}
+      // "all" (Todo, por defecto): mezcla prendas + outfits ya encontrados para los contadores.
+      groups = allGroups;
+      const meta = new Map<string, Meta>([
+        ...(gCount.data ?? []).map((m) => [`garment:${m.id}`, { sim: m.sim, same_city: false }] as const),
+        ...(pCount.data ?? []).map((m) => [`post:${m.id}`, { sim: m.sim, same_city: m.same_city }] as const),
+      ]);
+      const [gRows, pRows] = await Promise.all([
+        fetchFeedItemsByIds(supabase, "garment", (gCount.data ?? []).map((m) => m.id), f),
+        fetchFeedItemsByIds(supabase, "post", (pCount.data ?? []).map((m) => m.id), f),
+      ]);
+      const rows = [...gRows, ...pRows];
+      sortFeedItems(rows, sort, meta);
+      body =
+        rows.length === 0 ? (
+          <EmptyState text={`No encontramos nada para «${q}». Prueba con otro término o quita filtros.`} clearHref={clearFiltersHref} />
+        ) : (
+          <div className="columns-2 gap-4 md:columns-3">
+            {rows.map((item) => (
+              <FeedCard
+                key={`${item.kind}:${item.id}`}
+                item={item}
+                tagNames={tagNames}
+                saved={item.kind === "post" ? saved.posts.has(item.id) : saved.garments.has(item.id)}
                 path="/feed"
               />
-            </div>
-          ))}
-        </div>
-      );
+            ))}
+          </div>
+        );
     }
 
     return (
-      <Shell groups={groups} sort={sort}>
+      <Shell groups={groups} sort={sort} suggestions={null}>
         {tabs}
         {body}
       </Shell>
     );
   }
 
-  // ===================== Modo browse: feed de POSTS (outfits) =====================
-  let query = supabase.from("post_feed").select("*");
-  if (f.city.length) query = query.in("city_slug", f.city);
-  if (f.occasion.length) query = query.overlaps("occasions", f.occasion);
-  if (f.style.length) query = query.overlaps("styles", f.style);
-  if (f.category.length) query = query.overlaps("categories", f.category);
-  if (f.price.length) query = query.overlaps("price_ranges", f.price);
-  if (sort === "new") query = query.order("published_at", { ascending: false });
-  else if (sort === "popular") query = query.order("popularity", { ascending: false });
-  else if (sort === "az") query = query.order("brand_name", { ascending: true });
-  else query = query.order("score", { ascending: false });
-
-  const feedRes = await query;
-  const posts = feedRes.data ?? [];
-
-  const groups = [occasionGroup, cityGroup, priceGroup, categoryGroup, styleGroup];
+  // ===================== Modo browse: feed mixto (outfits + prendas) =====================
+  const [{ items, nextOffset, error }, chips] = await Promise.all([
+    getFeedPage(f, sort),
+    getSuggestionChips(),
+  ]);
 
   return (
-    <Shell groups={groups} sort={sort}>
-      {feedRes.error ? (
-        <p className="text-sm text-coral">{feedRes.error.message}</p>
-      ) : posts.length === 0 ? (
-        <p className="text-sm text-ink/60">
-          No hay posts con esos filtros. Prueba quitar alguno.
+    <Shell groups={allGroups} sort={sort} suggestions={chips}>
+      {error ? (
+        <p className="glass rounded-2xl px-6 py-16 text-center text-sm text-ink/60">
+          No pudimos cargar el feed en este momento. Intenta de nuevo en un momento.
         </p>
       ) : (
-        <div className="columns-2 gap-4 md:columns-3">
-          {posts.map((post) => (
-            <PostCard key={post.id} post={post} saved={saved.posts.has(post.id)} path="/feed" />
-          ))}
-        </div>
+        <FeedGrid
+          key={JSON.stringify({ f, sort })}
+          initialItems={items}
+          initialNextOffset={nextOffset}
+          initialSaved={saved}
+          tagNames={tagNames}
+        />
       )}
     </Shell>
+  );
+}
+
+function EmptyState({ text, clearHref = "/feed" }: { text: string; clearHref?: string }) {
+  return (
+    <div className="glass rounded-2xl px-6 py-16 text-center">
+      <p className="text-sm text-ink/60">{text}</p>
+      <Link href={clearHref} className="mt-3 inline-block text-sm font-medium text-coral hover:underline">
+        Limpiar filtros
+      </Link>
+    </div>
   );
 }
 
 function Shell({
   groups,
   sort,
+  suggestions,
   children,
 }: {
-  groups: Group[];
+  groups: FilterGroup[];
   sort: string;
+  suggestions: Awaited<ReturnType<typeof getSuggestionChips>> | null;
   children: React.ReactNode;
 }) {
   return (
@@ -292,9 +336,11 @@ function Shell({
         <h1 className="mt-8 mb-4 text-3xl font-medium tracking-tight text-forest">
           Explorar
         </h1>
-        <div className="mb-6">
-          <FeedFilters groups={groups} sort={sort} />
+        <div className="mb-4">
+          <FeedTopBar groups={groups} sort={sort} />
         </div>
+        {suggestions && suggestions.length > 0 && <FeedSuggestions chips={suggestions} />}
+        <FeedActiveChips groups={groups} />
         {children}
       </div>
     </>
