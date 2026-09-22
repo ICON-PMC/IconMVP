@@ -124,9 +124,12 @@
 ## Criterio de merge
 
 - [ ] Todos los checkboxes de arriba están marcados o diferidos con una nota escrita.
-- [ ] **PENDIENTE — bloqueante:** la migración `20260922000000_user_social_actions.sql`
-      está aplicada **solo en local**. Aplicarla en Supabase cloud **antes** de mergear
-      el código que la usa (constitución §7.5).
+- [x] La migración `20260922000000_user_social_actions.sql` está aplicada en Supabase
+      cloud (proyecto `oyzvuckkxzbufncvzcvw`), además de local. Aplicada el 2026-09-22
+      pegando el SQL en el SQL Editor. Verificado con `information_schema.tables`
+      (existen `brand_follows` y `post_likes`) y confirmando que la migración anterior
+      en orden (`20260919020000_protect_post_status`) ya estaba presente, para
+      descartar aplicación fuera de orden.
 - [ ] `database.types.ts` reconciliado con `origin/dev` (conflicto esperado; resolver a mano).
 - [ ] No queda ningún `TODO` sin un follow-up enlazado en los specs o el roadmap.
 - [ ] Las decisiones 6 (like no afecta el feed) y 7 (sin contador de seguidores) se respetan
