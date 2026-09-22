@@ -7,7 +7,7 @@ import { PostCard } from "@/components/post-card";
 import { GarmentCard } from "@/components/garment-card";
 import { FollowButton } from "@/components/follow-button";
 import { getMySavedIds } from "@/lib/saves";
-import { getMyFollowedBrandIds } from "@/lib/social";
+import { getMyFollowedBrandIds, getMyLikedPostIds } from "@/lib/social";
 import { getCurrentUser } from "@/lib/auth";
 
 export default async function BrandPage({
@@ -59,9 +59,10 @@ export default async function BrandPage({
   const imageOf = (gid: string) =>
     gimages.find((x) => x.garment_id === gid)?.cf_image_id ?? null;
 
-  const [saved, followedBrandIds, session] = await Promise.all([
+  const [saved, followedBrandIds, likedPostIds, session] = await Promise.all([
     getMySavedIds(),
     getMyFollowedBrandIds(),
+    getMyLikedPostIds(),
     getCurrentUser(),
   ]);
   const path = `/marca/${slug}`;
@@ -134,6 +135,8 @@ export default async function BrandPage({
                 key={p.id}
                 post={p}
                 saved={saved.posts.has(p.id)}
+                liked={likedPostIds.has(p.id)}
+                isLoggedIn={isLoggedIn}
                 path={path}
               />
             ))}

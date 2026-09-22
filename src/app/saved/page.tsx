@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/auth";
+import { getMyLikedPostIds } from "@/lib/social";
 import { SiteHeader } from "@/components/site-header";
 import { Aurora } from "@/components/aurora";
 import { PostCard } from "@/components/post-card";
@@ -13,7 +14,7 @@ export default async function SavedPage() {
   const supabase = await createClient();
   const userId = session.profile.id;
 
-  const [{ data: sp }, { data: sg }] = await Promise.all([
+  const [{ data: sp }, { data: sg }, likedPostIds] = await Promise.all([
     supabase
       .from("saved_posts")
       .select("post_id")
@@ -24,6 +25,7 @@ export default async function SavedPage() {
       .select("garment_id")
       .eq("user_id", userId)
       .order("created_at", { ascending: false }),
+    getMyLikedPostIds(),
   ]);
 
   const postIds = (sp ?? []).map((r) => r.post_id);
@@ -78,7 +80,7 @@ export default async function SavedPage() {
             </h2>
             <div className="columns-2 gap-4 md:columns-3">
               {posts.map((p) => (
-                <PostCard key={p.id} post={p} saved path="/saved" />
+                <PostCard key={p.id} post={p} saved liked={likedPostIds.has(p.id)} isLoggedIn={true} path="/saved" />
               ))}
             </div>
           </>
