@@ -131,6 +131,12 @@ export type Database = {
         Update: { user_id?: string; post_id?: string; created_at?: string };
         Relationships: [];
       };
+      garment_likes: {
+        Row: { user_id: string; garment_id: string; created_at: string };
+        Insert: { user_id: string; garment_id: string; created_at?: string };
+        Update: { user_id?: string; garment_id?: string; created_at?: string };
+        Relationships: [];
+      };
       outbound_clicks: {
         Row: { id: string; garment_id: string | null; brand_id: string | null; post_id: string | null; user_id: string | null; source: Database["public"]["Enums"]["click_source"]; created_at: string };
         Insert: { id?: string; garment_id?: string | null; brand_id?: string | null; post_id?: string | null; user_id?: string | null; source: Database["public"]["Enums"]["click_source"]; created_at?: string };

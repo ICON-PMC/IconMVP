@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/auth";
-import { getMyFollowedBrands, getMyLikedPostIds } from "@/lib/social";
+import { getGarmentLikeCounts, getMyFollowedBrands, getMyLikedGarmentIds, getMyLikedPostIds } from "@/lib/social";
 import { SiteHeader } from "@/components/site-header";
 import { Aurora } from "@/components/aurora";
 import { PostCard } from "@/components/post-card";
@@ -66,7 +66,7 @@ export default async function SavedPage({
   const supabase = await createClient();
   const userId = session.profile.id;
 
-  const [{ data: sp }, { data: sg }, likedPostIds] = await Promise.all([
+  const [{ data: sp }, { data: sg }, likedPostIds, likedGarmentIds] = await Promise.all([
     supabase
       .from("saved_posts")
       .select("post_id")
@@ -78,10 +78,12 @@ export default async function SavedPage({
       .eq("user_id", userId)
       .order("created_at", { ascending: false }),
     getMyLikedPostIds(),
+    getMyLikedGarmentIds(),
   ]);
 
   const postIds = (sp ?? []).map((r) => r.post_id);
   const garmentIds = (sg ?? []).map((r) => r.garment_id);
+  const garmentLikeCounts = await getGarmentLikeCounts(garmentIds);
 
   const posts = postIds.length
     ? ((await supabase.from("post_feed").select("*").in("id", postIds)).data ?? [])
@@ -153,6 +155,9 @@ export default async function SavedPage({
                   price_cop={g.price_cop}
                   image={imageOf(g.id)}
                   saved
+                  liked={likedGarmentIds.has(g.id)}
+                  likeCount={garmentLikeCounts.get(g.id) ?? 0}
+                  isLoggedIn
                   path="/saved"
                 />
               ))}

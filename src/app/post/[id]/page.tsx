@@ -122,7 +122,7 @@ export default async function PostPage({
             <GlassCard className="relative p-5">
               <div className="absolute right-4 top-4 flex items-center gap-2">
                 <LikeButton
-                  postId={id}
+                  itemId={id}
                   initialLiked={likedPostIds.has(id)}
                   initialCount={header.like_count}
                   path={path}

@@ -10,7 +10,7 @@ import { FeedCard } from "@/components/feed-card";
 import { BrandCard } from "@/components/brand-card";
 import { PRICE_BUCKETS } from "@/lib/taxonomy";
 import { getMySavedIds } from "@/lib/saves";
-import { getMyLikedPostIds } from "@/lib/social";
+import { getMyLikedGarmentIds, getMyLikedPostIds } from "@/lib/social";
 import { getCurrentUser } from "@/lib/auth";
 import { getSuggestionChips } from "@/lib/suggestions";
 import { parseFeedParams, getFeedPage, type FeedItem } from "@/lib/feed";
@@ -87,11 +87,13 @@ export default async function FeedPage({ searchParams }: { searchParams: SearchP
   for (const t of [...(occsRes.data ?? []), ...(stylesRes.data ?? [])]) tagNames[t.slug] = t.name;
 
   // Una sola tanda: la sesión se reusa en los dos modos y en los FeedCard.
-  const [saved, liked, session] = await Promise.all([
+  const [saved, likedPosts, likedGarments, session] = await Promise.all([
     getMySavedIds(),
     getMyLikedPostIds(),
+    getMyLikedGarmentIds(),
     getCurrentUser(),
   ]);
+  const liked = { posts: likedPosts, garments: likedGarments };
   const isLoggedIn = Boolean(session?.profile);
 
   // ===================== Modo búsqueda: pestañas Todo / Prendas / Outfits / Marcas =====================
@@ -214,7 +216,7 @@ export default async function FeedPage({ searchParams }: { searchParams: SearchP
                 item={item}
                 tagNames={tagNames}
                 saved={saved.posts.has(item.id)}
-                liked={liked.has(item.id)}
+                liked={liked.posts.has(item.id)}
                 isLoggedIn={isLoggedIn}
                 path="/feed"
               />
@@ -245,7 +247,7 @@ export default async function FeedPage({ searchParams }: { searchParams: SearchP
                 item={item}
                 tagNames={tagNames}
                 saved={saved.garments.has(item.id)}
-                liked={liked.has(item.id)}
+                liked={liked.garments.has(item.id)}
                 isLoggedIn={isLoggedIn}
                 path="/feed"
               />
@@ -276,7 +278,7 @@ export default async function FeedPage({ searchParams }: { searchParams: SearchP
                 item={item}
                 tagNames={tagNames}
                 saved={item.kind === "post" ? saved.posts.has(item.id) : saved.garments.has(item.id)}
-                liked={liked.has(item.id)}
+                liked={item.kind === "post" ? liked.posts.has(item.id) : liked.garments.has(item.id)}
                 isLoggedIn={isLoggedIn}
                 path="/feed"
               />
