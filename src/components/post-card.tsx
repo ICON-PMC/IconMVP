@@ -80,7 +80,7 @@ export function PostCard({
         <div className="flex items-center justify-between gap-2 px-3 pb-3">
           <SaveButton kind="post" id={post.id} saved={saved} path={path} />
           <LikeButton
-            postId={post.id}
+            itemId={post.id}
             initialLiked={liked}
             initialCount={likeCount ?? post.like_count}
             path={path}

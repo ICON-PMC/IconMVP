@@ -7,7 +7,7 @@ import { PostCard } from "@/components/post-card";
 import { GarmentCard } from "@/components/garment-card";
 import { FollowButton } from "@/components/follow-button";
 import { getMySavedIds } from "@/lib/saves";
-import { getMyFollowedBrandIds, getMyLikedPostIds } from "@/lib/social";
+import { getGarmentLikeCounts, getMyFollowedBrandIds, getMyLikedGarmentIds, getMyLikedPostIds } from "@/lib/social";
 import { getCurrentUser } from "@/lib/auth";
 
 export default async function BrandPage({
@@ -59,15 +59,17 @@ export default async function BrandPage({
   const imageOf = (gid: string) =>
     gimages.find((x) => x.garment_id === gid)?.cf_image_id ?? null;
 
-  const [saved, followedBrandIds, likedPostIds, session] = await Promise.all([
+  const [saved, followedBrandIds, likedPostIds, likedGarmentIds, session] = await Promise.all([
     getMySavedIds(),
     getMyFollowedBrandIds(),
     getMyLikedPostIds(),
+    getMyLikedGarmentIds(),
     getCurrentUser(),
   ]);
   const path = `/marca/${slug}`;
   const isFollowing = followedBrandIds.has(brand.id);
   const isLoggedIn = Boolean(session?.profile);
+  const garmentLikeCounts = await getGarmentLikeCounts(gids);
 
   return (
     <>
@@ -159,6 +161,9 @@ export default async function BrandPage({
                 price_cop={g.price_cop}
                 image={imageOf(g.id)}
                 saved={saved.garments.has(g.id)}
+                liked={likedGarmentIds.has(g.id)}
+                likeCount={garmentLikeCounts.get(g.id) ?? 0}
+                isLoggedIn={isLoggedIn}
                 path={path}
               />
             ))}

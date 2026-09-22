@@ -92,18 +92,17 @@ export function FeedCard({
         </Link>
         {/* Fila de acciones al pie: fuera del <Link> (un <button> dentro de un <a> es HTML
             inválido) y sin flotante, para que guardar y like no se superpongan. El like
-            se renderiza solo en posts: los likes son solo de posts (decisión 5). */}
+            aplica a los dos tipos que muestra el feed mixto: outfits y prendas. */}
         <div className="flex items-center justify-between gap-2 px-3 pb-3">
           <SaveButton kind={item.kind} id={item.id} saved={saved} path={path} />
-          {item.kind === "post" && (
-            <LikeButton
-              postId={item.id}
-              initialLiked={liked}
-              initialCount={item.like_count}
-              path={path}
-              isLoggedIn={isLoggedIn}
-            />
-          )}
+          <LikeButton
+            kind={item.kind}
+            itemId={item.id}
+            initialLiked={liked}
+            initialCount={item.like_count}
+            path={path}
+            isLoggedIn={isLoggedIn}
+          />
         </div>
       </div>
     </article>

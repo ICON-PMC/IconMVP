@@ -32,6 +32,38 @@ export async function getMyLikedPostIds(): Promise<Set<string>> {
   return new Set((data ?? []).map((r) => r.post_id));
 }
 
+// Ids de las prendas a las que el usuario actual dio like.
+export async function getMyLikedGarmentIds(): Promise<Set<string>> {
+  const session = await getCurrentUser();
+  if (!session?.profile) return new Set();
+
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("garment_likes")
+    .select("garment_id")
+    .eq("user_id", session.profile.id);
+
+  return new Set((data ?? []).map((r) => r.garment_id));
+}
+
+// Conteo de likes por prenda. La vista `feed_items` ya trae `like_count`, pero las pantallas
+// que leen de la tabla `garments` (`/prenda/[id]`, `/saved`, `/marca/[slug]`) no lo tienen.
+export async function getGarmentLikeCounts(ids: string[]): Promise<Map<string, number>> {
+  if (ids.length === 0) return new Map();
+
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("garment_likes")
+    .select("garment_id")
+    .in("garment_id", ids);
+
+  const counts = new Map<string, number>();
+  for (const r of data ?? []) {
+    counts.set(r.garment_id, (counts.get(r.garment_id) ?? 0) + 1);
+  }
+  return counts;
+}
+
 // Marcas que sigue el usuario actual, con todo lo que necesita el `BrandCard` del
 // tab "Siguiendo" de /saved (Grupo 4).
 export type FollowedBrand = {
