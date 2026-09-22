@@ -3,28 +3,40 @@
 > Cómo saber que la implementación funciona y se puede mergear.
 > Todos los checks deben estar marcados o diferidos con una nota escrita antes de
 > mergear `feat/fase0-social-infra` → `main`.
+>
+> **Leyenda:** **[CLI]** verificado por SQL contra la Supabase local con rol `authenticated`
+> + claim JWT (no como superusuario), reproducible con las queries de § Evidencia CLI.
+> **[build]** verificado por `npm run build` / `npm run lint` / revisión de código.
+> **[manual]** requiere navegador con datos — pendiente de la prueba del equipo.
 
 ---
 
 ## Grupo 1 — Esquema
 
-- [ ] La migración aplica desde cero: `supabase db reset` termina sin errores.
-- [ ] `brand_follows(user_id, brand_id)` tiene PK compuesta; los FK cascadean al borrar
-      usuario o marca.
-- [ ] `post_likes(user_id, post_id)` tiene PK compuesta; los FK cascadean al borrar usuario
-      o post.
-- [ ] Ambas tablas tienen RLS habilitado **y** GRANT explícito a `authenticated`
-      (constitución §7.2).
-- [ ] Una usuaria **no** puede insertar/borrar filas a nombre de otra (RLS lo bloquea).
-- [ ] `post_feed` incluye `like_count` y conserva todos los campos previos; el feed sigue
-      cargando.
-- [ ] `post_feed.like_count` refleja el número real de filas en `post_likes` para un post.
-- [ ] `posts.popularity` **no** cambia al dar/quitar like (decisión 6).
-- [ ] `brands` **no** tiene `follower_count` ni trigger de conteo (decisión 7).
-- [ ] `database.types.ts` actualizado: `brand_follows`, `post_likes` y `like_count` en
-      `post_feed` (constitución §7.4).
-- [ ] `src/lib/social.ts` exporta `getMyFollowedBrandIds`, `getMyLikedPostIds` y
-      `getMyFollowedBrands`; devuelven vacío para usuaria anónima.
+- [x] La migración aplica desde cero: `supabase db reset` termina sin errores. **[CLI]**
+- [x] `brand_follows(user_id, brand_id)` tiene PK compuesta; los FK cascadean al borrar
+      usuario o marca. **[CLI]** — `brand_follows_pkey` + ambos FK `ON DELETE CASCADE`
+- [x] `post_likes(user_id, post_id)` tiene PK compuesta; los FK cascadean al borrar usuario
+      o post. **[CLI]** — `post_likes_pkey` + ambos FK `ON DELETE CASCADE`
+- [x] Ambas tablas tienen RLS habilitado **y** GRANT explícito a `authenticated`
+      (constitución §7.2). **[CLI]** — `relrowsecurity = true`; policies `_insert`/`_delete`/`_read`
+- [x] Una usuaria **no** puede insertar/borrar filas a nombre de otra (RLS lo bloquea).
+      **[CLI]** — insert de A con `user_id` de B → `42501` en `post_likes` y `saved_posts`
+- [x] `post_feed` incluye `like_count` y conserva todos los campos previos. **[CLI]**
+      (el *render* del feed en el navegador queda **[manual]**)
+- [x] `post_feed.like_count` refleja el número real de filas en `post_likes` para un post.
+      **[CLI]** — 1 fila en `post_likes` → `like_count = 1`
+- [x] `posts.popularity` **no** cambia al dar/quitar like (decisión 6). **[CLI]**
+      — `popularity` sigue en 0 con 1 like; 0 triggers en `post_likes`
+- [x] `brands` **no** tiene `follower_count` ni trigger de conteo (decisión 7). **[CLI]**
+      — 0 columnas `follower_count`; 0 triggers en `post_likes`/`brand_follows`
+- [x] `database.types.ts` actualizado: `brand_follows`, `post_likes` y `like_count` en
+      `post_feed` (constitución §7.4). **[build]**
+- [x] `src/lib/social.ts` exporta `getMyFollowedBrandIds`, `getMyLikedPostIds` y
+      `getMyFollowedBrands`; devuelven vacío para usuaria anónima. **[build]**
+      (early return `if (!session?.profile)`; cubierto por `npm run build`)
+- [ ] `brand_follows_brand_idx` y `post_likes_post_idx` existen (índices de la migración).
+      **[manual]**
 
 ---
 
@@ -53,7 +65,7 @@
 - [ ] Una usuaria anónima que hace clic en el corazón va a `/login?next=<ruta actual>`.
 - [ ] Si el server action falla, el corazón y el contador revierten.
 - [ ] El server action rechaza peticiones sin sesión (devuelve error, no 500).
-- [ ] Dar like **no** modifica `posts.popularity` (verificar por query directa).
+- [x] Dar like **no** modifica `posts.popularity` (verificar por query directa). **[CLI]**
 
 ---
 
@@ -74,16 +86,20 @@
 
 ## Grupo 5 — Verificación de "guardar" existente
 
-- [ ] `saved_posts` / `saved_garments` siguen funcionando tras los cambios del Grupo 4.
-- [ ] `SaveButton` sigue guardando/quitando posts y prendas correctamente.
-- [ ] Guardar y dar like sobre el **mismo post** coexisten sin interferirse (independientes).
-- [ ] El tab Guardados no perdió ninguna funcionalidad previa de `/saved`.
+- [x] `saved_posts` / `saved_garments` siguen funcionando tras los cambios del Grupo 4.
+      **[CLI]** — insert + delete con rol `authenticated` y RLS activa, sin error
+- [ ] `SaveButton` sigue guardando/quitando posts y prendas correctamente. **[manual]**
+- [x] Guardar y dar like sobre el **mismo post** coexisten sin interferirse (independientes).
+      **[CLI]** — fila simultánea en `post_likes` y `saved_posts` para el mismo `user_id`/`post_id`;
+      borrar el like deja el guardado intacto y viceversa
+- [ ] El tab Guardados no perdió ninguna funcionalidad previa de `/saved`. **[manual]**
 
 ---
 
 ## Casos borde
 
-- [ ] Like y guardar sobre el mismo post: ambos estados persisten de forma independiente.
+- [x] Like y guardar sobre el mismo post: ambos estados persisten de forma independiente.
+      **[CLI]** — ver Grupo 5
 - [ ] Unfollow / unlike cuando la fila no existía: no es error; el estado final es correcto.
 - [ ] Acción sobre un id inexistente: el server action no revienta; el UI revierte.
 - [ ] Post archivado / marca inactiva no aparece en `/saved` (la vista filtra `published`).
@@ -93,9 +109,10 @@
 
 ## Regresión
 
-- [ ] `npm run build` pasa con cero errores de TypeScript.
-- [ ] `npm run lint` pasa.
-- [ ] El feed carga; `post_feed` devuelve `like_count` sin romper campos existentes.
+- [x] `npm run build` pasa con cero errores de TypeScript. **[build]**
+- [x] `npm run lint` pasa. **[build]**
+- [x] `post_feed` devuelve `like_count` sin romper campos existentes. **[CLI]**
+      (que el feed *cargue* en el navegador queda **[manual]**)
 - [ ] `/post/[id]`, `/marca/[slug]`, `/prenda/[id]` renderizan sin errores.
 - [ ] Las rutas de admin y la carga masiva siguen funcionando.
 - [ ] Los tokens glass/tropical siguen intactos (`--color-forest` presente en `globals.css`).
@@ -107,9 +124,44 @@
 ## Criterio de merge
 
 - [ ] Todos los checkboxes de arriba están marcados o diferidos con una nota escrita.
-- [ ] La migración está aplicada en Supabase cloud **antes** de mergear el código
-      (constitución §7.5).
+- [ ] **PENDIENTE — bloqueante:** la migración `20260922000000_user_social_actions.sql`
+      está aplicada **solo en local**. Aplicarla en Supabase cloud **antes** de mergear
+      el código que la usa (constitución §7.5).
 - [ ] `database.types.ts` reconciliado con `origin/dev` (conflicto esperado; resolver a mano).
 - [ ] No queda ningún `TODO` sin un follow-up enlazado en los specs o el roadmap.
 - [ ] Las decisiones 6 (like no afecta el feed) y 7 (sin contador de seguidores) se respetan
       en el código final.
+
+---
+
+## Evidencia CLI (Grupo 1 y Grupo 5)
+
+> Los checks **[CLI]** se corrieron contra la Supabase local. Como `supabase db query`
+> ejecuta como superusuario (bypassa RLS), cada check simula una sesión real dentro de un
+> `DO` block:
+>
+> ```sql
+> perform set_config('role', 'authenticated', true);
+> perform set_config('request.jwt.claim.sub', '<auth.users.id>', true);
+> ```
+>
+> y asserta que `current_user_id()` resuelve al perfil esperado, para no medir por accidente
+> como superusuario. Notas de la herramienta: `supabase db query` acepta **una sola
+> sentencia** por ejecución y **no imprime** los `raise notice`, por eso cada check es un
+> `DO` block (terminar en `DO` = pasó) y los números salen de `SELECT` separados.
+
+| # | Check | Query / criterio | Resultado |
+|---|---|---|---|
+| 1 | Insert + delete de las 3 tablas con RLS activa | `DO` con rol `authenticated` | `DO` — sin excepción |
+| 2 | Fila simultánea en `post_likes` + `saved_posts` + `saved_garments` | `count(*)` por tabla, mismo `user_id`/`post_id` | `1 / 1 / 1` |
+| 3a | Borrar el like no toca el guardado | `delete` + aserción | `post_likes=0`, `saved_posts=1` |
+| 3b | Borrar el guardado no toca el like | `delete` + aserción | `post_likes=1`, `saved_posts=0` |
+| 4 | RLS bloquea escribir a nombre de otra usuaria | `insert` con `user_id` real de B, esperando `42501` | `DO`; B quedó con 0 filas |
+
+El check 4 es el que hace concluyentes a los checks 1–3: sin él, un insert exitoso no
+distinguiría "RLS permite" de "RLS está apagada".
+
+**Fixtures usadas** (creadas para esto, la DB estaba vacía — el `seed.sql` solo trae taxonomía):
+2 usuarios (`auth.users` + perfiles), 1 marca, 1 post publicado, 1 prenda publicada.
+Ninguno de esos usuarios puede iniciar sesión: se insertaron directo en `auth.users`, sin
+contraseña ni `aud`/`role`/`instance_id`. Para probar en el navegador, registrarse en `/signup`.
