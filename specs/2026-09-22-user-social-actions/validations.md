@@ -7,7 +7,7 @@
 > **Leyenda:** **[CLI]** verificado por SQL contra la Supabase local con rol `authenticated`
 > + claim JWT (no como superusuario), reproducible con las queries de § Evidencia CLI.
 > **[build]** verificado por `npm run build` / `npm run lint` / revisión de código.
-> **[manual]** requiere navegador con datos — pendiente de la prueba del equipo.
+> **[manual]** verificado en el navegador con datos (22/09).
 
 ---
 
