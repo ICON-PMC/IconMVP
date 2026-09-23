@@ -161,27 +161,6 @@ export default async function BrandOnboardingPage({
               <GarmentForm key={saved.length} categories={categories ?? []} />
 
               <form id="submit-review" action={submitBrandForReview} />
-              <StickyActionBar
-                label={saved.length === 0 ? "Guarda al menos una prenda para enviar." : undefined}
-              >
-                <Button
-                  nativeButton={false}
-                  render={<Link href="/onboarding/marca?paso=2" />}
-                  variant="ghost"
-                  className="rounded-full"
-                >
-                  Atrás
-                </Button>
-                <Button
-                  type="submit"
-                  form="submit-review"
-                  size="lg"
-                  disabled={saved.length === 0}
-                  className="flex-1 rounded-full bg-coral text-white hover:bg-coral/90 sm:flex-none sm:px-8"
-                >
-                  {resubmitting ? "Reenviar para aprobación" : "Enviar para aprobación"}
-                </Button>
-              </StickyActionBar>
             </>
           ) : (
             <>
@@ -193,6 +172,31 @@ export default async function BrandOnboardingPage({
             </>
           )}
         </GlassCard>
+        {/* Fuera del GlassCard: su backdrop-filter convierte al card en el contenedor del `fixed`
+            y la barra quedaba pegada al fondo del card, tapando "Guardar prenda". */}
+        {step === 3 && (
+          <StickyActionBar
+            label={saved.length === 0 ? "Guarda al menos una prenda para enviar." : undefined}
+          >
+            <Button
+              nativeButton={false}
+              render={<Link href="/onboarding/marca?paso=2" />}
+              variant="ghost"
+              className="rounded-full"
+            >
+              Atrás
+            </Button>
+            <Button
+              type="submit"
+              form="submit-review"
+              size="lg"
+              disabled={saved.length === 0}
+              className="flex-1 rounded-full bg-coral text-white hover:bg-coral/90 sm:flex-none sm:px-8"
+            >
+              {resubmitting ? "Reenviar para aprobación" : "Enviar para aprobación"}
+            </Button>
+          </StickyActionBar>
+        )}
       </main>
     </>
   );
