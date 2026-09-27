@@ -57,11 +57,22 @@ export type InstagramMedia = {
   timestamp: string;
 };
 
+// Token vencido o revocado por la marca desde Instagram (error 190 / OAuthException):
+// la única salida es que la marca vuelva a conectar su cuenta.
+export class InstagramAuthError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "InstagramAuthError";
+  }
+}
+
 async function graphFetch<T>(url: string): Promise<T> {
   const res = await fetch(url);
   const body = await res.json();
   if (!res.ok) {
     const msg = body?.error?.message ?? `Instagram API respondió ${res.status}`;
+    if (body?.error?.code === 190 || body?.error?.type === "OAuthException")
+      throw new InstagramAuthError(msg);
     throw new Error(msg);
   }
   return body as T;

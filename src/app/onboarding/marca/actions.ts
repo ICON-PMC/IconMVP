@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser, getMyBrand } from "@/lib/auth";
 import { uploadImageField } from "@/lib/upload";
+import { StorageQuotaError } from "@/lib/storage-quota";
 import {
   normalizeBrandLink,
   slugify,
@@ -116,15 +117,21 @@ export async function saveBrandCover(
     if (file.size > MAX_COVER_BYTES)
       return { errors: { cover: "La imagen pesa más de 10 MB. Prueba con una más liviana." } };
 
-    let key: string | null;
+    let img: Awaited<ReturnType<typeof uploadImageField>>;
     try {
-      key = await uploadImageField(formData, `brands/${brand.id}/cover`);
+      img = await uploadImageField(formData, `brands/${brand.id}/cover`, "image", {
+        enforceQuotaFor: brand.id,
+      });
     } catch (e) {
+      if (e instanceof StorageQuotaError) return { errors: { cover: e.message } };
       console.error("[onboarding/marca] subida de portada falló:", e);
       return { message: "No pudimos subir la imagen. Intenta de nuevo." };
     }
     const supabase = await createClient();
-    const { error } = await supabase.from("brands").update({ logo_url: key }).eq("id", brand.id);
+    const { error } = await supabase
+      .from("brands")
+      .update({ logo_url: img?.key ?? null, logo_bytes: img?.bytes ?? 0 })
+      .eq("id", brand.id);
     if (error) {
       console.error("[onboarding/marca] guardar portada falló:", error.code, error.message);
       return { message: "No pudimos guardar la imagen. Intenta de nuevo." };
@@ -190,17 +197,23 @@ export async function addOnboardingGarment(
     .from("garment_tags")
     .insert({ garment_id: garment.id, tag_id: category });
 
-  let key: string | null = null;
+  let img: Awaited<ReturnType<typeof uploadImageField>> = null;
   try {
-    key = await uploadImageField(formData, `garments/${garment.id}`);
+    img = await uploadImageField(formData, `garments/${garment.id}`, "image", {
+      enforceQuotaFor: brand.id,
+    });
   } catch (e) {
+    if (e instanceof StorageQuotaError) {
+      await supabase.from("garments").delete().eq("id", garment.id);
+      return { message: e.message, values };
+    }
     console.error("[onboarding/marca] subida de prenda falló:", e);
   }
-  const imgErr = key
+  const imgErr = img
     ? (
         await supabase
           .from("garment_images")
-          .insert({ garment_id: garment.id, cf_image_id: key, position: 0 })
+          .insert({ garment_id: garment.id, cf_image_id: img.key, bytes: img.bytes, position: 0 })
       ).error
     : true;
 

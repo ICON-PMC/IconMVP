@@ -5,7 +5,9 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { requireBrandOwner } from "@/lib/auth";
 import { uploadImageField, uploadImageFromUrl } from "@/lib/upload";
-import { fetchRecentMedia } from "@/lib/instagram";
+import { StorageQuotaError } from "@/lib/storage-quota";
+import { fetchRecentMedia, InstagramAuthError, refreshLongLivedToken } from "@/lib/instagram";
+import { normalizeInstagramHandle, normalizeUrl } from "@/lib/links";
 
 function str(formData: FormData, key: string): string | null {
   const v = formData.get(key);
@@ -24,13 +26,22 @@ async function myBrandIdOrRedirect(): Promise<string> {
 // ============================================================
 export async function updateBrandProfile(formData: FormData) {
   const brandId = await myBrandIdOrRedirect();
+  const storeRaw = str(formData, "store_url");
+  const store_url = normalizeUrl(storeRaw);
+  if (storeRaw && !store_url)
+    redirect(`/marca/panel?tab=perfil&error=${encodeURIComponent("El link de la tienda no es válido.")}`);
+  const instagramRaw = str(formData, "instagram");
+  const instagram = normalizeInstagramHandle(instagramRaw);
+  if (instagramRaw && !instagram)
+    redirect(`/marca/panel?tab=perfil&error=${encodeURIComponent("El usuario de Instagram no es válido.")}`);
+
   const supabase = await createClient();
   const { error } = await supabase
     .from("brands")
     .update({
       name: str(formData, "name") ?? "",
-      store_url: str(formData, "store_url"),
-      instagram: str(formData, "instagram"),
+      store_url,
+      instagram,
       bio: str(formData, "bio"),
     })
     .eq("id", brandId);
@@ -44,6 +55,10 @@ export async function updateBrandProfile(formData: FormData) {
 // ============================================================
 export async function createBrandGarment(formData: FormData) {
   const brandId = await myBrandIdOrRedirect();
+  const productUrlRaw = str(formData, "product_url");
+  const product_url = normalizeUrl(productUrlRaw);
+  if (productUrlRaw && !product_url)
+    redirect(`/marca/panel?tab=catalogo&error=${encodeURIComponent("El link de compra no es válido.")}`);
   const supabase = await createClient();
 
   const priceRaw = str(formData, "price_cop");
@@ -54,7 +69,7 @@ export async function createBrandGarment(formData: FormData) {
       title: str(formData, "title") ?? "",
       description: str(formData, "description"),
       price_cop: priceRaw ? Number(priceRaw) : null,
-      product_url: str(formData, "product_url"),
+      product_url,
       color: str(formData, "color"),
       fabric: str(formData, "fabric"),
       status: "published",
@@ -76,11 +91,20 @@ export async function createBrandGarment(formData: FormData) {
       .from("garment_sizes")
       .insert(sizeIds.map((size_id) => ({ garment_id: garment.id, size_id })));
   }
-  const key = await uploadImageField(formData, `garments/${garment.id}`);
-  if (key) {
+  let img: Awaited<ReturnType<typeof uploadImageField>>;
+  try {
+    img = await uploadImageField(formData, `garments/${garment.id}`, "image", {
+      enforceQuotaFor: brandId,
+    });
+  } catch (e) {
+    if (!(e instanceof StorageQuotaError)) throw e;
+    await supabase.from("garments").delete().eq("id", garment.id);
+    redirect(`/marca/panel?tab=catalogo&error=${encodeURIComponent(e.message)}`);
+  }
+  if (img) {
     await supabase
       .from("garment_images")
-      .insert({ garment_id: garment.id, cf_image_id: key, position: 0 });
+      .insert({ garment_id: garment.id, cf_image_id: img.key, bytes: img.bytes, position: 0 });
   }
 
   revalidatePath("/marca/panel");
@@ -107,9 +131,18 @@ export async function createBrandPost(formData: FormData) {
   if (error || !post)
     redirect(`/marca/panel?error=${encodeURIComponent(error?.message ?? "post")}`);
 
-  const key = await uploadImageField(formData, `posts/${post.id}`);
-  if (key) {
-    await supabase.from("post_images").insert({ post_id: post.id, cf_image_id: key, position: 0 });
+  let img: Awaited<ReturnType<typeof uploadImageField>>;
+  try {
+    img = await uploadImageField(formData, `posts/${post.id}`, "image", { enforceQuotaFor: brandId });
+  } catch (e) {
+    if (!(e instanceof StorageQuotaError)) throw e;
+    await supabase.from("posts").delete().eq("id", post.id);
+    redirect(`/marca/panel?error=${encodeURIComponent(e.message)}`);
+  }
+  if (img) {
+    await supabase
+      .from("post_images")
+      .insert({ post_id: post.id, cf_image_id: img.key, bytes: img.bytes, position: 0 });
   }
 
   revalidatePath("/marca/panel");
@@ -366,23 +399,57 @@ export type IgMediaOption = {
   permalink: string | null;
 };
 
+const RECONNECT_MESSAGE =
+  "Tu conexión con Instagram venció o fue revocada. Vuelve a conectar tu cuenta para importar fotos.";
+const REFRESH_WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
+
+// Devuelve un token vigente de la marca. El token de larga duración dura ~60 días: si le
+// queda menos de una semana se renueva aquí (al usarlo), así no hace falta un cron.
+async function instagramTokenFor(
+  brandId: string,
+): Promise<{ token: string } | { error: string; reconnect?: true }> {
+  const supabase = await createClient();
+  const { data: conn } = await supabase
+    .from("brand_instagram_connections")
+    .select("access_token, token_expires_at")
+    .eq("brand_id", brandId)
+    .maybeSingle();
+  if (!conn) return { error: "Conecta tu Instagram primero." };
+
+  const msLeft = new Date(conn.token_expires_at).getTime() - Date.now();
+  if (msLeft <= 0) return { error: RECONNECT_MESSAGE, reconnect: true };
+  if (msLeft > REFRESH_WINDOW_MS) return { token: conn.access_token };
+
+  try {
+    const fresh = await refreshLongLivedToken(conn.access_token);
+    await supabase
+      .from("brand_instagram_connections")
+      .update({
+        access_token: fresh.access_token,
+        token_expires_at: new Date(Date.now() + fresh.expires_in * 1000).toISOString(),
+      })
+      .eq("brand_id", brandId);
+    return { token: fresh.access_token };
+  } catch (e) {
+    if (e instanceof InstagramAuthError) return { error: RECONNECT_MESSAGE, reconnect: true };
+    // Fallo transitorio: el token actual sigue vigente, se reintenta en el próximo uso.
+    console.error("[instagram] refresh del token falló:", e);
+    return { token: conn.access_token };
+  }
+}
+
 // Trae la media reciente de la marca conectada para que elija cuáles importar.
 export async function listInstagramMedia(): Promise<
-  { ok: true; items: IgMediaOption[] } | { ok: false; error: string }
+  { ok: true; items: IgMediaOption[] } | { ok: false; error: string; reconnect?: true }
 > {
   const { brand } = await requireBrandOwner();
   if (!brand) return { ok: false, error: "No tienes una marca conectada." };
 
-  const supabase = await createClient();
-  const { data: conn } = await supabase
-    .from("brand_instagram_connections")
-    .select("access_token")
-    .eq("brand_id", brand.id)
-    .maybeSingle();
-  if (!conn) return { ok: false, error: "Conecta tu Instagram primero." };
+  const auth = await instagramTokenFor(brand.id);
+  if ("error" in auth) return { ok: false, ...auth };
 
   try {
-    const media = await fetchRecentMedia(conn.access_token);
+    const media = await fetchRecentMedia(auth.token);
     return {
       ok: true,
       items: media
@@ -395,6 +462,7 @@ export async function listInstagramMedia(): Promise<
         })),
     };
   } catch (e) {
+    if (e instanceof InstagramAuthError) return { ok: false, error: RECONNECT_MESSAGE, reconnect: true };
     return { ok: false, error: e instanceof Error ? e.message : "Error al leer Instagram." };
   }
 }
@@ -428,12 +496,20 @@ export async function importInstagramMedia(
       continue;
     }
     try {
-      const key = await uploadImageFromUrl(item.imageUrl, `posts/${post.id}`);
+      const img = await uploadImageFromUrl(item.imageUrl, `posts/${post.id}`, {
+        enforceQuotaFor: brand.id,
+      });
       await supabase
         .from("post_images")
-        .insert({ post_id: post.id, cf_image_id: key, position: 0 });
+        .insert({ post_id: post.id, cf_image_id: img.key, bytes: img.bytes, position: 0 });
       created++;
     } catch (e) {
+      if (e instanceof StorageQuotaError) {
+        // Sin espacio: se borra el borrador vacío y no tiene sentido seguir con el resto.
+        await supabase.from("posts").delete().eq("id", post.id);
+        errors.push(e.message);
+        break;
+      }
       errors.push(`${item.id}: ${e instanceof Error ? e.message : "fallo al subir la imagen"}`);
     }
   }

@@ -5,6 +5,7 @@ import ExcelJS from "exceljs";
 import { createClient } from "@/lib/supabase/server";
 import { requireStaff } from "@/lib/auth";
 import { uploadImageField } from "@/lib/upload";
+import { normalizeUrl } from "@/lib/links";
 
 export type RowResult = {
   line: number;
@@ -154,6 +155,9 @@ export async function importGarments(
     }
 
     const notes: string[] = [];
+    const urlRaw = get(row, "url_producto");
+    const product_url = normalizeUrl(urlRaw);
+    if (urlRaw && !product_url) notes.push(`link de compra inválido "${urlRaw}" (omitido)`);
     const precioRaw = get(row, "precio_cop").replace(/[^\d]/g, "");
     const price_cop = precioRaw ? Number(precioRaw) : null;
 
@@ -187,7 +191,7 @@ export async function importGarments(
         title: titulo,
         description: get(row, "descripcion") || null,
         price_cop,
-        product_url: get(row, "url_producto") || null,
+        product_url,
         color: get(row, "color") || null,
         fabric: get(row, "tela") || null,
         status: "pending",
@@ -252,19 +256,19 @@ export async function uploadGarmentImageAction(
   if (!garmentId) return { ok: false, error: "Falta la prenda" };
 
   const supabase = await createClient();
-  let key: string | null;
+  let img: Awaited<ReturnType<typeof uploadImageField>>;
   try {
-    key = await uploadImageField(formData, `garments/${garmentId}`);
+    img = await uploadImageField(formData, `garments/${garmentId}`);
   } catch (e) {
     const msg = e instanceof Error ? e.message : "Error al subir";
     console.error("[uploadGarmentImage] resize/R2 falló:", msg);
     return { ok: false, error: msg };
   }
-  if (!key) return { ok: false, error: "Selecciona una imagen" };
+  if (!img) return { ok: false, error: "Selecciona una imagen" };
 
   const { error: imgErr } = await supabase
     .from("garment_images")
-    .insert({ garment_id: garmentId, cf_image_id: key, position: 0 });
+    .insert({ garment_id: garmentId, cf_image_id: img.key, bytes: img.bytes, position: 0 });
   if (imgErr) {
     console.error("[uploadGarmentImage] insert garment_images falló:", imgErr.message);
     return { ok: false, error: imgErr.message };
