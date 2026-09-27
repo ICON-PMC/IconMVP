@@ -5,6 +5,7 @@ import { GlassCard } from "@/components/glass-card";
 import { EmptyState } from "@/components/empty-state";
 import { PageShell } from "@/components/page-shell";
 import { SiteHeader } from "@/components/site-header";
+import { Button } from "@/components/ui/button";
 import { requireBrandOwner } from "@/lib/auth";
 import { listInstagramMedia } from "../actions";
 import { ImportPicker } from "./import-picker";
@@ -32,9 +33,20 @@ export default async function InstagramImportPage() {
 
         <GlassCard className="mt-6 p-4 sm:p-6">
           {!result.ok ? (
-            <p role="alert" className="rounded-xl bg-coral/15 px-3 py-2 text-sm text-coral">
-              {result.error}
-            </p>
+            <div className="space-y-3">
+              <p role="alert" className="rounded-xl bg-coral/15 px-3 py-2 text-sm text-coral">
+                {result.error}
+              </p>
+              {result.reconnect && (
+                <Button
+                  nativeButton={false}
+                  render={<a href="/api/instagram/authorize" />}
+                  className="w-full rounded-full sm:w-auto sm:px-5"
+                >
+                  Reconectar Instagram
+                </Button>
+              )}
+            </div>
           ) : result.items.length === 0 ? (
             <EmptyState
               title="No encontramos fotos"

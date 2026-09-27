@@ -42,9 +42,9 @@ export type Database = {
         Relationships: [];
       };
       brands: {
-        Row: { id: string; name: string; slug: string; city_id: string | null; store_url: string | null; instagram: string | null; price_range: Database["public"]["Enums"]["price_range"] | null; bio: string | null; logo_url: string | null; is_active: boolean; is_verified: boolean; is_sustainable: boolean; owner_user_id: string | null; status: Database["public"]["Enums"]["brand_status"]; rejection_note: string | null; submitted_at: string | null; created_at: string; updated_at: string };
-        Insert: { id?: string; name: string; slug: string; city_id?: string | null; store_url?: string | null; instagram?: string | null; price_range?: Database["public"]["Enums"]["price_range"] | null; bio?: string | null; logo_url?: string | null; is_active?: boolean; is_verified?: boolean; is_sustainable?: boolean; owner_user_id?: string | null; status?: Database["public"]["Enums"]["brand_status"]; rejection_note?: string | null; submitted_at?: string | null; created_at?: string; updated_at?: string };
-        Update: { id?: string; name?: string; slug?: string; city_id?: string | null; store_url?: string | null; instagram?: string | null; price_range?: Database["public"]["Enums"]["price_range"] | null; bio?: string | null; logo_url?: string | null; is_active?: boolean; is_verified?: boolean; is_sustainable?: boolean; owner_user_id?: string | null; status?: Database["public"]["Enums"]["brand_status"]; rejection_note?: string | null; submitted_at?: string | null; created_at?: string; updated_at?: string };
+        Row: { id: string; name: string; slug: string; city_id: string | null; store_url: string | null; instagram: string | null; price_range: Database["public"]["Enums"]["price_range"] | null; bio: string | null; logo_url: string | null; logo_bytes: number; is_active: boolean; is_verified: boolean; is_sustainable: boolean; owner_user_id: string | null; status: Database["public"]["Enums"]["brand_status"]; rejection_note: string | null; submitted_at: string | null; created_at: string; updated_at: string };
+        Insert: { id?: string; name: string; slug: string; city_id?: string | null; store_url?: string | null; instagram?: string | null; price_range?: Database["public"]["Enums"]["price_range"] | null; bio?: string | null; logo_url?: string | null; logo_bytes?: number; is_active?: boolean; is_verified?: boolean; is_sustainable?: boolean; owner_user_id?: string | null; status?: Database["public"]["Enums"]["brand_status"]; rejection_note?: string | null; submitted_at?: string | null; created_at?: string; updated_at?: string };
+        Update: { id?: string; name?: string; slug?: string; city_id?: string | null; store_url?: string | null; instagram?: string | null; price_range?: Database["public"]["Enums"]["price_range"] | null; bio?: string | null; logo_url?: string | null; logo_bytes?: number; is_active?: boolean; is_verified?: boolean; is_sustainable?: boolean; owner_user_id?: string | null; status?: Database["public"]["Enums"]["brand_status"]; rejection_note?: string | null; submitted_at?: string | null; created_at?: string; updated_at?: string };
         Relationships: [];
       };
       garments: {
@@ -54,9 +54,9 @@ export type Database = {
         Relationships: [];
       };
       garment_images: {
-        Row: { id: string; garment_id: string; cf_image_id: string; position: number; alt: string | null; created_at: string };
-        Insert: { id?: string; garment_id: string; cf_image_id: string; position?: number; alt?: string | null; created_at?: string };
-        Update: { id?: string; garment_id?: string; cf_image_id?: string; position?: number; alt?: string | null; created_at?: string };
+        Row: { id: string; garment_id: string; cf_image_id: string; position: number; bytes: number; alt: string | null; created_at: string };
+        Insert: { id?: string; garment_id: string; cf_image_id: string; position?: number; bytes?: number; alt?: string | null; created_at?: string };
+        Update: { id?: string; garment_id?: string; cf_image_id?: string; position?: number; bytes?: number; alt?: string | null; created_at?: string };
         Relationships: [];
       };
       garment_tags: {
@@ -78,9 +78,9 @@ export type Database = {
         Relationships: [];
       };
       post_images: {
-        Row: { id: string; post_id: string; cf_image_id: string; position: number; width: number | null; height: number | null; created_at: string };
-        Insert: { id?: string; post_id: string; cf_image_id: string; position?: number; width?: number | null; height?: number | null; created_at?: string };
-        Update: { id?: string; post_id?: string; cf_image_id?: string; position?: number; width?: number | null; height?: number | null; created_at?: string };
+        Row: { id: string; post_id: string; cf_image_id: string; position: number; bytes: number; width: number | null; height: number | null; created_at: string };
+        Insert: { id?: string; post_id: string; cf_image_id: string; position?: number; bytes?: number; width?: number | null; height?: number | null; created_at?: string };
+        Update: { id?: string; post_id?: string; cf_image_id?: string; position?: number; bytes?: number; width?: number | null; height?: number | null; created_at?: string };
         Relationships: [];
       };
       post_items: {
@@ -216,6 +216,7 @@ export type Database = {
     Functions: {
       current_user_id: { Args: Record<string, never>; Returns: string };
       is_staff: { Args: Record<string, never>; Returns: boolean };
+      check_storage_quota: { Args: { p_brand_id: string; p_bytes: number }; Returns: Json };
       approve_brand: { Args: { p_brand_id: string }; Returns: { brand_name: string; owner_email: string | null }[] };
       reject_brand: { Args: { p_brand_id: string; p_note?: string | null }; Returns: { brand_name: string; owner_email: string | null }[] };
       search_garments: {

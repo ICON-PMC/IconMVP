@@ -12,6 +12,7 @@ import { OverviewTab } from "./_components/overview-tab";
 import { CatalogTab } from "./_components/catalog-tab";
 import { LooksTab } from "./_components/looks-tab";
 import { ProfileTab } from "./_components/profile-tab";
+import { checkStorageQuota } from "@/lib/storage-quota";
 
 const FLASH = { perfil: "Perfil guardado.", prenda: "Prenda agregada." };
 
@@ -59,7 +60,7 @@ export default async function BrandPanelPage({
   const [{ data: connection }, { data: garments }, { data: posts }] = await Promise.all([
     supabase
       .from("brand_instagram_connections")
-      .select("username, account_type, connected_at")
+      .select("username, account_type, connected_at, token_expires_at")
       .eq("brand_id", brand.id)
       .maybeSingle(),
     supabase
@@ -140,6 +141,7 @@ export default async function BrandPanelPage({
           {tab === "resumen" && (
             <OverviewTab
               connection={connection}
+              storage={await checkStorageQuota(brand.id, 0).catch(() => null)}
               counts={{
                 garments: catalog.length,
                 looks: looks.length,

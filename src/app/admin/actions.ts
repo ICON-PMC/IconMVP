@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser, isStaff, requireStaff } from "@/lib/auth";
 import { uploadImageField } from "@/lib/upload";
+import { normalizeInstagramHandle, normalizeUrl } from "@/lib/links";
 
 function str(formData: FormData, key: string): string | null {
   const v = formData.get(key);
@@ -12,19 +13,29 @@ function str(formData: FormData, key: string): string | null {
   return s === "" ? null : s;
 }
 
-// Sube la imagen del formulario a R2 (redimensionada) y devuelve la clave, o null.
+// Sube la imagen del formulario a R2 (redimensionada) y devuelve clave y peso, o null.
+// El staff sube sin bloqueo de cuota; el peso igual cuenta para la marca.
 const uploadImage = (formData: FormData, keyPrefix: string) =>
   uploadImageField(formData, keyPrefix);
 
 export async function createBrand(formData: FormData) {
   await requireStaff();
+  const storeRaw = str(formData, "store_url");
+  const store_url = normalizeUrl(storeRaw);
+  if (storeRaw && !store_url)
+    redirect(`/admin?tab=cargar&form=marca&error=${encodeURIComponent("El link de la tienda no es válido.")}`);
+  const instagramRaw = str(formData, "instagram");
+  const instagram = normalizeInstagramHandle(instagramRaw);
+  if (instagramRaw && !instagram)
+    redirect(`/admin?tab=cargar&form=marca&error=${encodeURIComponent("El usuario de Instagram no es válido.")}`);
+
   const supabase = await createClient();
   const { error } = await supabase.from("brands").insert({
     name: str(formData, "name") ?? "",
     slug: str(formData, "slug") ?? "",
     city_id: str(formData, "city_id"),
-    store_url: str(formData, "store_url"),
-    instagram: str(formData, "instagram"),
+    store_url,
+    instagram,
     price_range: (str(formData, "price_range") as never) ?? null,
     bio: str(formData, "bio"),
     is_verified: formData.get("is_verified") === "on",
@@ -37,6 +48,10 @@ export async function createBrand(formData: FormData) {
 
 export async function createGarment(formData: FormData) {
   await requireStaff();
+  const productUrlRaw = str(formData, "product_url");
+  const product_url = normalizeUrl(productUrlRaw);
+  if (productUrlRaw && !product_url)
+    redirect(`/admin?tab=cargar&form=prenda&error=${encodeURIComponent("El link de compra no es válido.")}`);
   const supabase = await createClient();
 
   const status = (str(formData, "status") ?? "published") as
@@ -52,7 +67,7 @@ export async function createGarment(formData: FormData) {
       title: str(formData, "title") ?? "",
       description: str(formData, "description"),
       price_cop: priceRaw ? Number(priceRaw) : null,
-      product_url: str(formData, "product_url"),
+      product_url,
       color: str(formData, "color"),
       fabric: str(formData, "fabric"),
       status,
@@ -76,11 +91,11 @@ export async function createGarment(formData: FormData) {
       .from("garment_sizes")
       .insert(sizeIds.map((size_id) => ({ garment_id: garment.id, size_id })));
   }
-  const key = await uploadImage(formData, `garments/${garment.id}`);
-  if (key) {
+  const img = await uploadImage(formData, `garments/${garment.id}`);
+  if (img) {
     await supabase
       .from("garment_images")
-      .insert({ garment_id: garment.id, cf_image_id: key, position: 0 });
+      .insert({ garment_id: garment.id, cf_image_id: img.key, bytes: img.bytes, position: 0 });
   }
 
   revalidatePath("/admin");
@@ -126,11 +141,11 @@ export async function createPost(formData: FormData) {
       .from("post_items")
       .insert(garmentIds.map((garment_id) => ({ post_id: post.id, garment_id })));
   }
-  const key = await uploadImage(formData, `posts/${post.id}`);
-  if (key) {
+  const img = await uploadImage(formData, `posts/${post.id}`);
+  if (img) {
     await supabase
       .from("post_images")
-      .insert({ post_id: post.id, cf_image_id: key, position: 0 });
+      .insert({ post_id: post.id, cf_image_id: img.key, bytes: img.bytes, position: 0 });
   }
 
   revalidatePath("/admin");
