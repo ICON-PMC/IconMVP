@@ -7,9 +7,9 @@ import { signIn } from "@/app/auth/actions";
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; aviso?: string }>;
 }) {
-  const { error } = await searchParams;
+  const { error, aviso } = await searchParams;
 
   return (
     <>
@@ -21,6 +21,11 @@ export default async function LoginPage({
             Entra para guardar tus prendas favoritas.
           </p>
 
+          {aviso && !error && (
+            <p className="mb-4 rounded-xl bg-forest/10 px-3 py-2 text-sm text-forest">
+              {aviso}
+            </p>
+          )}
           {error && (
             <p className="mb-4 rounded-xl bg-coral/15 px-3 py-2 text-sm text-coral">
               {error}
