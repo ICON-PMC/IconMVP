@@ -23,7 +23,7 @@ export function ProfileTab({ brand }: { brand: MyBrand }) {
             <Input
               id="store_url"
               name="store_url"
-              type="url"
+              type="text"
               inputMode="url"
               defaultValue={brand.store_url ?? ""}
               placeholder="https://"

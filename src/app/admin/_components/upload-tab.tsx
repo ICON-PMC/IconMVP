@@ -86,7 +86,7 @@ function BrandForm({ data }: { data: UploadData }) {
           </NativeSelect>
         </FormField>
         <FormField label="Tienda online" htmlFor="b-store">
-          <Input id="b-store" name="store_url" type="url" inputMode="url" placeholder="https://" />
+          <Input id="b-store" name="store_url" type="text" inputMode="url" placeholder="https://" />
         </FormField>
         <FormField label="Instagram" htmlFor="b-ig">
           <Input id="b-ig" name="instagram" placeholder="marca.co" autoCapitalize="none" />
@@ -137,7 +137,7 @@ function GarmentForm({ data }: { data: UploadData }) {
           <Input id="g-price" name="price_cop" type="number" min="0" inputMode="numeric" />
         </FormField>
         <FormField label="Enlace del producto" htmlFor="g-url">
-          <Input id="g-url" name="product_url" type="url" inputMode="url" placeholder="https://" />
+          <Input id="g-url" name="product_url" type="text" inputMode="url" placeholder="https://" />
         </FormField>
         <FormField label="Color" htmlFor="g-color">
           <Input id="g-color" name="color" />

@@ -1,5 +1,7 @@
 // Validación y normalización compartidas del registro de marca (server actions + formularios).
 
+import { normalizeUrl } from "@/lib/links";
+
 export const BRAND_NAME_MAX = 80;
 export const BRAND_BIO_MAX = 280;
 
@@ -36,13 +38,7 @@ export function normalizeBrandLink(raw: string): string | null {
     return `https://wa.me/${n.length === 10 && n.startsWith("3") ? "57" + n : n}`;
   }
 
-  const withScheme = /^https?:\/\//i.test(v) ? v : `https://${v}`;
-  try {
-    const url = new URL(withScheme);
-    return url.hostname.includes(".") ? url.toString() : null;
-  } catch {
-    return null;
-  }
+  return normalizeUrl(v);
 }
 
 export function validateBrandProfile(input: BrandProfileInput): FieldErrors {
