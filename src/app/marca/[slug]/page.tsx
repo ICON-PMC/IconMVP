@@ -9,6 +9,7 @@ import { FollowButton } from "@/components/follow-button";
 import { getMySavedIds } from "@/lib/saves";
 import { getGarmentLikeCounts, getMyFollowedBrandIds, getMyLikedGarmentIds, getMyLikedPostIds } from "@/lib/social";
 import { getCurrentUser } from "@/lib/auth";
+import { instagramUrl, normalizeInstagramHandle, normalizeUrl } from "@/lib/links";
 
 export default async function BrandPage({
   params,
@@ -25,6 +26,10 @@ export default async function BrandPage({
     .eq("is_active", true)
     .maybeSingle();
   if (!brand) notFound();
+  // Normalizados al render: valores viejos pueden venir con "https://" duplicado o como URL de Instagram.
+  const storeUrl = normalizeUrl(brand.store_url);
+  const instagramHandle = normalizeInstagramHandle(brand.instagram);
+  const instagramHref = instagramUrl(brand.instagram);
 
   let cityName: string | null = null;
   if (brand.city_id) {
@@ -103,9 +108,9 @@ export default async function BrandPage({
               initialFollowing={isFollowing}
               isLoggedIn={isLoggedIn}
             />
-            {brand.store_url && (
+            {storeUrl && (
               <a
-                href={brand.store_url}
+                href={storeUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="rounded-full bg-forest px-4 py-2 font-medium text-white hover:bg-forest-deep"
@@ -113,14 +118,14 @@ export default async function BrandPage({
                 Visitar tienda ↗
               </a>
             )}
-            {brand.instagram && (
+            {instagramHref && instagramHandle && (
               <a
-                href={`https://instagram.com/${brand.instagram}`}
+                href={instagramHref}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="glass-input rounded-full px-4 py-2 font-medium text-ink/80 hover:bg-white/70"
               >
-                @{brand.instagram}
+                @{instagramHandle}
               </a>
             )}
           </div>

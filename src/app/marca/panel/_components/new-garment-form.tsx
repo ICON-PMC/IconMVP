@@ -36,7 +36,7 @@ export function NewGarmentForm({
           </NativeSelect>
         </FormField>
         <FormField label="Enlace del producto" htmlFor="g-url">
-          <Input id="g-url" name="product_url" type="url" inputMode="url" placeholder="https://" />
+          <Input id="g-url" name="product_url" type="text" inputMode="url" placeholder="https://" />
         </FormField>
         <FormField label="Color" htmlFor="g-color">
           <Input id="g-color" name="color" />
