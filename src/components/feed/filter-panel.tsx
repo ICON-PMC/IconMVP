@@ -11,11 +11,14 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { useFeedUrl } from "@/components/feed/use-feed-url";
+import { CityMultiCombobox } from "@/components/city-combobox";
 
 export type FilterGroup = {
   param: string;
   label: string;
   options: { value: string; label: string }[];
+  /** Muchas opciones (ciudades): buscador con selección múltiple en vez de chips. */
+  searchable?: boolean;
 };
 
 // Botón "Filtros (n)" + panel plegable (shadcn Sheet, cajón) con los 5 grupos.
@@ -28,7 +31,10 @@ export function FeedFilterPanel({ groups }: { groups: FilterGroup[] }) {
 
   // Reinicia el borrador con lo que hay en la URL cada vez que se abre el panel.
   function handleOpenChange(next: boolean) {
-    if (next) setDraft(Object.fromEntries(groups.map((g) => [g.param, selected(g.param)])));
+    if (next)
+      setDraft(
+        Object.fromEntries(groups.map((g) => [g.param, selected(g.param)])),
+      );
     setOpen(next);
   }
 
@@ -37,7 +43,9 @@ export function FeedFilterPanel({ groups }: { groups: FilterGroup[] }) {
   function toggleDraft(param: string, value: string) {
     setDraft((prev) => {
       const cur = prev[param] ?? [];
-      const next = cur.includes(value) ? cur.filter((v) => v !== value) : [...cur, value];
+      const next = cur.includes(value)
+        ? cur.filter((v) => v !== value)
+        : [...cur, value];
       return { ...prev, [param]: next };
     });
   }
@@ -59,10 +67,15 @@ export function FeedFilterPanel({ groups }: { groups: FilterGroup[] }) {
       >
         Filtros{activeCount > 0 ? ` (${activeCount})` : ""}
       </SheetTrigger>
-      <SheetContent side="right" className="w-full overflow-y-auto p-0 sm:max-w-sm">
+      <SheetContent
+        side="right"
+        className="w-full overflow-y-auto p-0 sm:max-w-sm"
+      >
         <SheetHeader>
           <SheetTitle>Filtros</SheetTitle>
-          <SheetDescription>Ocasión, ciudad, precio, categoría y estilo.</SheetDescription>
+          <SheetDescription>
+            Ocasión, ciudad, precio, categoría y estilo.
+          </SheetDescription>
         </SheetHeader>
         <div className="flex flex-1 flex-col gap-5 overflow-y-auto px-4 pb-4">
           {groups.map((g) => {
@@ -77,25 +90,36 @@ export function FeedFilterPanel({ groups }: { groups: FilterGroup[] }) {
                     </span>
                   )}
                 </p>
-                <div className="flex flex-wrap gap-1.5">
-                  {g.options.map((o) => {
-                    const active = values.includes(o.value);
-                    return (
-                      <button
-                        key={o.value}
-                        type="button"
-                        onClick={() => toggleDraft(g.param, o.value)}
-                        className={
-                          active
-                            ? "rounded-full bg-forest px-3 py-1 text-xs font-medium text-white"
-                            : "glass-input rounded-full px-3 py-1 text-xs text-ink/80 hover:bg-white/70"
-                        }
-                      >
-                        {o.label}
-                      </button>
-                    );
-                  })}
-                </div>
+                {g.searchable ? (
+                  <CityMultiCombobox
+                    label={g.label}
+                    options={g.options}
+                    value={values}
+                    onValueChange={(next) =>
+                      setDraft((prev) => ({ ...prev, [g.param]: next }))
+                    }
+                  />
+                ) : (
+                  <div className="flex flex-wrap gap-1.5">
+                    {g.options.map((o) => {
+                      const active = values.includes(o.value);
+                      return (
+                        <button
+                          key={o.value}
+                          type="button"
+                          onClick={() => toggleDraft(g.param, o.value)}
+                          className={
+                            active
+                              ? "rounded-full bg-forest px-3 py-1 text-xs font-medium text-white"
+                              : "glass-input rounded-full px-3 py-1 text-xs text-ink/80 hover:bg-white/70"
+                          }
+                        >
+                          {o.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             );
           })}

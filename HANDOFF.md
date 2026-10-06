@@ -10,11 +10,12 @@ Si algo aquí no cuadra con el código, el código manda: este archivo se desact
 ## Qué es Icon, en dos frases
 
 Plataforma tipo Pinterest para descubrir **moda colombiana independiente** con intención de compra
-(ocasión, ciudad, precio, estilo) — no solo inspiración. MVP **curado**: el equipo carga el contenido,
-no las marcas ni los usuarios. Español primero. Nicho inicial: Barranquilla, Medellín, Bogotá.
+(ocasión, ciudad, precio, estilo) — no solo inspiración. Las marcas se registran y cargan su propio
+catálogo (con aprobación del equipo); el staff también puede cargar en su nombre desde `/admin`.
+Español primero. Nicho inicial: Barranquilla, Medellín, Bogotá.
 
-**El objetivo ahora mismo no es construir más funciones — es conseguir que marcas y usuarios reales
-lo usen y nos digan qué falla.** Ver `TODO.md` para el camino a ese punto.
+**Estado:** la Fase 0 está cerrada y el piloto ya corrió con marcas reales. `TODO.md` tiene lo que
+falta para dejar el release redondo; `specs/roadmap.md`, lo que sigue (Fase 1).
 
 ## Arrancar en 10 minutos
 
@@ -126,6 +127,19 @@ Reglas que hay que conocer:
   mantenido por trigger (no lo escribas a mano).
 - Una marca no aprobada no puede publicar prendas ni posts: los triggers `garments_protect_status` y `posts_protect_status` los dejan en `pending`/`draft` hasta que la marca sea `active`.
 - La cola solo lista marcas con `submitted_at` no nulo (los registros a medias no aparecen).
+
+### Links que escriben las marcas
+
+Tienda, producto e Instagram pasan siempre por `src/lib/links.ts`: `normalizeUrl` al guardar (acepta
+`tienda.com`, corrige `https://https://…`) y también al renderizar; Instagram se guarda como usuario
+(`marca.co`), nunca como URL. Si agregas un campo de link nuevo, úsalo ahí también.
+
+### Cuota de almacenamiento
+
+300 MB de imágenes por marca. Cada imagen guarda su peso (`garment_images.bytes`,
+`post_images.bytes`, `brands.logo_bytes`) y el uso es la suma (`check_storage_quota`). Si subes una
+imagen nueva desde código, pasa `bytes` al insertar y, si la sube la propia marca,
+`{ enforceQuotaFor: brandId }` a `uploadImageField` (`src/lib/upload.ts`). El staff no se bloquea.
 
 ## Lenguaje inclusivo
 

@@ -1,16 +1,35 @@
+import { ChipSelect } from "@/components/chip-select";
+import { CityCombobox } from "@/components/city-combobox";
 import { GlassCard } from "@/components/glass-card";
 import { FormField } from "@/components/form-field";
 import { StickyActionBar } from "@/components/sticky-action-bar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { MyBrand } from "@/lib/auth";
+import { MAX_BRAND_STYLES, type TagOption } from "@/lib/tags";
+import type { CityOption } from "@/lib/cities";
 import { updateBrandProfile } from "../actions";
+import { BrandCoverForm } from "./brand-cover-form";
+import { CloseBrandSection } from "./close-brand-section";
 
 const FORM_ID = "brand-profile-form";
 
-export function ProfileTab({ brand }: { brand: MyBrand }) {
+export function ProfileTab({
+  brand,
+  styles,
+  brandStyleIds,
+  cities,
+}: {
+  brand: MyBrand;
+  cities: CityOption[];
+  styles: TagOption[];
+  brandStyleIds: string[];
+}) {
   return (
     <>
+      <GlassCard className="mb-4 p-5">
+        <BrandCoverForm currentKey={brand.logo_url} />
+      </GlassCard>
       <GlassCard className="p-5">
         <form id={FORM_ID} action={updateBrandProfile} className="flex flex-col gap-4">
           <FormField label="Nombre" htmlFor="name">
@@ -19,11 +38,14 @@ export function ProfileTab({ brand }: { brand: MyBrand }) {
           <FormField label="Bio" htmlFor="bio" hint="Una frase que cuente qué hace tu marca.">
             <Input id="bio" name="bio" defaultValue={brand.bio ?? ""} />
           </FormField>
+          <FormField label="Ciudad" htmlFor="city">
+            <CityCombobox id="city" name="city" options={cities} defaultValue={brand.city_id} />
+          </FormField>
           <FormField label="Tienda online" htmlFor="store_url">
             <Input
               id="store_url"
               name="store_url"
-              type="url"
+              type="text"
               inputMode="url"
               defaultValue={brand.store_url ?? ""}
               placeholder="https://"
@@ -38,8 +60,18 @@ export function ProfileTab({ brand }: { brand: MyBrand }) {
               autoCapitalize="none"
             />
           </FormField>
+          <ChipSelect
+            name="styles"
+            legend="Estilo de tu marca"
+            options={styles}
+            defaultSelected={brandStyleIds}
+            max={MAX_BRAND_STYLES}
+          />
         </form>
       </GlassCard>
+      <div className="mt-8">
+        <CloseBrandSection brandName={brand.name} />
+      </div>
       <StickyActionBar>
         <Button type="submit" form={FORM_ID} size="lg" className="w-full rounded-full sm:w-auto sm:px-8">
           Guardar cambios

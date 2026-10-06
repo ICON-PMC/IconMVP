@@ -3,6 +3,7 @@ import { Aurora } from "@/components/aurora";
 import { GlassCard } from "@/components/glass-card";
 import { GoogleButton } from "@/components/google-button";
 import { signUp } from "@/app/auth/actions";
+import { SubmitButton } from "@/components/submit-button";
 
 export default async function SignupPage({
   searchParams,
@@ -73,12 +74,14 @@ export default async function SignupPage({
               minLength={6}
               autoComplete="new-password"
             />
-            <button
-              className="mt-1 rounded-xl bg-forest px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-forest-deep"
-              type="submit"
+            {/* Se deshabilita mientras corre: un doble toque mandaba dos signUp y el segundo
+                mostraba "ya registrado" aunque la cuenta sí se creó. */}
+            <SubmitButton
+              pendingText="Creando cuenta…"
+              className="mt-1 h-auto rounded-xl bg-forest px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-forest-deep"
             >
               Crear cuenta
-            </button>
+            </SubmitButton>
           </form>
 
           {!isBrand && (

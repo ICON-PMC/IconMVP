@@ -3,19 +3,23 @@ import { createClient } from "@/lib/supabase/server";
 import { requireStaff } from "@/lib/auth";
 
 // GET /admin/bulk/template → descarga una plantilla .xlsx para carga masiva de prendas.
-// La hoja "Referencia" se llena con las marcas/categorías/tallas válidas actuales y
+// La hoja "Referencia" se llena con las marcas/categorías/tallas/estilos/ocasiones/climas válidos y
 // las columnas marca/categoría tienen dropdowns que apuntan a esa hoja.
 export async function GET() {
   await requireStaff();
   const supabase = await createClient();
 
-  const [brandsRes, catsRes, sizesRes] = await Promise.all([
+  const [brandsRes, tagsRes, sizesRes] = await Promise.all([
     supabase.from("brands").select("name").order("name"),
-    supabase.from("tags").select("name").eq("type", "category").order("name"),
+    supabase.from("tags").select("name, type").order("name"),
     supabase.from("sizes").select("label").order("sort_order"),
   ]);
   const brands = (brandsRes.data ?? []).map((b) => b.name);
-  const categories = (catsRes.data ?? []).map((c) => c.name);
+  const tagNames = (type: string) => (tagsRes.data ?? []).filter((t) => t.type === type).map((t) => t.name);
+  const categories = tagNames("category");
+  const styles = tagNames("style");
+  const occasions = tagNames("occasion");
+  const climates = tagNames("temperature");
   const sizes = (sizesRes.data ?? []).map((s) => s.label);
 
   const wb = new ExcelJS.Workbook();
@@ -32,6 +36,9 @@ export async function GET() {
     { header: "tela", key: "tela", width: 18 },
     { header: "categoria", key: "categoria", width: 20 },
     { header: "tallas", key: "tallas", width: 22 },
+    { header: "estilo", key: "estilo", width: 24 },
+    { header: "ocasion", key: "ocasion", width: 24 },
+    { header: "clima", key: "clima", width: 16 },
   ];
   ws.getRow(1).font = { bold: true };
   ws.addRow({
@@ -44,6 +51,9 @@ export async function GET() {
     tela: "Algodón",
     categoria: categories[0] ?? "Camisetas",
     tallas: "S, M, L",
+    estilo: styles.slice(0, 2).join(", "),
+    ocasion: occasions[0] ?? "",
+    clima: climates[0] ?? "",
   });
 
   // Hoja de referencia (valores válidos). No editar.
@@ -52,11 +62,15 @@ export async function GET() {
     { header: "Marcas", key: "marcas", width: 28 },
     { header: "Categorías", key: "categorias", width: 24 },
     { header: "Tallas", key: "tallas", width: 14 },
+    { header: "Estilos (hasta 3, con coma)", key: "estilos", width: 28 },
+    { header: "Ocasiones (hasta 3, con coma)", key: "ocasiones", width: 30 },
+    { header: "Climas (hasta 3, con coma)", key: "climas", width: 28 },
   ];
   ref.getRow(1).font = { bold: true };
-  const maxLen = Math.max(brands.length, categories.length, sizes.length);
+  const cols = [brands, categories, sizes, styles, occasions, climates];
+  const maxLen = Math.max(...cols.map((c) => c.length));
   for (let i = 0; i < maxLen; i++) {
-    ref.addRow([brands[i] ?? null, categories[i] ?? null, sizes[i] ?? null]);
+    ref.addRow(cols.map((c) => c[i] ?? null));
   }
 
   // Dropdowns en las primeras 500 filas de datos.

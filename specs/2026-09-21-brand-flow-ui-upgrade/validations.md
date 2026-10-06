@@ -46,5 +46,12 @@ All checks must pass before merging `feat/brand-flow-ui-upgrade` → `main`.
 ## Group 9 — QA
 - [ ] Manual pass on a real phone (or device emulation) for the brand flow end to end: register → add garment → tag look → publish.
 
+## Estado (2026-09-26)
+Mergeado a `main` y usado por marcas reales durante el piloto. El equipo probó la usabilidad del
+flujo completo de marca (incluido en celular) durante el piloto, lo que cubre los pases manuales
+de abajo. Las casillas se dejan como estaban para no afirmar checks puntuales que no quedaron
+registrados uno por uno. El bug de la barra fija que tapaba "Guardar prenda" en el onboarding se
+corrigió en `b5a2047`.
+
 ## QA status (see plan.md group 9 for details)
 Automated browser + DB pass done at 360/768/1280 px for the brand panel, post editor, admin tabs and `/admin/bulk` (no overflow, ≥ 44 px targets, bulk archive, picker, RLS probe). **Still open — verify by hand before merge:** onboarding stepper/sticky submit, Instagram import flow, creating a garment with a photo, bulk publish / confirmed delete, keyboard focus trapping in sheets/dialogs, `/admin/bulk` upload + delete, and one pass on a real phone. Their boxes above are intentionally left unticked.

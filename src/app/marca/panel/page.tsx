@@ -12,8 +12,16 @@ import { OverviewTab } from "./_components/overview-tab";
 import { CatalogTab } from "./_components/catalog-tab";
 import { LooksTab } from "./_components/looks-tab";
 import { ProfileTab } from "./_components/profile-tab";
+import { checkStorageQuota } from "@/lib/storage-quota";
+import { EMPTY_TAG_OPTIONS, getTagOptions } from "@/lib/tags";
+import { getCityOptions } from "@/lib/cities";
 
-const FLASH = { perfil: "Perfil guardado.", prenda: "Prenda agregada." };
+const FLASH = {
+  perfil: "Perfil guardado.",
+  prenda: "Prenda agregada.",
+  "look-eliminado": "Look eliminado.",
+  portada: "Portada cambiada.",
+};
 
 export default async function BrandPanelPage({
   searchParams,
@@ -59,12 +67,12 @@ export default async function BrandPanelPage({
   const [{ data: connection }, { data: garments }, { data: posts }] = await Promise.all([
     supabase
       .from("brand_instagram_connections")
-      .select("username, account_type, connected_at")
+      .select("username, account_type, connected_at, token_expires_at")
       .eq("brand_id", brand.id)
       .maybeSingle(),
     supabase
       .from("garments")
-      .select("id, title, price_cop, status")
+      .select("id, title, price_cop, status, description, product_url, color, fabric")
       .eq("brand_id", brand.id)
       .order("created_at", { ascending: false }),
     supabase
@@ -103,21 +111,44 @@ export default async function BrandPanelPage({
     itemCounts.set(it.post_id, (itemCounts.get(it.post_id) ?? 0) + 1);
   }
 
-  const catalog = (garments ?? []).map((g) => ({ ...g, cf_image_id: gImageMap.get(g.id) ?? null }));
+  // Solo el catálogo necesita el vocabulario, las tallas y los tags de cada prenda.
+  const [tagOptions, { data: sizes }, { data: gTags }, { data: gSizes }] =
+    tab === "catalogo"
+      ? await Promise.all([
+          getTagOptions(supabase),
+          supabase.from("sizes").select("id, label").order("sort_order"),
+          gIds.length
+            ? supabase.from("garment_tags").select("garment_id, tag_id").in("garment_id", gIds)
+            : Promise.resolve({ data: [] as { garment_id: string; tag_id: string }[] }),
+          gIds.length
+            ? supabase.from("garment_sizes").select("garment_id, size_id").in("garment_id", gIds)
+            : Promise.resolve({ data: [] as { garment_id: string; size_id: string }[] }),
+        ])
+      : [EMPTY_TAG_OPTIONS, { data: [] }, { data: [] }, { data: [] }];
+  const [styleOptions, { data: brandStyles }, cityOptions] =
+    tab === "perfil"
+      ? await Promise.all([
+          getTagOptions(supabase).then((o) => o.style),
+          supabase.from("brand_tags").select("tag_id").eq("brand_id", brand.id),
+          getCityOptions(supabase),
+        ])
+      : [[], { data: [] }, []];
+  const gTagMap = new Map<string, string[]>();
+  for (const t of gTags ?? []) gTagMap.set(t.garment_id, [...(gTagMap.get(t.garment_id) ?? []), t.tag_id]);
+  const gSizeMap = new Map<string, string[]>();
+  for (const t of gSizes ?? []) gSizeMap.set(t.garment_id, [...(gSizeMap.get(t.garment_id) ?? []), t.size_id]);
+
+  const catalog = (garments ?? []).map((g) => ({
+    ...g,
+    cf_image_id: gImageMap.get(g.id) ?? null,
+    tagIds: gTagMap.get(g.id) ?? [],
+    sizeIds: gSizeMap.get(g.id) ?? [],
+  }));
   const looks = (posts ?? []).map((p) => ({
     ...p,
     cf_image_id: pImageMap.get(p.id) ?? null,
     items: itemCounts.get(p.id) ?? 0,
   }));
-
-  // Solo el catálogo necesita categorías y tallas.
-  const [{ data: categories }, { data: sizes }] =
-    tab === "catalogo"
-      ? await Promise.all([
-          supabase.from("tags").select("id, name").eq("type", "category").order("name"),
-          supabase.from("sizes").select("id, label").order("sort_order"),
-        ])
-      : [{ data: [] }, { data: [] }];
 
   return (
     <>
@@ -140,6 +171,7 @@ export default async function BrandPanelPage({
           {tab === "resumen" && (
             <OverviewTab
               connection={connection}
+              storage={await checkStorageQuota(brand.id, 0).catch(() => null)}
               counts={{
                 garments: catalog.length,
                 looks: looks.length,
@@ -150,13 +182,20 @@ export default async function BrandPanelPage({
           {tab === "catalogo" && (
             <CatalogTab
               garments={catalog}
-              categories={categories ?? []}
+              tagOptions={tagOptions}
               sizes={sizes ?? []}
               canPublish={brand.status === "active"}
             />
           )}
           {tab === "looks" && <LooksTab looks={looks} canImport={!!connection} />}
-          {tab === "perfil" && <ProfileTab brand={brand} />}
+          {tab === "perfil" && (
+            <ProfileTab
+              brand={brand}
+              styles={styleOptions}
+              brandStyleIds={(brandStyles ?? []).map((t) => t.tag_id)}
+              cities={cityOptions}
+            />
+          )}
         </div>
       </PageShell>
     </>

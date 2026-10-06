@@ -1,9 +1,14 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
 import { EmptyState } from "@/components/empty-state";
 import { SectionHeader } from "@/components/page-shell";
 import { StatusBadge } from "@/components/status-badge";
 import { Button } from "@/components/ui/button";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { imageUrl } from "@/lib/images";
+import { NewLookSheet } from "./new-look-sheet";
 
 export type LookRow = {
   id: string;
@@ -13,28 +18,65 @@ export type LookRow = {
   items: number;
 };
 
+const FILTERS = [
+  { id: "all", label: "Todos" },
+  { id: "published", label: "Publicados" },
+  { id: "draft", label: "Borradores" },
+  { id: "archived", label: "Archivados" },
+] as const;
+type Filter = (typeof FILTERS)[number]["id"];
+
 export function LooksTab({ looks, canImport }: { looks: LookRow[]; canImport: boolean }) {
+  const [filter, setFilter] = useState<Filter>("all");
+  const visible = looks.filter((l) => filter === "all" || l.status === filter);
+
   return (
     <div className="space-y-6">
       <SectionHeader
         title={`Looks (${looks.length})`}
         description="Fotos de outfits con tus prendas taggeadas."
         action={
-          canImport ? (
-            <Button
-              nativeButton={false}
-              render={<Link href="/marca/panel/import" />}
-              variant="outline"
-              className="rounded-full"
-            >
-              Importar
-            </Button>
-          ) : undefined
+          <div className="flex flex-wrap gap-2">
+            {canImport && (
+              <Button
+                nativeButton={false}
+                render={<Link href="/marca/panel/import" />}
+                variant="outline"
+                className="rounded-full"
+              >
+                Importar
+              </Button>
+            )}
+            <NewLookSheet />
+          </div>
         }
       />
-      {looks.length ? (
+
+      {looks.length > 0 && (
+        <div className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
+          <ToggleGroup
+            aria-label="Filtrar por estado"
+            value={[filter]}
+            onValueChange={(v) => v[0] && setFilter(v[0] as Filter)}
+            spacing={1}
+            className="min-w-max"
+          >
+            {FILTERS.map((f) => (
+              <ToggleGroupItem
+                key={f.id}
+                value={f.id}
+                className="min-h-11 rounded-full px-4 md:min-h-8 data-[pressed]:bg-forest data-[pressed]:text-white"
+              >
+                {f.label}
+              </ToggleGroupItem>
+            ))}
+          </ToggleGroup>
+        </div>
+      )}
+
+      {visible.length ? (
         <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
-          {looks.map((p) => {
+          {visible.map((p) => {
             const img = imageUrl(p.cf_image_id);
             return (
               <li key={p.id}>
@@ -65,11 +107,13 @@ export function LooksTab({ looks, canImport }: { looks: LookRow[]; canImport: bo
         </ul>
       ) : (
         <EmptyState
-          title="Aún no tienes looks"
+          title={looks.length ? "Ningún look con ese estado" : "Aún no tienes looks"}
           description={
-            canImport
-              ? "Importa fotos desde Instagram; quedan como borrador hasta que taggees una prenda."
-              : "Conecta Instagram desde el Resumen para importar tus primeras fotos."
+            looks.length
+              ? "Prueba con otro filtro."
+              : canImport
+                ? "Sube una foto con «Nuevo look» o impórtala desde Instagram."
+                : "Sube una foto con «Nuevo look». También puedes conectar Instagram desde el Resumen."
           }
         />
       )}
