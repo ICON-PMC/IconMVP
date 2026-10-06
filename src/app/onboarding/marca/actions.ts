@@ -15,6 +15,7 @@ import {
 } from "@/lib/brand-registration";
 import { replaceBrandStyles, tagIdsFromForm } from "@/lib/tags";
 import { deleteFromR2 } from "@/lib/r2";
+import { saveBrandCoverImage } from "@/lib/brand-cover";
 import { imageKeysFor } from "@/lib/image-keys";
 
 export type GarmentFieldErrors = Partial<
@@ -130,30 +131,9 @@ export async function saveBrandCover(
   if (!hasFile && !brand.logo_url)
     return { errors: { cover: "Sube una foto de portada para continuar." } };
   if (hasFile) {
-    if (!file.type.startsWith("image/"))
-      return { errors: { cover: "El archivo debe ser una imagen (JPG, PNG o WebP)." } };
-    if (file.size > MAX_COVER_BYTES)
-      return { errors: { cover: "La imagen pesa más de 10 MB. Prueba con una más liviana." } };
-
-    let img: Awaited<ReturnType<typeof uploadImageField>>;
-    try {
-      img = await uploadImageField(formData, `brands/${brand.id}/cover`, "image", {
-        enforceQuotaFor: brand.id,
-      });
-    } catch (e) {
-      if (e instanceof StorageQuotaError) return { errors: { cover: e.message } };
-      console.error("[onboarding/marca] subida de portada falló:", e);
-      return { message: "No pudimos subir la imagen. Intenta de nuevo." };
-    }
     const supabase = await createClient();
-    const { error } = await supabase
-      .from("brands")
-      .update({ logo_url: img?.key ?? null, logo_bytes: img?.bytes ?? 0 })
-      .eq("id", brand.id);
-    if (error) {
-      console.error("[onboarding/marca] guardar portada falló:", error.code, error.message);
-      return { message: "No pudimos guardar la imagen. Intenta de nuevo." };
-    }
+    const coverError = await saveBrandCoverImage(supabase, brand.id, formData, brand.id);
+    if (coverError) return { errors: { cover: coverError } };
   }
 
   revalidatePath("/", "layout");

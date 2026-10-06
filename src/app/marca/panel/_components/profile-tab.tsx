@@ -9,6 +9,8 @@ import type { MyBrand } from "@/lib/auth";
 import { MAX_BRAND_STYLES, type TagOption } from "@/lib/tags";
 import type { CityOption } from "@/lib/cities";
 import { updateBrandProfile } from "../actions";
+import { BrandCoverForm } from "./brand-cover-form";
+import { CloseBrandSection } from "./close-brand-section";
 
 const FORM_ID = "brand-profile-form";
 
@@ -25,6 +27,9 @@ export function ProfileTab({
 }) {
   return (
     <>
+      <GlassCard className="mb-4 p-5">
+        <BrandCoverForm currentKey={brand.logo_url} />
+      </GlassCard>
       <GlassCard className="p-5">
         <form id={FORM_ID} action={updateBrandProfile} className="flex flex-col gap-4">
           <FormField label="Nombre" htmlFor="name">
@@ -64,6 +69,9 @@ export function ProfileTab({
           />
         </form>
       </GlassCard>
+      <div className="mt-8">
+        <CloseBrandSection brandName={brand.name} />
+      </div>
       <StickyActionBar>
         <Button type="submit" form={FORM_ID} size="lg" className="w-full rounded-full sm:w-auto sm:px-8">
           Guardar cambios
