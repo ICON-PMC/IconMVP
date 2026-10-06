@@ -26,7 +26,9 @@ En local no hay variables de R2: todo lo que sube o borra fotos se prueba en la 
       con la contraseña correcta entra al onboarding. **[local]**
 
 ## Prendas
-- [ ] Editar título, precio, link, tallas y etiquetas de una prenda existente. **[local]**
+- [x] Editar prenda: abre con todo precargado (título, precio, link, categoría, tallas, estilos);
+      un link inválido muestra "El link de compra no es válido."; guardar cambia título, precio,
+      link (normalizado), tela, categoría, tallas (S,M → M,L) y estilos. **[local]**
 - [ ] Cambiar la foto de una prenda reemplaza la imagen y borra la vieja de R2. **[nube]**
 - [ ] Borrar prendas borra sus imágenes de R2. **[nube]**
 
@@ -59,4 +61,6 @@ En local no hay variables de R2: todo lo que sube o borra fotos se prueba en la 
 ## General
 - [x] `supabase db reset` sin errores y las pruebas SQL del Grupo 1 dan lo mismo. **[db]**
 - [x] `tsc`, `lint` y `next build` limpios tras el Grupo 1. **[build]**
+- [x] `tsc` y `lint` limpios tras el Grupo 2. **[build]**
+- [x] Migraciones del Grupo 1 aplicadas en la nube (2026-10-06): 6 funciones y el trigger de rol. **[nube]**
 - [ ] Migraciones aplicadas en la nube antes de mergear a `main`. **[nube]**

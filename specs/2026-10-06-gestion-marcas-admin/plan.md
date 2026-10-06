@@ -11,7 +11,7 @@
 
 ## Grupo 1 — Base y helpers (bloquea a todos) ✅ (local, 2026-10-06)
 
-Migraciones (aplicar en este orden en la nube):
+Migraciones (aplicadas en la nube el 2026-10-06):
 1. `20261006060000_admin_users.sql` — `is_admin`, `admin_list_users`, `set_user_role` y el trigger
    de rol ajustado.
 2. `20261006070000_close_brand_delete_account.sql` — `_delete_brand` (interna), `close_brand`,
@@ -72,7 +72,15 @@ por el `user → brand` del registro o sin usuario autenticado (SQL directo).
 
 - **1g. `database.types.ts`**: las funciones nuevas.
 
-## Grupo 2 — Prendas (depende de 1a, 1d)
+## Grupo 2 — Prendas (depende de 1a, 1d) ✅ (local, 2026-10-06)
+
+Hecho: `GarmentFields` (campos compartidos, ahora con **Tela**, que la acción leía pero el
+formulario no mostraba), `EditGarmentSheet` (reemplaza la hoja "Etiquetas"), `updateBrandGarment`
+y `replaceCoverImage` en `marca/panel/actions.ts`. **Clave de R2 nueva en cada cambio de foto**
+(`garments/<id>/<timestamp>/0.webp`): reusar `garments/<id>/0.webp` pisaba el archivo y el borrado
+de "la vieja" se habría llevado la nueva. La foto se sube primero: si la cuota la bloquea, no se
+guarda nada a medias. Borrado con R2 en el panel, en `/admin/bulk` y en el paso 3 del registro
+(`deleteAllPendingAction` solo borra prendas sin foto: no lo necesita).
 
 - **2a. `updateBrandGarment(garmentId, formData)`**: campos de la prenda + categoría + tallas +
   estilo/ocasión/clima (`replaceGarmentTags`) + foto opcional. Normaliza el link igual que al crear.

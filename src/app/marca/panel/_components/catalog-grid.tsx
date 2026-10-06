@@ -17,7 +17,7 @@ import type { TagOptions } from "@/lib/tags";
 import { useSelection } from "@/lib/use-selection";
 import { cn } from "@/lib/utils";
 import { deleteGarments, setGarmentsStatus, type BulkResult } from "../actions";
-import { GarmentTagsSheet } from "./garment-tags-sheet";
+import { EditGarmentSheet } from "./edit-garment-sheet";
 
 export type CatalogGarment = {
   id: string;
@@ -25,7 +25,12 @@ export type CatalogGarment = {
   price_cop: number | null;
   status: string;
   cf_image_id: string | null;
+  description: string | null;
+  product_url: string | null;
+  color: string | null;
+  fabric: string | null;
   tagIds: string[];
+  sizeIds: string[];
 };
 
 const FILTERS = [
@@ -41,10 +46,12 @@ const norm = (s: string) => s.normalize("NFD").replace(/\p{Diacritic}/gu, "").to
 export function CatalogGrid({
   garments,
   tagOptions,
+  sizes,
   canPublish,
 }: {
   garments: CatalogGarment[];
   tagOptions: TagOptions;
+  sizes: { id: string; label: string }[];
   canPublish: boolean;
 }) {
   const router = useRouter();
@@ -209,9 +216,10 @@ export function CatalogGrid({
         onConfirm={() => run(() => deleteGarments(ids()), "Eliminadas")}
       />
 
-      <GarmentTagsSheet
+      <EditGarmentSheet
         garment={editing}
         tagOptions={tagOptions}
+        sizes={sizes}
         onOpenChange={(open) => !open && setEditing(null)}
       />
     </div>
@@ -282,14 +290,12 @@ function GarmentTile({
       ) : (
         <button
           type="button"
-          aria-label={`Etiquetas de ${g.title}`}
+          aria-label={`Editar ${g.title}`}
           onClick={onEdit}
           className="glass-input block w-full rounded-2xl p-2 text-left hover:bg-white/70 focus-visible:ring-3 focus-visible:ring-ring/50"
         >
           {body}
-          <span className="mt-1.5 block text-xs text-forest">
-            {g.tagIds.length ? "Editar etiquetas" : "Agregar etiquetas"}
-          </span>
+          <span className="mt-1.5 block text-xs text-forest">Editar</span>
         </button>
       )}
     </li>

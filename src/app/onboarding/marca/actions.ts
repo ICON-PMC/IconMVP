@@ -14,6 +14,8 @@ import {
   type FieldErrors,
 } from "@/lib/brand-registration";
 import { replaceBrandStyles, tagIdsFromForm } from "@/lib/tags";
+import { deleteFromR2 } from "@/lib/r2";
+import { imageKeysFor } from "@/lib/image-keys";
 
 export type GarmentFieldErrors = Partial<
   Record<"title" | "price" | "category" | "photo" | "link", string>
@@ -251,7 +253,14 @@ export async function removeOnboardingGarment(formData: FormData) {
   const id = text(formData, "id");
   if (id) {
     const supabase = await createClient();
-    await supabase.from("garments").delete().eq("id", id).eq("brand_id", brand.id);
+    const keys = await imageKeysFor(supabase, { garmentIds: [id] });
+    const { data } = await supabase
+      .from("garments")
+      .delete()
+      .eq("id", id)
+      .eq("brand_id", brand.id)
+      .select("id");
+    if (data?.length) await deleteFromR2(keys);
   }
   revalidatePath("/onboarding/marca");
   redirect("/onboarding/marca?paso=3");

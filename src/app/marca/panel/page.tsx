@@ -67,7 +67,7 @@ export default async function BrandPanelPage({
       .maybeSingle(),
     supabase
       .from("garments")
-      .select("id, title, price_cop, status")
+      .select("id, title, price_cop, status, description, product_url, color, fabric")
       .eq("brand_id", brand.id)
       .order("created_at", { ascending: false }),
     supabase
@@ -107,7 +107,7 @@ export default async function BrandPanelPage({
   }
 
   // Solo el catálogo necesita el vocabulario, las tallas y los tags de cada prenda.
-  const [tagOptions, { data: sizes }, { data: gTags }] =
+  const [tagOptions, { data: sizes }, { data: gTags }, { data: gSizes }] =
     tab === "catalogo"
       ? await Promise.all([
           getTagOptions(supabase),
@@ -115,8 +115,11 @@ export default async function BrandPanelPage({
           gIds.length
             ? supabase.from("garment_tags").select("garment_id, tag_id").in("garment_id", gIds)
             : Promise.resolve({ data: [] as { garment_id: string; tag_id: string }[] }),
+          gIds.length
+            ? supabase.from("garment_sizes").select("garment_id, size_id").in("garment_id", gIds)
+            : Promise.resolve({ data: [] as { garment_id: string; size_id: string }[] }),
         ])
-      : [EMPTY_TAG_OPTIONS, { data: [] }, { data: [] }];
+      : [EMPTY_TAG_OPTIONS, { data: [] }, { data: [] }, { data: [] }];
   const [styleOptions, { data: brandStyles }, cityOptions] =
     tab === "perfil"
       ? await Promise.all([
@@ -127,11 +130,14 @@ export default async function BrandPanelPage({
       : [[], { data: [] }, []];
   const gTagMap = new Map<string, string[]>();
   for (const t of gTags ?? []) gTagMap.set(t.garment_id, [...(gTagMap.get(t.garment_id) ?? []), t.tag_id]);
+  const gSizeMap = new Map<string, string[]>();
+  for (const t of gSizes ?? []) gSizeMap.set(t.garment_id, [...(gSizeMap.get(t.garment_id) ?? []), t.size_id]);
 
   const catalog = (garments ?? []).map((g) => ({
     ...g,
     cf_image_id: gImageMap.get(g.id) ?? null,
     tagIds: gTagMap.get(g.id) ?? [],
+    sizeIds: gSizeMap.get(g.id) ?? [],
   }));
   const looks = (posts ?? []).map((p) => ({
     ...p,
