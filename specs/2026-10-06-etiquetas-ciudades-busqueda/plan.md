@@ -20,7 +20,7 @@ Migraciones, en orden de aplicación:
 6. `20261006050000_grant_select_social.sql` — `select` en `post_likes`, `garment_likes` y
    `brand_follows` (agregada en el Grupo 5; en la nube ya existían).
 
-Las migraciones 1–5 están aplicadas en la nube (2026-10-06). La 3 se reescribió como un solo
+Las 6 migraciones están aplicadas en la nube (2026-10-06). La 3 se reescribió como un solo
 statement con CTE: el SQL Editor no conserva una tabla temporal entre statements.
 
 - **1a. `brand_tags`**

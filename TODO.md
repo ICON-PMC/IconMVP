@@ -9,11 +9,11 @@ Marcado `[ ]` pendiente, `[x]` hecho. Cuando termines algo, muévelo a "Hecho" c
 
 ## Para cerrar el release (en este orden)
 
-- [ ] **Aplicar `supabase/migrations/20261006050000_grant_select_social.sql`** en la nube (no
-      cambia permisos allá; deja la nube igual al repo). Las migraciones 1–5 de
-      `2026-10-06-etiquetas-ciudades-busqueda` ya están aplicadas.
 - [ ] **Revisar las etiquetas nuevas** (9 estilos y 5 ocasiones de `20261006010000_more_tags.sql`)
       con producto; se renombran o borran desde `/admin` → Etiquetas mientras no estén en uso.
+- [ ] **Etiquetar el catálogo del piloto:** pedir a las marcas que elijan sus estilos (Panel →
+      Perfil) y etiqueten sus prendas (Catálogo → "Agregar etiquetas"); sin eso la búsqueda por
+      estilo no encuentra nada en producción.
 - [ ] **Rellenar el peso de las imágenes existentes:** `npm run db:backfill-image-bytes` con las
       variables de la nube (ver HANDOFF, "Para apuntar un script a la nube"). Al 2026-10-06 siguen
       en 0 bytes: 24 imágenes de prendas, 3 de posts y 9 logos.
@@ -54,7 +54,8 @@ Si alguien propone retomarlo antes de tiempo, esta es la razón para decir "toda
 
 - 2026-10-06 — **Etiquetas, ciudades y búsqueda** (`specs/2026-10-06-etiquetas-ciudades-busqueda/`):
   estilos de marca y estilo/ocasión/clima en prendas, los 1.122 municipios con desplegable con
-  búsqueda, sinónimos y palabras ignoradas en la búsqueda, y `/admin` → Etiquetas.
+  búsqueda, sinónimos y palabras ignoradas en la búsqueda, y `/admin` → Etiquetas. Las 6
+  migraciones están en la nube; lo pendiente está al final de `requirements.md` del spec.
 - 2026-10-06 — **Migraciones de la Fase 0 aplicadas en la nube**: `20260926000000_normalize_brand_instagram.sql`
   y `20260926010000_storage_quota.sql`. Ya se puede mergear `dev` → `main` sin romper la subida de imágenes.
 - 2026-09-26 — **Links rotos corregidos**: Instagram guardado como URL armaba

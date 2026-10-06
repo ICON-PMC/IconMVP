@@ -68,5 +68,4 @@ Leyenda: **[build]** = `tsc`/`lint`/`build`; **[db]** = probado con SQL en Supab
 - [x] `tsc`, `lint` y `next build` limpios tras el Grupo 4. **[build]**
 - [x] Migraciones 1–4 aplicadas en la nube (2026-10-06). **[nube]**
 - [x] Migración `20261006040000_tag_usage.sql` aplicada en la nube (2026-10-06). **[nube]**
-- [ ] Migración `20261006050000_grant_select_social.sql` aplicada en la nube (no cambia nada allá:
-      ya tiene esos permisos; es para que la nube y el repo coincidan). **[nube]**
+- [x] Migración `20261006050000_grant_select_social.sql` aplicada en la nube (2026-10-06). **[nube]**

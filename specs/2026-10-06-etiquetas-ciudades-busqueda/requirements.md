@@ -1,5 +1,8 @@
 # Requirements — Etiquetas, ciudades y búsqueda
 
+> **Estado (2026-10-06): construido y verificado en local; las 6 migraciones están en la nube.**
+> Falta mergear `dev` → `main` y probar en producción lo de la sección "Pendiente" al final.
+
 > Tres arreglos de descubrimiento después del piloto: las marcas no tienen etiquetas propias (no se
 > puede buscar "marcas tropicales"), la carga de prendas no deja etiquetar estilo/ocasión/clima, solo
 > hay 3 ciudades y la búsqueda no entiende términos cercanos ("hoodie" no encuentra "capucha").
@@ -84,3 +87,20 @@
 - Sinónimos de frases de varias palabras ("traje de baño" = "vestido de baño"): el MVP trabaja palabra
   por palabra; se anota si aparece en las pruebas.
 - Ciudades fuera de Colombia.
+
+## Pendiente al cerrar (2026-10-06)
+
+Lo que no se pudo probar en local o quedó para producto. El detalle de cada prueba está en
+`validations.md`.
+
+- **Producto:** revisar los 9 estilos y 5 ocasiones nuevos (`20261006010000_more_tags.sql`). Se
+  renombran o borran desde `/admin` → Etiquetas mientras no estén en uso.
+- **Smoke test en producción** (después del merge):
+  - "Nueva prenda" del panel con foto, eligiendo estilo/ocasión/clima (en local no hay R2).
+  - Ciudad en `/settings` y en el registro de marca, desde un celular real.
+  - Buscar "hoodie" y "marcas tropicales"; agregar un sinónimo en `/admin` y ver que aplica sin desplegar.
+  - El filtro de ciudad del feed lista solo ciudades con marcas.
+- **Etiquetar el catálogo existente:** las prendas y marcas del piloto no tienen estilos todavía;
+  hasta que las marcas (o el staff) los pongan, "marcas tropicales" no encuentra nada en producción.
+- **Fuera de alcance, anotado:** sinónimos de varias palabras ("traje de baño" = "bikini");
+  `popular_content_tags` (chips de sugerencia) solo cuenta tags de posts, no los propios de prendas.
