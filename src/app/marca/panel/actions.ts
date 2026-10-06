@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { requireBrandOwner } from "@/lib/auth";
+import { quotaBrandId, requireBrandOwner } from "@/lib/auth";
 import { uploadImageField, uploadImageFromUrl } from "@/lib/upload";
 import { StorageQuotaError } from "@/lib/storage-quota";
 import { fetchRecentMedia, InstagramAuthError, refreshLongLivedToken } from "@/lib/instagram";
@@ -23,9 +23,37 @@ function str(formData: FormData, key: string): string | null {
 }
 
 async function myBrandIdOrRedirect(): Promise<string> {
+  return (await panelBrandOrRedirect()).brandId;
+}
+
+// Marca del panel (la propia o la que gestiona el staff) y a quién exigirle cuota al subir.
+async function panelBrandOrRedirect(): Promise<{ brandId: string; quotaFor: string | undefined }> {
+  const ctx = await requireBrandOwner();
+  if (!ctx.brand) redirect("/marca/panel");
+  return { brandId: ctx.brand.id, quotaFor: quotaBrandId(ctx) };
+}
+
+// El look es de la marca del panel. Con staff la RLS deja tocar cualquier post, así que cada
+// acción sobre un look lo comprueba antes (un id equivocado no debe tocar otra marca).
+async function ownPostOrNull(postId: string): Promise<string | null> {
   const { brand } = await requireBrandOwner();
-  if (!brand) redirect("/marca/panel");
-  return brand.id;
+  if (!brand || !postId) return null;
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("posts")
+    .select("id")
+    .eq("id", postId)
+    .eq("author_brand_id", brand.id)
+    .maybeSingle();
+  return data ? brand.id : null;
+}
+
+// Solo las prendas de la marca (para no etiquetar en un look prendas de otra).
+async function ownGarmentIds(brandId: string, ids: string[]): Promise<string[]> {
+  if (!ids.length) return [];
+  const supabase = await createClient();
+  const { data } = await supabase.from("garments").select("id").in("id", ids).eq("brand_id", brandId);
+  return (data ?? []).map((g) => g.id);
 }
 
 // ============================================================
@@ -65,7 +93,7 @@ export async function updateBrandProfile(formData: FormData) {
 // Catálogo (prendas) — mismos campos que /admin, sin elegir marca (es la propia).
 // ============================================================
 export async function createBrandGarment(formData: FormData) {
-  const brandId = await myBrandIdOrRedirect();
+  const { brandId, quotaFor } = await panelBrandOrRedirect();
   const productUrlRaw = str(formData, "product_url");
   const product_url = normalizeUrl(productUrlRaw);
   if (productUrlRaw && !product_url)
@@ -111,7 +139,7 @@ export async function createBrandGarment(formData: FormData) {
   let img: Awaited<ReturnType<typeof uploadImageField>>;
   try {
     img = await uploadImageField(formData, `garments/${garment.id}`, "image", {
-      enforceQuotaFor: brandId,
+      enforceQuotaFor: quotaFor,
     });
   } catch (e) {
     if (!(e instanceof StorageQuotaError)) throw e;
@@ -162,7 +190,7 @@ export async function updateGarmentTags(
 // Posts manuales (sin pasar por Instagram) — por si la marca prefiere subir directo.
 // ============================================================
 export async function createBrandPost(formData: FormData) {
-  const brandId = await myBrandIdOrRedirect();
+  const { brandId, quotaFor } = await panelBrandOrRedirect();
   const supabase = await createClient();
 
   const { data: post, error } = await supabase
@@ -180,7 +208,7 @@ export async function createBrandPost(formData: FormData) {
 
   let img: Awaited<ReturnType<typeof uploadImageField>>;
   try {
-    img = await uploadImageField(formData, `posts/${post.id}`, "image", { enforceQuotaFor: brandId });
+    img = await uploadImageField(formData, `posts/${post.id}`, "image", { enforceQuotaFor: quotaFor });
   } catch (e) {
     if (!(e instanceof StorageQuotaError)) throw e;
     await supabase.from("posts").delete().eq("id", post.id);
@@ -288,10 +316,11 @@ export async function deleteGarments(ids: string[]): Promise<BulkResult> {
 // patrón que src/app/saved/actions.ts): sin cliente que lea un valor de retorno, así que la
 // señal de error es un redirect con ?error=, no un ActionResult.
 export async function tagGarmentOnPost(formData: FormData) {
-  await requireBrandOwner();
   const postId = String(formData.get("post_id") ?? "");
   const garmentId = String(formData.get("garment_id") ?? "");
-  if (!postId || !garmentId) redirect("/marca/panel");
+  const brandId = await ownPostOrNull(postId);
+  if (!brandId || !garmentId || !(await ownGarmentIds(brandId, [garmentId])).length)
+    redirect("/marca/panel");
   const sizeId = str(formData, "size_id");
 
   const supabase = await createClient();
@@ -314,12 +343,14 @@ export async function tagGarmentsOnPost(
   postId: string,
   garmentIds: string[],
 ): Promise<ActionResult> {
-  await requireBrandOwner();
-  if (!postId || !garmentIds.length) return { ok: false, error: "Elige al menos una prenda." };
+  const brandId = await ownPostOrNull(postId);
+  if (!brandId) return { ok: false, error: "No encontramos ese look en tu marca." };
+  const own = await ownGarmentIds(brandId, garmentIds);
+  if (!own.length) return { ok: false, error: "Elige al menos una prenda." };
   const supabase = await createClient();
   const { error } = await supabase
     .from("post_items")
-    .insert(garmentIds.map((garment_id) => ({ post_id: postId, garment_id })));
+    .insert(own.map((garment_id) => ({ post_id: postId, garment_id })));
   if (error) return { ok: false, error: error.message };
   revalidatePath(`/marca/panel/post/${postId}`);
   revalidatePath("/marca/panel");
@@ -331,7 +362,7 @@ export async function setPostItemSize(
   itemId: string,
   sizeId: string | null,
 ): Promise<ActionResult> {
-  await requireBrandOwner();
+  if (!(await ownPostOrNull(postId))) return { ok: false, error: "No encontramos ese look en tu marca." };
   const supabase = await createClient();
   const { error } = await supabase
     .from("post_items")
@@ -344,9 +375,9 @@ export async function setPostItemSize(
 }
 
 export async function untagGarmentFromPost(postId: string, itemId: string) {
-  await requireBrandOwner();
+  if (!(await ownPostOrNull(postId))) redirect("/marca/panel");
   const supabase = await createClient();
-  const { error } = await supabase.from("post_items").delete().eq("id", itemId);
+  const { error } = await supabase.from("post_items").delete().eq("id", itemId).eq("post_id", postId);
   if (error) {
     redirect(`/marca/panel/post/${postId}?error=${encodeURIComponent(error.message)}`);
   }
@@ -370,9 +401,8 @@ export async function untagGarmentFromPost(postId: string, itemId: string) {
 }
 
 export async function setPostTags(formData: FormData) {
-  await requireBrandOwner();
   const postId = String(formData.get("post_id") ?? "");
-  if (!postId) redirect("/marca/panel");
+  if (!(await ownPostOrNull(postId))) redirect("/marca/panel");
   const tagIds = [
     ...formData.getAll("occasions"),
     ...formData.getAll("styles"),
@@ -415,7 +445,8 @@ export async function publishPost(postId: string) {
   const { error } = await supabase
     .from("posts")
     .update({ status: "published", published_at: new Date().toISOString() })
-    .eq("id", postId);
+    .eq("id", postId)
+    .eq("author_brand_id", brand.id);
   if (error) {
     redirect(`/marca/panel/post/${postId}?error=${encodeURIComponent(error.message)}`);
   }
@@ -425,9 +456,14 @@ export async function publishPost(postId: string) {
 }
 
 export async function unpublishPost(postId: string) {
-  await requireBrandOwner();
+  const brandId = await ownPostOrNull(postId);
+  if (!brandId) redirect("/marca/panel");
   const supabase = await createClient();
-  const { error } = await supabase.from("posts").update({ status: "draft" }).eq("id", postId);
+  const { error } = await supabase
+    .from("posts")
+    .update({ status: "draft" })
+    .eq("id", postId)
+    .eq("author_brand_id", brandId);
   if (error) {
     redirect(`/marca/panel/post/${postId}?error=${encodeURIComponent(error.message)}`);
   }
@@ -519,7 +555,8 @@ export async function listInstagramMedia(): Promise<
 export async function importInstagramMedia(
   items: { id: string; caption: string | null; imageUrl: string }[],
 ): Promise<{ ok: true; created: number; errors: string[] } | { ok: false; error: string }> {
-  const { brand } = await requireBrandOwner();
+  const ctx = await requireBrandOwner();
+  const { brand } = ctx;
   if (!brand) return { ok: false, error: "No tienes una marca conectada." };
   if (!items.length) return { ok: false, error: "No seleccionaste ninguna foto." };
 
@@ -544,7 +581,7 @@ export async function importInstagramMedia(
     }
     try {
       const img = await uploadImageFromUrl(item.imageUrl, `posts/${post.id}`, {
-        enforceQuotaFor: brand.id,
+        enforceQuotaFor: quotaBrandId(ctx),
       });
       await supabase
         .from("post_images")

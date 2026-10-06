@@ -38,11 +38,22 @@ export async function signUp(formData: FormData) {
     },
   });
   const sep = signupPath.includes("?") ? "&" : "?";
+  // "Ya registrado": por error (confirmación apagada, como en la nube) o como usuario sin
+  // identidades (confirmación activa, para no revelar qué correos existen).
+  const alreadyRegistered =
+    (error && (error.code === "user_already_exists" || error.code === "email_exists" ||
+      /already (been )?registered|already exists/i.test(error.message))) ||
+    (!error && data.user && data.user.identities?.length === 0);
+  if (alreadyRegistered) {
+    // Si la contraseña coincide es su propia cuenta: la que acaba de crear un envío duplicado
+    // (doble toque) o una que ya tenía. Entra en vez de ver "ya registrado".
+    const { data: signedIn } = await supabase.auth.signInWithPassword({ email, password });
+    if (!signedIn.session)
+      redirect(`${signupPath}${sep}error=${encodeURIComponent("Este correo ya está registrado. Inicia sesión.")}`);
+    revalidatePath("/", "layout");
+    redirect(isBrand ? "/onboarding/marca" : "/onboarding");
+  }
   if (error) redirect(`${signupPath}${sep}error=${encodeURIComponent(authErrorMessage(error))}`);
-  // Con "Confirm email" activo, Supabase no devuelve error para un correo ya registrado:
-  // devuelve un usuario sin identidades (para no revelar qué correos existen).
-  if (data.user && data.user.identities?.length === 0)
-    redirect(`${signupPath}${sep}error=${encodeURIComponent("Este correo ya está registrado. Inicia sesión.")}`);
   // Sin sesión = hay que confirmar el correo antes de entrar al onboarding.
   if (!data.session)
     redirect(`/login?aviso=${encodeURIComponent("Te enviamos un correo para confirmar tu cuenta. Ábrelo y luego inicia sesión.")}`);

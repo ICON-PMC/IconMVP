@@ -6,21 +6,24 @@ En local no hay variables de R2: todo lo que sube o borra fotos se prueba en la 
 
 ## Base
 - [ ] `deleteFromR2` borra un objeto de prueba y no lanza si la clave no existe. **[nube]**
-- [ ] `admin_list_users`: staff ve todos; un usuario normal recibe error. **[db]**
-- [ ] `set_user_role`: admin cambia el rol de otro; curator, el propio rol y quitar el último admin
-      dan error en español. **[db]**
-- [ ] El registro de marca sigue pasando `user → brand` con el trigger ajustado. **[db]**
-- [ ] `close_brand`: el dueño borra su marca (prendas, looks, tags, follows desaparecen; clics
-      quedan con `brand_id` nulo; su rol vuelve a `user`); otra marca no puede. **[db]**
+- [x] `admin_list_users`: el curator ve los 5 usuarios de prueba y busca por correo sin
+      mayúsculas; un usuario normal recibe "Solo el equipo puede ver la lista de usuarios." **[db]**
+- [x] `set_user_role`: admin cambia user → curator; curator recibe "Solo un admin puede cambiar
+      roles."; el propio rol da "No puedes cambiar tu propio rol." **[db]**
+- [x] Un curator ya **no** puede ponerse `admin` con un UPDATE directo (antes sí). **[db]**
+- [x] El registro de marca sigue pasando `user → brand`; `user → admin` directo se ignora. **[db]**
+- [x] `close_brand`: otra marca recibe "No puedes cerrar esta marca."; el dueño la cierra y se van
+      marca, prendas, follows y guardados; el clic queda anónimo; su rol vuelve a `user`. **[db]**
 - [ ] La cookie de "gestionar" se ignora para un usuario que no es staff. **[local]**
-- [ ] `delete_my_account`: borra `auth.users` y en cascada `public.users`, guardados, likes y
-      follows; con marca, también la marca; el último admin recibe error. **[db]**
+- [x] `delete_my_account`: borra `auth.users` y en cascada `public.users` y follows (los clics se
+      conservan); con marca, también la marca; el único admin recibe "Eres el único admin…". **[db]**
 
 ## Registro (bug)
 - [x] Reproducido antes del arreglo: doble clic en "Crear cuenta" muestra "Este correo ya está
       registrado" y la cuenta queda creada y confirmada (local, 2026-10-06). **[local]**
-- [ ] Después del arreglo: el doble clic deja entrar al onboarding sin error. **[local]**
-- [ ] Un correo ya registrado con otra contraseña sigue mostrando "Este correo ya está registrado". **[local]**
+- [x] Después del arreglo: el doble clic deja entrar al onboarding sin error. **[local]**
+- [x] Un correo ya registrado con otra contraseña sigue mostrando "Este correo ya está registrado";
+      con la contraseña correcta entra al onboarding. **[local]**
 
 ## Prendas
 - [ ] Editar título, precio, link, tallas y etiquetas de una prenda existente. **[local]**
@@ -54,6 +57,6 @@ En local no hay variables de R2: todo lo que sube o borra fotos se prueba en la 
 - [ ] Usuarios: admin cambia un rol; curator ve la lista sin selects; el propio usuario sin select. **[local]**
 
 ## General
-- [ ] `supabase db reset` sin errores. **[db]**
-- [ ] `tsc`, `lint` y `next build` limpios. **[build]**
+- [x] `supabase db reset` sin errores y las pruebas SQL del Grupo 1 dan lo mismo. **[db]**
+- [x] `tsc`, `lint` y `next build` limpios tras el Grupo 1. **[build]**
 - [ ] Migraciones aplicadas en la nube antes de mergear a `main`. **[nube]**

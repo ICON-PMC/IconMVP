@@ -9,12 +9,24 @@
 
 ---
 
-## Grupo 1 — Base y helpers (bloquea a todos)
+## Grupo 1 — Base y helpers (bloquea a todos) ✅ (local, 2026-10-06)
+
+Migraciones (aplicar en este orden en la nube):
+1. `20261006060000_admin_users.sql` — `is_admin`, `admin_list_users`, `set_user_role` y el trigger
+   de rol ajustado.
+2. `20261006070000_close_brand_delete_account.sql` — `_delete_brand` (interna), `close_brand`,
+   `delete_my_account` (1c + 1e en un solo archivo: `delete_my_account` reusa el borrado de marca).
+
+Hallazgo al escribir 1b: un **curator podía ponerse `admin`** con un PATCH directo a `users` (el
+trigger no limitaba el rol si quien edita es staff y `users_update_own` deja editar la fila propia).
+Ahora un cambio de rol solo pasa por `set_user_role`/`_delete_brand` (marcan `icon.role_change`),
+por el `user → brand` del registro o sin usuario autenticado (SQL directo).
 
 - **1a. `deleteFromR2(keys)`** en `src/lib/r2.ts`: `DELETE` firmado igual que `uploadToR2`, varios
   keys en paralelo, nunca lanza (devuelve los que fallaron y los registra con `console.error`).
-  Helper `imageKeysFor({ garmentIds?, postIds?, brandId? })` en `src/lib/images.ts` que lee las
-  claves **antes** de borrar filas (después ya no existen).
+  Helper `imageKeysFor(supabase, { garmentIds?, postIds?, brandId? })` en `src/lib/image-keys.ts`
+  (no en `images.ts`, que lo importan componentes de cliente) que lee las claves **antes** de borrar
+  filas (después ya no existen).
 
 - **1b. Migración `…_admin_users.sql`**
   - `admin_list_users(q text default null)` → `(id, email, display_name, role, brand_id,
@@ -32,7 +44,10 @@
     con `brand_id = null` (ya es `on delete set null`).
   - Las imágenes de R2 las borra la server action (1a) con las claves leídas antes de llamar la RPC.
 
-- **1d. Marca activa del panel** en `src/lib/auth.ts`
+- **1d. Marca activa del panel** en `src/lib/auth.ts` — hecho: `requireBrandOwner()` devuelve
+  `{ profile, brand, actingAsStaff }`, `quotaBrandId(ctx)` y `MANAGED_BRAND_COOKIE`. En
+  `marca/panel/actions.ts`, `ownPostOrNull` / `ownGarmentIds` filtran por la marca del panel en todas
+  las acciones de looks (etiquetar, tallas, quitar, tags, publicar, despublicar).
   - `requireBrandOwner()` pasa a devolver también `actingAsStaff: boolean`: si el usuario es staff y
     existe la cookie `icon_admin_brand` (httpOnly, `sameSite=lax`, sin `maxAge` → de sesión) con un
     id de marca válido, devuelve esa marca. Para cualquier otro usuario, la cookie se ignora.
