@@ -3,6 +3,7 @@ import { Aurora } from "@/components/aurora";
 import { GlassCard } from "@/components/glass-card";
 import { GoogleButton } from "@/components/google-button";
 import { signIn } from "@/app/auth/actions";
+import { SubmitButton } from "@/components/submit-button";
 
 export default async function LoginPage({
   searchParams,
@@ -49,12 +50,12 @@ export default async function LoginPage({
               required
               autoComplete="current-password"
             />
-            <button
-              className="mt-1 rounded-xl bg-forest px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-forest-deep"
-              type="submit"
+            <SubmitButton
+              pendingText="Entrando…"
+              className="mt-1 h-auto rounded-xl bg-forest px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-forest-deep"
             >
               Iniciar sesión
-            </button>
+            </SubmitButton>
           </form>
 
           <div className="my-5 flex items-center gap-3 text-xs text-ink/40">

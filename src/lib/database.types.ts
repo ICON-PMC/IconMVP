@@ -287,6 +287,25 @@ export type Database = {
       };
       search_matches: { Args: { p_txt: string; q: string }; Returns: boolean };
       tag_usage_counts: { Args: Record<string, never>; Returns: { tag_id: string; uses: number }[] };
+      is_admin: { Args: Record<string, never>; Returns: boolean };
+      admin_list_users: {
+        Args: { q?: string | null };
+        Returns: {
+          id: string;
+          email: string | null;
+          display_name: string | null;
+          role: Database["public"]["Enums"]["user_role"];
+          brand_id: string | null;
+          brand_name: string | null;
+          created_at: string;
+        }[];
+      };
+      set_user_role: {
+        Args: { p_user_id: string; p_role: Database["public"]["Enums"]["user_role"] };
+        Returns: undefined;
+      };
+      close_brand: { Args: { p_brand_id: string }; Returns: undefined };
+      delete_my_account: { Args: Record<string, never>; Returns: undefined };
       popular_content_tags: {
         Args: { p_limit?: number | null };
         Returns: { slug: string; name: string; type: string }[];
