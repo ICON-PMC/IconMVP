@@ -16,7 +16,7 @@ import { checkStorageQuota } from "@/lib/storage-quota";
 import { EMPTY_TAG_OPTIONS, getTagOptions } from "@/lib/tags";
 import { getCityOptions } from "@/lib/cities";
 
-const FLASH = { perfil: "Perfil guardado.", prenda: "Prenda agregada." };
+const FLASH = { perfil: "Perfil guardado.", prenda: "Prenda agregada.", "look-eliminado": "Look eliminado." };
 
 export default async function BrandPanelPage({
   searchParams,

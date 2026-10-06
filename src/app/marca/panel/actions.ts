@@ -7,6 +7,7 @@ import { quotaBrandId, requireBrandOwner } from "@/lib/auth";
 import { uploadImageField, uploadImageFromUrl } from "@/lib/upload";
 import { StorageQuotaError } from "@/lib/storage-quota";
 import { deleteFromR2 } from "@/lib/r2";
+import { imageKeysFor } from "@/lib/image-keys";
 import { fetchRecentMedia, InstagramAuthError, refreshLongLivedToken } from "@/lib/instagram";
 import { normalizeInstagramHandle, normalizeUrl } from "@/lib/links";
 import {
@@ -280,8 +281,15 @@ async function replaceCoverImage(
 // ============================================================
 // Posts manuales (sin pasar por Instagram) — por si la marca prefiere subir directo.
 // ============================================================
+// Look subido a mano (sin Instagram): foto + caption -> borrador -> editor del look.
 export async function createBrandPost(formData: FormData) {
   const { brandId, quotaFor } = await panelBrandOrRedirect();
+  const looksError: (msg: string) => never = (msg) =>
+    redirect(`/marca/panel?tab=looks&error=${encodeURIComponent(msg)}`);
+  const photo = formData.get("image");
+  if (!(photo instanceof File) || photo.size === 0) looksError("Sube la foto del look.");
+  if (photo instanceof File && !photo.type.startsWith("image/"))
+    looksError("El archivo debe ser una imagen (JPG, PNG o WebP).");
   const supabase = await createClient();
 
   const { data: post, error } = await supabase
@@ -294,16 +302,17 @@ export async function createBrandPost(formData: FormData) {
     })
     .select("id")
     .single();
-  if (error || !post)
-    redirect(`/marca/panel?error=${encodeURIComponent(error?.message ?? "post")}`);
+  if (error || !post) looksError(error?.message ?? "No pudimos crear el look.");
 
   let img: Awaited<ReturnType<typeof uploadImageField>>;
   try {
     img = await uploadImageField(formData, `posts/${post.id}`, "image", { enforceQuotaFor: quotaFor });
   } catch (e) {
-    if (!(e instanceof StorageQuotaError)) throw e;
+    // Sin foto el look no sirve: se borra el borrador recién creado.
     await supabase.from("posts").delete().eq("id", post.id);
-    redirect(`/marca/panel?error=${encodeURIComponent(e.message)}`);
+    if (e instanceof StorageQuotaError) looksError(e.message);
+    console.error("[panel] subida de look falló:", e);
+    looksError("No pudimos subir la foto. Intenta de nuevo.");
   }
   if (img) {
     await supabase
@@ -518,6 +527,110 @@ export async function setPostTags(formData: FormData) {
     }
   }
   revalidatePath(`/marca/panel/post/${postId}`);
+}
+
+// ============================================================
+// Editar un look: caption, foto, archivar / restaurar / eliminar.
+// Estados: draft -> (Publicar) published -> (Archivar) archived -> (Restaurar) draft.
+// Solo se elimina un borrador o un archivado: un look publicado primero se archiva.
+// ============================================================
+const lookUrl = (postId: string, q: string) => `/marca/panel/post/${postId}?${q}`;
+
+function revalidateLook(postId: string) {
+  revalidatePath(`/marca/panel/post/${postId}`);
+  revalidatePath("/marca/panel");
+  revalidatePath("/feed");
+  revalidatePath(`/post/${postId}`);
+}
+
+export async function updatePostCaption(formData: FormData) {
+  const postId = String(formData.get("post_id") ?? "");
+  const brandId = await ownPostOrNull(postId);
+  if (!brandId) redirect("/marca/panel?tab=looks");
+  const caption = str(formData, "caption");
+  if (caption && caption.length > 2200)
+    redirect(lookUrl(postId, `error=${encodeURIComponent("El texto es muy largo (máximo 2.200 caracteres).")}`));
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("posts")
+    .update({ caption })
+    .eq("id", postId)
+    .eq("author_brand_id", brandId);
+  if (error) redirect(lookUrl(postId, `error=${encodeURIComponent(error.message)}`));
+  revalidateLook(postId);
+  redirect(lookUrl(postId, "ok=caption"));
+}
+
+export async function replacePostImage(formData: FormData) {
+  const postId = String(formData.get("post_id") ?? "");
+  if (!(await ownPostOrNull(postId))) redirect("/marca/panel?tab=looks");
+  const { quotaFor } = await panelBrandOrRedirect();
+  const photo = formData.get("image");
+  if (!(photo instanceof File) || photo.size === 0 || !photo.type.startsWith("image/"))
+    redirect(lookUrl(postId, `error=${encodeURIComponent("Elige una imagen (JPG, PNG o WebP).")}`));
+
+  let img: Awaited<ReturnType<typeof uploadImageField>>;
+  try {
+    // Clave nueva: ver updateBrandGarment.
+    img = await uploadImageField(formData, `posts/${postId}/${Date.now()}`, "image", {
+      enforceQuotaFor: quotaFor,
+    });
+  } catch (e) {
+    if (e instanceof StorageQuotaError) redirect(lookUrl(postId, `error=${encodeURIComponent(e.message)}`));
+    throw e;
+  }
+  if (!img) redirect(lookUrl(postId, `error=${encodeURIComponent("Elige una imagen.")}`));
+  const supabase = await createClient();
+  const error = await replaceCoverImage(supabase, "post", postId, img);
+  if (error) redirect(lookUrl(postId, `error=${encodeURIComponent(error)}`));
+  revalidateLook(postId);
+  redirect(lookUrl(postId, "ok=foto"));
+}
+
+async function setLookStatus(postId: string, from: string[], to: "draft" | "archived", ok: string) {
+  const brandId = await ownPostOrNull(postId);
+  if (!brandId) redirect("/marca/panel?tab=looks");
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("posts")
+    .update({ status: to })
+    .eq("id", postId)
+    .eq("author_brand_id", brandId)
+    .in("status", from as ("draft" | "published" | "archived")[])
+    .select("id");
+  if (error) redirect(lookUrl(postId, `error=${encodeURIComponent(error.message)}`));
+  if (!data?.length)
+    redirect(lookUrl(postId, `error=${encodeURIComponent("El look cambió de estado. Recarga la página.")}`));
+  revalidateLook(postId);
+  redirect(lookUrl(postId, `ok=${ok}`));
+}
+
+export async function archivePost(postId: string) {
+  await setLookStatus(postId, ["published", "draft"], "archived", "archivado");
+}
+
+export async function restorePost(postId: string) {
+  await setLookStatus(postId, ["archived"], "draft", "restaurado");
+}
+
+export async function deletePost(postId: string): Promise<ActionResult> {
+  const brandId = await ownPostOrNull(postId);
+  if (!brandId) return { ok: false, error: "No encontramos ese look en tu marca." };
+  const supabase = await createClient();
+  const keys = await imageKeysFor(supabase, { postIds: [postId] });
+  const { data, error } = await supabase
+    .from("posts")
+    .delete()
+    .eq("id", postId)
+    .eq("author_brand_id", brandId)
+    .in("status", ["draft", "archived"])
+    .select("id");
+  if (error) return { ok: false, error: error.message };
+  if (!data?.length) return { ok: false, error: "Archiva el look antes de eliminarlo." };
+  await deleteFromR2(keys);
+  revalidatePath("/marca/panel");
+  revalidatePath("/feed");
+  return { ok: true };
 }
 
 export async function publishPost(postId: string) {
