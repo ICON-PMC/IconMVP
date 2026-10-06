@@ -13,6 +13,9 @@ import { PendingBrands, pendingBrandsCount } from "./pending-brands";
 import { MetricsTab } from "./_components/metrics-tab";
 import { UploadTab, parseUploadForm, type UploadData } from "./_components/upload-tab";
 import { TagsTab, type AdminTag } from "./_components/tags-tab";
+import { BrandsTab, type AdminBrand } from "./_components/brands-tab";
+import { UsersTab, type AdminUser } from "./_components/users-tab";
+import { cityLabel } from "@/lib/cities";
 import { getCityOptions } from "@/lib/cities";
 
 const REVIEW_NOTICES: Record<string, string> = {
@@ -31,7 +34,53 @@ const FLASH = {
   "sinonimos-borrados": "Grupo de sinónimos borrado.",
   ignoradas: "Palabras agregadas.",
   "ignorada-borrada": "Palabra quitada.",
+  "marca-eliminada": "Marca eliminada.",
 };
+
+// Todas las marcas con su ciudad y cuántas prendas y looks tienen (son pocas: se filtra en el cliente).
+async function loadBrands(): Promise<AdminBrand[]> {
+  const supabase = await createClient();
+  const [{ data: brands }, { data: garments }, { data: posts }] = await Promise.all([
+    supabase
+      .from("brands")
+      .select("id, name, slug, status, is_active, is_verified, is_sustainable, city_id, owner_user_id")
+      .order("name"),
+    supabase.from("garments").select("brand_id"),
+    supabase.from("posts").select("author_brand_id").not("author_brand_id", "is", null),
+  ]);
+  const cityIds = [...new Set((brands ?? []).flatMap((b) => (b.city_id ? [b.city_id] : [])))];
+  const { data: cities } = cityIds.length
+    ? await supabase.from("cities").select("id, name, department").in("id", cityIds)
+    : { data: [] };
+  const cityOf = new Map((cities ?? []).map((c) => [c.id, cityLabel(c.name, c.department)]));
+  const count = (rows: (string | null)[]) => {
+    const m = new Map<string, number>();
+    for (const id of rows) if (id) m.set(id, (m.get(id) ?? 0) + 1);
+    return m;
+  };
+  const gCount = count((garments ?? []).map((g) => g.brand_id));
+  const pCount = count((posts ?? []).map((p) => p.author_brand_id));
+  return (brands ?? []).map((b) => ({
+    id: b.id,
+    name: b.name,
+    slug: b.slug,
+    status: b.status,
+    is_active: b.is_active,
+    is_verified: b.is_verified,
+    is_sustainable: b.is_sustainable,
+    city: b.city_id ? (cityOf.get(b.city_id) ?? null) : null,
+    garments: gCount.get(b.id) ?? 0,
+    looks: pCount.get(b.id) ?? 0,
+    hasOwner: !!b.owner_user_id,
+  }));
+}
+
+async function loadUsers(q: string | undefined): Promise<AdminUser[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("admin_list_users", { q: q ?? null });
+  if (error) console.error("[admin] admin_list_users falló:", error.message);
+  return data ?? [];
+}
 
 async function loadSearchVocabulary() {
   const supabase = await createClient();
@@ -117,12 +166,12 @@ async function loadUploadData(): Promise<UploadData> {
 export default async function AdminPage({
   searchParams,
 }: {
-  searchParams: Promise<{ tab?: string; form?: string; aviso?: string }>;
+  searchParams: Promise<{ tab?: string; form?: string; aviso?: string; q?: string }>;
 }) {
   const session = await getCurrentUser();
   if (!session) redirect("/login?next=/admin");
   if (!isStaff(session.profile)) redirect("/");
-  const { tab: tabParam, form, aviso } = await searchParams;
+  const { tab: tabParam, form, aviso, q } = await searchParams;
   const tab = parseAdminTab(tabParam);
   const pendingCount = await pendingBrandsCount();
 
@@ -159,7 +208,16 @@ export default async function AdminPage({
           {tab === "cargar" && (
             <UploadTab form={parseUploadForm(form)} data={await loadUploadData()} />
           )}
-          {tab === "marcas" && (
+          {tab === "marcas" && <BrandsTab brands={await loadBrands()} />}
+          {tab === "usuarios" && (
+            <UsersTab
+              users={await loadUsers(q)}
+              q={q ?? ""}
+              canEdit={session.profile?.role === "admin"}
+              myId={session.profile?.id ?? ""}
+            />
+          )}
+          {tab === "pendientes" && (
             <>
               {aviso && REVIEW_NOTICES[aviso] && (
                 <p

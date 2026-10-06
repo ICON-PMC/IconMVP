@@ -33,7 +33,7 @@ export function ReviewActions({ brandId, brandName }: { brandId: string; brandNa
       const res = await action();
       if (!res.ok) return setError(res.error);
       onOk?.();
-      router.replace(`/admin?tab=marcas&aviso=${kind}`);
+      router.replace(`/admin?tab=pendientes&aviso=${kind}`);
     });
   }
 

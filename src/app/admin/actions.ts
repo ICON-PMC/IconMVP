@@ -3,7 +3,9 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { getCurrentUser, isStaff, requireStaff } from "@/lib/auth";
+import { cookies } from "next/headers";
+import { getCurrentUser, isStaff, MANAGED_BRAND_COOKIE, requireStaff } from "@/lib/auth";
+import { brandNameMatches, deleteBrandWithImages } from "@/lib/brand-delete";
 import { uploadImageField } from "@/lib/upload";
 import { normalizeInstagramHandle, normalizeUrl } from "@/lib/links";
 import { replaceBrandStyles, tagIdsFromForm, type TagType } from "@/lib/tags";
@@ -327,4 +329,81 @@ export async function deleteStopword(formData: FormData) {
   if (error) redirect(tagsUrl(`error=${encodeURIComponent(error.message)}`));
   revalidateSearch();
   redirect(tagsUrl("ok=ignorada-borrada"));
+}
+
+// ============================================================
+// Marcas (/admin?tab=marcas): banderas, gestionar como la marca y eliminar.
+// ============================================================
+export type AdminResult = { ok: true } | { ok: false; error: string };
+
+type BrandFlags = Partial<{ is_active: boolean; is_verified: boolean; is_sustainable: boolean }>;
+
+export async function setBrandFlags(brandId: string, flags: BrandFlags): Promise<AdminResult> {
+  await requireStaff();
+  const update: BrandFlags = {};
+  for (const k of ["is_active", "is_verified", "is_sustainable"] as const)
+    if (typeof flags[k] === "boolean") update[k] = flags[k];
+  if (!brandId || !Object.keys(update).length) return { ok: false, error: "Nada que cambiar." };
+  const supabase = await createClient();
+  const { error } = await supabase.from("brands").update(update).eq("id", brandId);
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/admin");
+  revalidatePath("/feed");
+  revalidatePath("/marca/[slug]", "page");
+  return { ok: true };
+}
+
+// "Gestionar": el panel de marca pasa a mostrar esta marca para el staff (ver requireBrandOwner).
+export async function startManagingBrand(brandId: string) {
+  await requireStaff();
+  const supabase = await createClient();
+  const { data: brand } = await supabase.from("brands").select("id").eq("id", brandId).maybeSingle();
+  if (!brand) redirect(`/admin?tab=marcas&error=${encodeURIComponent("No encontramos esa marca.")}`);
+  (await cookies()).set(MANAGED_BRAND_COOKIE, brand.id, {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+  });
+  redirect("/marca/panel");
+}
+
+export async function stopManagingBrand() {
+  (await cookies()).delete(MANAGED_BRAND_COOKIE);
+  redirect("/admin?tab=marcas");
+}
+
+export async function deleteBrandAsStaff(brandId: string, confirmName: string): Promise<AdminResult> {
+  await requireStaff();
+  const supabase = await createClient();
+  const { data: brand } = await supabase.from("brands").select("id, name").eq("id", brandId).maybeSingle();
+  if (!brand) return { ok: false, error: "No encontramos esa marca." };
+  if (!brandNameMatches(confirmName, brand.name))
+    return { ok: false, error: "El nombre no coincide con el de la marca." };
+  const error = await deleteBrandWithImages(supabase, brand.id);
+  if (error) return { ok: false, error };
+  // Si el staff la estaba gestionando, la cookie apuntaría a una marca que ya no existe.
+  const jar = await cookies();
+  if (jar.get(MANAGED_BRAND_COOKIE)?.value === brand.id) jar.delete(MANAGED_BRAND_COOKIE);
+  revalidatePath("/admin");
+  revalidatePath("/feed");
+  return { ok: true };
+}
+
+// ============================================================
+// Usuarios (/admin?tab=usuarios): solo admin cambia roles; la base vuelve a validarlo.
+// ============================================================
+const ROLES = ["user", "brand", "curator", "admin"] as const;
+
+export async function setUserRole(userId: string, role: string): Promise<AdminResult> {
+  await requireStaff();
+  if (!ROLES.includes(role as (typeof ROLES)[number])) return { ok: false, error: "Rol no válido." };
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("set_user_role", {
+    p_user_id: userId,
+    p_role: role as (typeof ROLES)[number],
+  });
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/admin");
+  return { ok: true };
 }

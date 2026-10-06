@@ -1,8 +1,9 @@
 import { redirect } from "next/navigation";
+import { DeleteAccountSection } from "./delete-account-section";
 import { CityCombobox } from "@/components/city-combobox";
 import { getCityOptions } from "@/lib/cities";
 import { createClient } from "@/lib/supabase/server";
-import { getCurrentUser } from "@/lib/auth";
+import { getCurrentUser, getMyBrand } from "@/lib/auth";
 import { Aurora } from "@/components/aurora";
 import { GlassCard } from "@/components/glass-card";
 import { SiteHeader } from "@/components/site-header";
@@ -26,6 +27,7 @@ export default async function SettingsPage({
   ]);
   const myStyles = new Set((prefs ?? []).map((p) => p.tag_id));
   const myCity = session.profile.home_city_id;
+  const myBrand = await getMyBrand();
 
   return (
     <>
@@ -100,6 +102,7 @@ export default async function SettingsPage({
             </div>
           </form>
         </GlassCard>
+        <DeleteAccountSection brandName={myBrand?.name ?? null} />
       </div>
     </>
   );

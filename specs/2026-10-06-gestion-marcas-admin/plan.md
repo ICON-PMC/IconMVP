@@ -130,7 +130,14 @@ ahora usa clave nueva y borra la anterior. `BrandCoverForm` y `CloseBrandSection
   `close_brand` → `deleteFromR2` → limpia la cookie de staff si aplica → `redirect("/feed?ok=cuenta-cerrada")`.
   Si lo hace el staff, redirige a `/admin?tab=marcas-todas`.
 
-## Grupo 5 — `/admin`: marcas y usuarios (depende de 1b, 1c, 1d)
+## Grupo 5 — `/admin`: marcas y usuarios (depende de 1b, 1c, 1d) ✅ (local, 2026-10-06)
+
+Hecho: pestañas Métricas · Cargar · **Pendientes** (la cola, antes `?tab=marcas`) · **Marcas** ·
+**Usuarios** · Etiquetas. `BrandsTab` (búsqueda, filtro, casillas Activa/Verificada/Sostenible,
+Gestionar, Eliminar con `TypeToConfirmDialog`) y `UsersTab`. Acciones `setBrandFlags`,
+`startManagingBrand`, `stopManagingBrand`, `deleteBrandAsStaff`, `setUserRole`. El aviso
+"Estás gestionando X" vive en `src/app/marca/panel/layout.tsx` (sale en todo el panel).
+`src/lib/brand-delete.ts` (`deleteBrandWithImages`) lo comparten el panel y `/admin`.
 
 - **5a. Pestaña "Marcas"** (la actual pasa a llamarse "Pendientes"): tabla/lista responsive con
   búsqueda y filtro por estado (en el cliente: son pocas marcas). Interruptores Activa / Verificada /
@@ -144,13 +151,19 @@ ahora usa clave nueva y borra la anterior. `BrandCoverForm` y `CloseBrandSection
 - **5d. Pestaña "Usuarios"**: lista con `admin_list_users`, búsqueda (`?q=`), select de rol por fila
   solo para admin (`setUserRole` → RPC); curator ve el rol como texto. El propio usuario sin select.
 
-## Grupo 5b — Borrar mi cuenta (depende de 1a, 1e)
+## Grupo 5b — Borrar mi cuenta (depende de 1a, 1e) ✅ (local, 2026-10-06)
+
+Hecho: `DeleteAccountSection` en `/settings` y `deleteMyAccount` en `settings/actions.ts`; el feed
+muestra "Tu cuenta fue eliminada." al llegar.
 
 - `/settings` → zona de peligro con `ConfirmDialog` que pide "ELIMINAR". `deleteMyAccount(confirm)`:
   valida → si tiene marca, lee las claves de sus imágenes → `delete_my_account` → `deleteFromR2` →
   `signOut` → `redirect("/?ok=cuenta-eliminada")`.
 
-## Grupo 6 — Verificación
+## Grupo 6 — Verificación ✅ (local, 2026-10-06)
+
+Hecho en cada grupo (SQL + Chrome headless a 390 px) y al final: `supabase db reset`, `lint`,
+`next build`. Lo que queda es de la nube (todo lo que sube o borra en R2) y está en `validations.md`.
 
 Ver `validations.md`. `tsc`, `lint`, `next build`; `supabase db reset`; SQL de las RPC con usuarios
 de prueba (dueño, otra marca, curator, admin); recorrido en Chrome headless (390 px) de los flujos

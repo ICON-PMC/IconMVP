@@ -1,5 +1,8 @@
 # Requirements — Gestión completa para marcas y admin
 
+> **Estado (2026-10-06): construido y verificado en local; las migraciones del Grupo 1 están en la
+> nube.** Falta mergear `dev` → `main` y probar en producción lo de "Pendiente" al final.
+
 > Auditoría del 2026-10-06: el panel de marca y `/admin` crean contenido, pero casi no lo editan
 > ni lo borran. Una marca no puede corregir el precio de una prenda, no puede crear un look sin
 > Instagram ni borrar uno, y el staff no tiene una vista para "cargar **y editar** en nombre de una
@@ -107,3 +110,15 @@
 - Que el staff borre cuentas de otros usuarios (puede cambiar su rol o eliminar su marca).
 - Editar tallas y ciudades desde `/admin` (siguen por migración/seed).
 - Historial o papelera de lo borrado.
+
+## Pendiente al cerrar (2026-10-06)
+
+- **Todo lo que sube o borra en R2** (en local no hay variables de R2): cambiar foto de prenda y de
+  look, crear un look con foto, cambiar portada, y que al borrar prendas, looks, marcas o cuentas
+  desaparezcan sus archivos del bucket. Lo que el staff sube gestionando no se bloquea por cuota.
+- **Smoke test en producción** con una marca de prueba: Gestionar desde `/admin`, editar una prenda,
+  archivar y restaurar un look, y cerrar la marca de prueba al final.
+- **Instagram al gestionar:** "Conectar Instagram" usa la marca propia (`getMyBrand`), no la que
+  gestiona el staff. Fuera de alcance: el staff no conecta Instagram por una marca.
+- **Cuota al reemplazar una foto:** la nueva se suma antes de borrar la vieja, así que una marca
+  muy cerca del límite podría no poder cambiar una foto aunque el total final cupiera.

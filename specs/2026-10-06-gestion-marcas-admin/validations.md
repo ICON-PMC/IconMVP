@@ -14,7 +14,8 @@ En local no hay variables de R2: todo lo que sube o borra fotos se prueba en la 
 - [x] El registro de marca sigue pasando `user → brand`; `user → admin` directo se ignora. **[db]**
 - [x] `close_brand`: otra marca recibe "No puedes cerrar esta marca."; el dueño la cierra y se van
       marca, prendas, follows y guardados; el clic queda anónimo; su rol vuelve a `user`. **[db]**
-- [ ] La cookie de "gestionar" se ignora para un usuario que no es staff. **[local]**
+- [x] La cookie de "gestionar" se ignora para un usuario que no es staff: la dueña de Sol Caribe con
+      la cookie de Niebla sigue viendo Sol Caribe y sin aviso. **[local]**
 - [x] `delete_my_account`: borra `auth.users` y en cascada `public.users` y follows (los clics se
       conservan); con marca, también la marca; el único admin recibe "Eres el único admin…". **[db]**
 
@@ -54,18 +55,20 @@ En local no hay variables de R2: todo lo que sube o borra fotos se prueba en la 
       desaparecen, el rol vuelve a `user` y `/marca/sol-caribe` da 404. **[local]**
 
 ## Borrar mi cuenta
-- [ ] Usuario sin marca: escribe ELIMINAR, la cuenta desaparece de `auth.users` y no puede volver a
-      entrar con esa contraseña. **[local]**
-- [ ] Usuario con marca: se borran la marca y su contenido. **[local]** (imágenes de R2: **[nube]**)
+- [x] Usuario sin marca: escribe "eliminar", llega a `/feed` con "Tu cuenta fue eliminada.", ya no
+      está en `auth.users` y el login da "Correo o contraseña incorrectos." **[local]**
+- [x] Usuario con marca: se borran la cuenta, la marca y su prenda. **[local]** (imágenes de R2: **[nube]**)
 
 ## Admin
-- [ ] Lista de todas las marcas con búsqueda y filtro de estado. **[local]**
-- [ ] Desactivar una marca la saca del feed y de `/marca/[slug]` (404); reactivarla la devuelve. **[local]**
-- [ ] Verificada / Sostenible se reflejan en la tarjeta y la página de la marca. **[local]**
-- [ ] Gestionar: el panel muestra el aviso, edita una prenda de esa marca, Salir vuelve a `/admin`. **[local]**
+- [x] Lista de todas las marcas; buscar "nieb" deja solo Niebla. **[local]**
+- [x] Desactivar Sol Caribe: `/marca/sol-caribe` da 404 a un visitante; reactivarla, 200. **[local]**
+- [x] Verificada se guarda desde la lista. **[local]** (que se vea en la tarjeta: ya lo hacía)
+- [x] Gestionar Niebla: aviso "Estás gestionando Niebla", edita su prenda ("Prenda guardada."),
+      Salir vuelve a `/admin?tab=marcas`. **[local]**
 - [ ] Lo que sube el staff gestionando no se bloquea por cuota. **[nube]**
-- [ ] Eliminar marca desde `/admin` (con confirmación). **[local]**
-- [ ] Usuarios: admin cambia un rol; curator ve la lista sin selects; el propio usuario sin select. **[local]**
+- [x] Eliminar Niebla desde `/admin` escribiendo su nombre: "Eliminamos Niebla." y sale de la lista. **[local]**
+- [x] Usuarios: admin ve selector en todos menos en su fila ("Admin (tú)"); cambia user → curador
+      ("…ahora es Curador."); curator ve la lista sin selectores. **[local]**
 
 ## General
 - [x] `supabase db reset` sin errores y las pruebas SQL del Grupo 1 dan lo mismo. **[db]**
@@ -73,5 +76,6 @@ En local no hay variables de R2: todo lo que sube o borra fotos se prueba en la 
 - [x] `tsc` y `lint` limpios tras el Grupo 2. **[build]**
 - [x] `tsc` y `lint` limpios tras el Grupo 3. **[build]**
 - [x] `tsc` y `lint` limpios tras el Grupo 4. **[build]**
+- [x] Cierre: `supabase db reset`, `lint` y `next build` limpios tras el Grupo 5. **[build]**
 - [x] Migraciones del Grupo 1 aplicadas en la nube (2026-10-06): 6 funciones y el trigger de rol. **[nube]**
 - [ ] Migraciones aplicadas en la nube antes de mergear a `main`. **[nube]**

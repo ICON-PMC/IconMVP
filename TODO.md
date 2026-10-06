@@ -9,6 +9,8 @@ Marcado `[ ]` pendiente, `[x]` hecho. Cuando termines algo, muévelo a "Hecho" c
 
 ## Para cerrar el release (en este orden)
 
+- [ ] **Probar en producción la gestión de marcas y admin** (`specs/2026-10-06-gestion-marcas-admin/`,
+      sección "Pendiente"): todo lo que toca R2 y "Gestionar" con una marca de prueba.
 - [ ] **Revisar las etiquetas nuevas** (9 estilos y 5 ocasiones de `20261006010000_more_tags.sql`)
       con producto; se renombran o borran desde `/admin` → Etiquetas mientras no estén en uso.
 - [ ] **Etiquetar el catálogo del piloto:** pedir a las marcas que elijan sus estilos (Panel →
@@ -50,6 +52,10 @@ Si alguien propone retomarlo antes de tiempo, esta es la razón para decir "toda
 
 ## Hecho
 
+- 2026-10-06 — **Gestión completa para marcas y admin** (`specs/2026-10-06-gestion-marcas-admin/`):
+  editar prendas, looks sin Instagram (editar, archivar, eliminar), portada, cerrar marca, borrar
+  cuenta, `/admin` con todas las marcas ("Gestionar"), usuarios y roles. Cierra una escalada
+  (curator → admin) y el bug de "correo ya registrado" por doble envío en el registro.
 - 2026-10-06 — **"Confirm email" está apagado en la nube** (24/24 cuentas confirmadas, ninguna con
   correo de confirmación). Ver el bug del registro en `specs/2026-10-06-gestion-marcas-admin/`.
 - 2026-10-06 — **Etiquetas, ciudades y búsqueda** (`specs/2026-10-06-etiquetas-ciudades-busqueda/`):
