@@ -13,6 +13,7 @@ import { PendingBrands, pendingBrandsCount } from "./pending-brands";
 import { MetricsTab } from "./_components/metrics-tab";
 import { UploadTab, parseUploadForm, type UploadData } from "./_components/upload-tab";
 import { TagsTab, type AdminTag } from "./_components/tags-tab";
+import { getCityOptions } from "@/lib/cities";
 
 const REVIEW_NOTICES: Record<string, string> = {
   aprobada: "✓ Marca aprobada. Verá el resultado al ingresar a su panel; por ahora no enviamos correos.",
@@ -79,7 +80,7 @@ async function loadUploadData(): Promise<UploadData> {
     supabase.from("tags").select("id, name").eq("type", type).order("name");
   const [cities, categories, occasions, styles, temperatures, sizes, brands, garments] =
     await Promise.all([
-      supabase.from("cities").select("id, name").order("name"),
+      getCityOptions(supabase),
       tags("category"),
       tags("occasion"),
       tags("style"),
@@ -89,7 +90,7 @@ async function loadUploadData(): Promise<UploadData> {
       supabase.from("garments").select("id, title").order("created_at", { ascending: false }),
     ]);
   return {
-    cities: cities.data ?? [],
+    cities,
     categories: categories.data ?? [],
     occasions: occasions.data ?? [],
     styles: styles.data ?? [],

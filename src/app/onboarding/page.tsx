@@ -3,6 +3,8 @@ import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/auth";
 import { Aurora } from "@/components/aurora";
 import { GlassCard } from "@/components/glass-card";
+import { CityCombobox } from "@/components/city-combobox";
+import { getCityOptions } from "@/lib/cities";
 import { completeOnboarding } from "./actions";
 
 export default async function OnboardingPage() {
@@ -11,9 +13,9 @@ export default async function OnboardingPage() {
   if (session.profile.onboarded) redirect("/feed");
 
   const supabase = await createClient();
-  const [{ data: styles }, { data: cities }] = await Promise.all([
+  const [{ data: styles }, cities] = await Promise.all([
     supabase.from("tags").select("id, name").eq("type", "style").order("name"),
-    supabase.from("cities").select("id, name").order("name"),
+    getCityOptions(supabase),
   ]);
 
   return (
@@ -51,24 +53,13 @@ export default async function OnboardingPage() {
             </div>
 
             <div>
-              <p className="mb-2 text-xs font-medium uppercase tracking-wide text-ink/50">
+              <label
+                htmlFor="city"
+                className="mb-2 block text-xs font-medium uppercase tracking-wide text-ink/50"
+              >
                 Tu ciudad
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {(cities ?? []).map((c) => (
-                  <label key={c.id} className="cursor-pointer">
-                    <input
-                      type="radio"
-                      name="city"
-                      value={c.id}
-                      className="peer sr-only"
-                    />
-                    <span className="glass-input inline-block rounded-full px-3 py-1 text-sm text-ink/80 peer-checked:bg-forest peer-checked:text-white">
-                      {c.name}
-                    </span>
-                  </label>
-                ))}
-              </div>
+              </label>
+              <CityCombobox id="city" name="city" options={cities} />
             </div>
 
             <div className="flex items-center gap-4">

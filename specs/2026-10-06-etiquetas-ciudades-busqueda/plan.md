@@ -18,7 +18,7 @@ Migraciones, en orden de aplicación:
    reescriben una sola vez).
 5. `20261006040000_tag_usage.sql` — `tag_usage_counts()` para 2g (agregada en el Grupo 2).
 
-Las migraciones 1–4 están aplicadas en la nube (2026-10-06). La 3 se reescribió como un solo
+Las migraciones 1–5 están aplicadas en la nube (2026-10-06). La 3 se reescribió como un solo
 statement con CTE: el SQL Editor no conserva una tabla temporal entre statements.
 
 - **1a. `brand_tags`**
@@ -117,15 +117,21 @@ statement con CTE: el SQL Editor no conserva una tabla temporal entre statements
   de `tag_usage_counts()` (security definer, solo staff): con RLS el staff no ve las
   `user_preferences` de otros y habría podido borrar estilos elegidos por usuarios.
 
-## Grupo 3 — Ciudades en la UI (depende de 1e)
+## Grupo 3 — Ciudades en la UI (depende de 1e) ✅ (2026-10-06)
 
-- **3a.** `src/components/city-combobox.tsx`: shadcn Popover + Command (o el Combobox de Base UI si
-  ya está instalado), búsqueda sin acentos en el cliente sobre la lista (~1.100 filas, caben en
-  memoria), muestra "Nombre, Departamento". Props `multiple`, `name`, `defaultValue`.
+`src/lib/cities.ts` (`getCityOptions`, `getCityFilterOptions`, `cityLabel`). **Ojo:** PostgREST
+corta cada respuesta en 1.000 filas (`max_rows`) y hay 1.122 municipios; `getCityOptions` pide
+por páginas. Cualquier `select` nuevo sobre `cities` sin filtro debe pasar por ahí.
+
+- **3a.** `src/components/city-combobox.tsx`: Combobox de Base UI (ya instalado). `CityCombobox`
+  (uno, dentro de un form, envía el id) y `CityMultiCombobox` (controlado, filtro del feed). Filtro
+  sin acentos en el cliente, máximo 50 resultados pintados, etiqueta "Nombre, Departamento".
 - **3b.** Usarlo en onboarding de usuario, `/settings`, registro de marca, perfil del panel (agregar
   `city` a la acción de guardar perfil) y formulario de marca de `/admin`.
-- **3c.** Feed y búsqueda: el grupo "Ciudad" del `FeedFilterPanel` usa el combobox múltiple con solo
-  ciudades con marcas activas. El parámetro de URL (`city=slug`) no cambia.
+- **3c.** Feed y búsqueda: el grupo "Ciudad" lista solo ciudades con marcas activas. Con más de 8
+  el panel usa `CityMultiCombobox` (`searchable` en `FilterGroup`); con menos siguen los chips. El
+  parámetro de URL (`city=slug`) no cambia.
+- **3d.** `/marca/[slug]` y `/prenda/[id]` muestran "Ciudad, Departamento" (hay nombres repetidos).
 
 ## Grupo 4 — Búsqueda (depende de 1c y 1f)
 

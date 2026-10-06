@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { cityLabel } from "@/lib/cities";
 import { createClient } from "@/lib/supabase/server";
 import { SiteHeader } from "@/components/site-header";
 import { Aurora } from "@/components/aurora";
@@ -33,9 +34,12 @@ export default async function BrandPage({
 
   let cityName: string | null = null;
   if (brand.city_id) {
-    cityName =
-      (await supabase.from("cities").select("name").eq("id", brand.city_id).maybeSingle())
-        .data?.name ?? null;
+    const { data: city } = await supabase
+      .from("cities")
+      .select("name, department")
+      .eq("id", brand.city_id)
+      .maybeSingle();
+    cityName = city ? cityLabel(city.name, city.department) : null;
   }
 
   const { data: brandTags } = await supabase

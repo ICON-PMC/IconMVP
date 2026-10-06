@@ -10,6 +10,7 @@ import { ProfileForm } from "./profile-form";
 import { CoverForm } from "./cover-form";
 import { GarmentForm } from "./garment-form";
 import { getTagOptions } from "@/lib/tags";
+import { getCityOptions } from "@/lib/cities";
 import { removeOnboardingGarment, submitBrandForReview } from "./actions";
 import Image from "next/image";
 import Link from "next/link";
@@ -69,8 +70,8 @@ export default async function BrandOnboardingPage({
           ? 3
           : 1;
 
-  const [{ data: cities }, tagOptions, { data: brandTags }] = await Promise.all([
-    supabase.from("cities").select("id, name").order("name"),
+  const [cities, tagOptions, { data: brandTags }] = await Promise.all([
+    getCityOptions(supabase),
     getTagOptions(supabase),
     brand
       ? supabase.from("brand_tags").select("tag_id").eq("brand_id", brand.id)
@@ -120,7 +121,7 @@ export default async function BrandOnboardingPage({
                 Icon es para marcas colombianas independientes. Revisamos cada perfil antes de publicarlo.
               </p>
               <ProfileForm
-                cities={cities ?? []}
+                cities={cities}
                 styles={tagOptions.style}
                 defaults={{
                   styles: (brandTags ?? []).map((t) => t.tag_id),

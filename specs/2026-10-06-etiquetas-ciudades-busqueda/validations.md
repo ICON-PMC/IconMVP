@@ -22,7 +22,8 @@ Leyenda: **[build]** = `tsc`/`lint`/`build`; **[db]** = probado con SQL en Supab
 - [x] `cities` tiene ~1.100 filas con `department` y `dane_code`; los 3 slugs viejos siguen igual y
       las marcas/usuarios que apuntan a ellos no cambian. **[db]**
 - [x] No hay slugs repetidos. **[db]**
-- [ ] El combobox encuentra "Medellin" sin tilde y "Rionegro" muestra los dos departamentos. **[local]**
+- [x] El combobox encuentra "Medellin" sin tilde y "Rionegro" muestra los dos departamentos;
+      el onboarding guarda Medellín en `home_city_id` (Chrome headless, 390 px). **[local]**
 - [ ] Onboarding, `/settings`, registro de marca, perfil del panel y `/admin` guardan la ciudad. **[local]**
 - [ ] El filtro de ciudad del feed solo lista ciudades con marcas activas; `?city=bogota` sigue funcionando. **[local]**
 - [ ] El combobox se usa bien en celular (teclado, scroll de la lista). **[local]**
@@ -42,5 +43,6 @@ Leyenda: **[build]** = `tsc`/`lint`/`build`; **[db]** = probado con SQL en Supab
 - [x] `supabase migration up --local` aplica las 4 migraciones sin errores. **[db]**
 - [ ] `supabase db reset` aplica todas las migraciones + `seed.sql` sin errores. **[db]**
 - [x] `tsc`, `lint` y `next build` limpios tras el Grupo 2. **[build]**
+- [x] `tsc` y `lint` limpios tras el Grupo 3. **[build]**
 - [x] Migraciones 1–4 aplicadas en la nube (2026-10-06). **[nube]**
-- [ ] Migración `20261006040000_tag_usage.sql` aplicada en la nube antes de mergear a `main`. **[nube]**
+- [x] Migración `20261006040000_tag_usage.sql` aplicada en la nube (2026-10-06). **[nube]**
