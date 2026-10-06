@@ -3,7 +3,9 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { quotaBrandId, requireBrandOwner } from "@/lib/auth";
+import { cookies } from "next/headers";
+import { MANAGED_BRAND_COOKIE, quotaBrandId, requireBrandOwner } from "@/lib/auth";
+import { saveBrandCoverImage } from "@/lib/brand-cover";
 import { uploadImageField, uploadImageFromUrl } from "@/lib/upload";
 import { StorageQuotaError } from "@/lib/storage-quota";
 import { deleteFromR2 } from "@/lib/r2";
@@ -89,6 +91,43 @@ export async function updateBrandProfile(formData: FormData) {
   revalidatePath("/marca/panel");
   revalidatePath("/marca/[slug]", "page");
   redirect("/marca/panel?tab=perfil&ok=perfil");
+}
+
+// Portada (Panel → Perfil). Misma lógica que el paso 2 del registro (src/lib/brand-cover.ts).
+export async function updateBrandCover(formData: FormData) {
+  const { brandId, quotaFor } = await panelBrandOrRedirect();
+  const supabase = await createClient();
+  const error = await saveBrandCoverImage(supabase, brandId, formData, quotaFor);
+  if (error) redirect(`/marca/panel?tab=perfil&error=${encodeURIComponent(error)}`);
+  revalidatePath("/marca/panel");
+  revalidatePath("/marca/[slug]", "page");
+  revalidatePath("/feed");
+  redirect("/marca/panel?tab=perfil&ok=portada");
+}
+
+// Cerrar la cuenta de la marca: borra la marca y todo su contenido (RPC `close_brand`) y sus
+// imágenes de R2. La persona sigue con su cuenta como usuario. `confirmName` se vuelve a validar
+// aquí (el diálogo ya lo exige). Si es el staff gestionando, vuelve a /admin.
+export async function closeBrandAccount(confirmName: string): Promise<ActionResult> {
+  const ctx = await requireBrandOwner();
+  const brand = ctx.brand;
+  if (!brand) return { ok: false, error: "No encontramos la marca." };
+  const norm = (v: string) => v.trim().toLocaleLowerCase("es");
+  if (norm(confirmName) !== norm(brand.name))
+    return { ok: false, error: "El nombre no coincide con el de la marca." };
+
+  const supabase = await createClient();
+  const keys = await imageKeysFor(supabase, { brandId: brand.id });
+  const { error } = await supabase.rpc("close_brand", { p_brand_id: brand.id });
+  if (error) return { ok: false, error: error.message };
+  await deleteFromR2(keys);
+
+  revalidatePath("/", "layout");
+  if (ctx.actingAsStaff) {
+    (await cookies()).delete(MANAGED_BRAND_COOKIE);
+    redirect("/admin?tab=marcas&ok=marca-eliminada");
+  }
+  redirect("/feed?ok=marca-cerrada");
 }
 
 // ============================================================

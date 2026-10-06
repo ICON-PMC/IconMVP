@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { Suspense } from "react";
+import { FlashToast } from "@/components/flash-toast";
 import { getBrandStyleNames } from "@/lib/tags";
 import { getCityFilterOptions } from "@/lib/cities";
 import { createClient } from "@/lib/supabase/server";
@@ -55,6 +57,12 @@ async function fetchFeedItemsByIds(
   const { data } = await q;
   return data ?? [];
 }
+
+// Avisos al llegar al feed después de cerrar una marca o borrar la cuenta.
+const FEED_FLASH = {
+  "marca-cerrada": "Cerramos la cuenta de tu marca. Tu cuenta de usuario sigue activa.",
+  "cuenta-eliminada": "Tu cuenta fue eliminada.",
+};
 
 // Hasta este número de ciudades el filtro sigue siendo de chips.
 const CITY_CHIPS_MAX = 8;
@@ -373,6 +381,9 @@ function Shell({
       <Aurora />
       <div className="mx-auto w-full max-w-5xl px-4 py-6">
         <SiteHeader />
+        <Suspense>
+          <FlashToast messages={FEED_FLASH} />
+        </Suspense>
         <h1 className="mt-8 mb-4 text-3xl font-medium tracking-tight text-forest">
           Explorar
         </h1>

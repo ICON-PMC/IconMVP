@@ -48,8 +48,10 @@ En local no hay variables de R2: todo lo que sube o borra fotos se prueba en la 
 
 ## Perfil
 - [ ] Cambiar portada reemplaza la imagen y borra la anterior de R2. **[nube]**
-- [ ] Cerrar cuenta: con el nombre mal escrito no hace nada; bien escrito borra todo y la persona
-      queda como usuario en `/feed`. **[local]**
+- [x] Sin R2, "Guardar portada" muestra "No pudimos subir la imagen…" sin romper nada. **[local]**
+- [x] Cerrar cuenta: con "Sol" el botón queda deshabilitado; con "  sol caribe " se habilita; al
+      confirmar llega a `/feed` con "Cerramos la cuenta de tu marca…", la marca, su prenda y su look
+      desaparecen, el rol vuelve a `user` y `/marca/sol-caribe` da 404. **[local]**
 
 ## Borrar mi cuenta
 - [ ] Usuario sin marca: escribe ELIMINAR, la cuenta desaparece de `auth.users` y no puede volver a
@@ -70,5 +72,6 @@ En local no hay variables de R2: todo lo que sube o borra fotos se prueba en la 
 - [x] `tsc`, `lint` y `next build` limpios tras el Grupo 1. **[build]**
 - [x] `tsc` y `lint` limpios tras el Grupo 2. **[build]**
 - [x] `tsc` y `lint` limpios tras el Grupo 3. **[build]**
+- [x] `tsc` y `lint` limpios tras el Grupo 4. **[build]**
 - [x] Migraciones del Grupo 1 aplicadas en la nube (2026-10-06): 6 funciones y el trigger de rol. **[nube]**
 - [ ] Migraciones aplicadas en la nube antes de mergear a `main`. **[nube]**

@@ -114,7 +114,13 @@ llame la acción a mano.
 - **3d.** `LooksTab` muestra el estado archivado y un filtro Todos/Publicados/Borradores/Archivados
   (igual que el catálogo).
 
-## Grupo 4 — Perfil de marca (depende de 1a, 1c, 1d)
+## Grupo 4 — Perfil de marca (depende de 1a, 1c, 1d) ✅ (local, 2026-10-06)
+
+Hecho: `src/lib/brand-cover.ts` (`saveBrandCoverImage`) usado por el registro y por
+`updateBrandCover`; **el registro también cambió**: guardaba siempre en `brands/<id>/cover/0.webp`,
+ahora usa clave nueva y borra la anterior. `BrandCoverForm` y `CloseBrandSection` en Perfil;
+`closeBrandAccount` revalida el nombre en el servidor. `TypeToConfirmDialog` reutilizable
+(también para 5c y 5b). El feed ganó `FlashToast` para el aviso al llegar.
 
 - **4a. Portada** en `profile-tab.tsx`: campo de imagen con vista previa; `updateBrandCover`
   reutiliza la lógica de `saveBrandCover` del onboarding (moverla a `src/lib/brand-cover.ts`) y
