@@ -28,7 +28,7 @@ export function CatalogTab({
           </NewGarmentSheet>
         }
       />
-      <CatalogGrid garments={garments} tagOptions={tagOptions} canPublish={canPublish} />
+      <CatalogGrid garments={garments} tagOptions={tagOptions} sizes={sizes} canPublish={canPublish} />
     </div>
   );
 }

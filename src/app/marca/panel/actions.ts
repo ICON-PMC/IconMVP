@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { quotaBrandId, requireBrandOwner } from "@/lib/auth";
 import { uploadImageField, uploadImageFromUrl } from "@/lib/upload";
 import { StorageQuotaError } from "@/lib/storage-quota";
+import { deleteFromR2 } from "@/lib/r2";
 import { fetchRecentMedia, InstagramAuthError, refreshLongLivedToken } from "@/lib/instagram";
 import { normalizeInstagramHandle, normalizeUrl } from "@/lib/links";
 import {
@@ -156,12 +157,13 @@ export async function createBrandGarment(formData: FormData) {
   redirect("/marca/panel?tab=catalogo&ok=prenda");
 }
 
-// Categoría + estilo/ocasión/clima de una prenda ya creada (hoja "Etiquetas" del catálogo).
-export async function updateGarmentTags(
+// Editar una prenda ya creada (hoja "Editar prenda" del catálogo): campos, categoría, tallas,
+// estilo/ocasión/clima y, si llega, una foto nueva.
+export async function updateBrandGarment(
   garmentId: string,
   formData: FormData,
 ): Promise<{ ok: true } | { ok: false; error: string }> {
-  const brandId = await myBrandIdOrRedirect();
+  const { brandId, quotaFor } = await panelBrandOrRedirect();
   const supabase = await createClient();
   const { data: garment } = await supabase
     .from("garments")
@@ -171,19 +173,108 @@ export async function updateGarmentTags(
     .maybeSingle();
   if (!garment) return { ok: false, error: "No encontramos esa prenda en tu catálogo." };
 
+  const title = str(formData, "title");
+  if (!title) return { ok: false, error: "Escribe el título de la prenda." };
+  const productUrlRaw = str(formData, "product_url");
+  const product_url = normalizeUrl(productUrlRaw);
+  if (productUrlRaw && !product_url) return { ok: false, error: "El link de compra no es válido." };
+  const priceRaw = str(formData, "price_cop");
+  if (priceRaw && !/^\d+$/.test(priceRaw)) return { ok: false, error: "El precio debe ser un número." };
+
+  // La foto va primero: si la cuota la bloquea, no queda nada guardado a medias.
+  let newImage: Awaited<ReturnType<typeof uploadImageField>> = null;
+  try {
+    // Clave nueva en cada cambio: reusar `garments/<id>/0.webp` pisaría el archivo (y el CDN
+    // podría seguir mostrando el viejo) y el borrado de la vieja se llevaría la nueva.
+    newImage = await uploadImageField(formData, `garments/${garmentId}/${Date.now()}`, "image", {
+      enforceQuotaFor: quotaFor,
+    });
+  } catch (e) {
+    if (e instanceof StorageQuotaError) return { ok: false, error: e.message };
+    throw e;
+  }
+
+  const { error } = await supabase
+    .from("garments")
+    .update({
+      title,
+      description: str(formData, "description"),
+      price_cop: priceRaw ? Number(priceRaw) : null,
+      product_url,
+      color: str(formData, "color"),
+      fabric: str(formData, "fabric"),
+    })
+    .eq("id", garmentId)
+    .eq("brand_id", brandId);
+  if (error) return { ok: false, error: error.message };
+
   const categoryId = str(formData, "category");
   const options = await getTagOptions(supabase);
-  const error = await replaceGarmentTags(
+  const tagError = await replaceGarmentTags(
     supabase,
     garmentId,
     idsOfTypes(options, ["category", "style", "occasion", "temperature"]),
     [...(categoryId ? [categoryId] : []), ...tagIdsFromForm(formData, ["style", "occasion", "temperature"])],
   );
-  if (error) return { ok: false, error };
+  if (tagError) return { ok: false, error: tagError };
+
+  await supabase.from("garment_sizes").delete().eq("garment_id", garmentId);
+  const sizeIds = [...new Set(formData.getAll("sizes").map(String))].filter(Boolean);
+  if (sizeIds.length) {
+    const { error: sizeError } = await supabase
+      .from("garment_sizes")
+      .insert(sizeIds.map((size_id) => ({ garment_id: garmentId, size_id })));
+    if (sizeError) return { ok: false, error: sizeError.message };
+  }
+
+  if (newImage) {
+    const imageError = await replaceCoverImage(supabase, "garment", garmentId, newImage);
+    if (imageError) return { ok: false, error: imageError };
+  }
+
   revalidatePath("/marca/panel");
   revalidatePath(`/prenda/${garmentId}`);
   revalidatePath("/feed");
   return { ok: true };
+}
+
+// Deja `image` como foto principal (posición 0) de una prenda o un look y borra la anterior
+// de R2. Devuelve el mensaje de error o null.
+async function replaceCoverImage(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  kind: "garment" | "post",
+  ownerId: string,
+  image: { key: string; bytes: number },
+): Promise<string | null> {
+  const row = { cf_image_id: image.key, bytes: image.bytes };
+  let oldKey: string | null = null;
+  let error: { message: string } | null = null;
+  if (kind === "garment") {
+    const { data: current } = await supabase
+      .from("garment_images")
+      .select("id, cf_image_id")
+      .eq("garment_id", ownerId)
+      .eq("position", 0)
+      .maybeSingle();
+    oldKey = current?.cf_image_id ?? null;
+    ({ error } = current
+      ? await supabase.from("garment_images").update(row).eq("id", current.id)
+      : await supabase.from("garment_images").insert({ ...row, garment_id: ownerId, position: 0 }));
+  } else {
+    const { data: current } = await supabase
+      .from("post_images")
+      .select("id, cf_image_id")
+      .eq("post_id", ownerId)
+      .eq("position", 0)
+      .maybeSingle();
+    oldKey = current?.cf_image_id ?? null;
+    ({ error } = current
+      ? await supabase.from("post_images").update(row).eq("id", current.id)
+      : await supabase.from("post_images").insert({ ...row, post_id: ownerId, position: 0 }));
+  }
+  if (error) return error.message;
+  if (oldKey && oldKey !== image.key) await deleteFromR2([oldKey]);
+  return null;
 }
 
 // ============================================================
@@ -279,6 +370,11 @@ export async function deleteGarments(ids: string[]): Promise<BulkResult> {
     .select("post_id")
     .in("garment_id", ids);
   const postIds = [...new Set((affected ?? []).map((r) => r.post_id))];
+  // Las claves de R2 se leen antes: después del borrado la cascada ya se llevó las filas.
+  const { data: images } = await supabase
+    .from("garment_images")
+    .select("garment_id, cf_image_id")
+    .in("garment_id", ids);
 
   const { data, error } = await supabase
     .from("garments")
@@ -287,6 +383,8 @@ export async function deleteGarments(ids: string[]): Promise<BulkResult> {
     .eq("brand_id", brand.id)
     .select("id");
   if (error) return { ok: false, error: error.message };
+  const deleted = new Set((data ?? []).map((g) => g.id));
+  await deleteFromR2((images ?? []).filter((i) => deleted.has(i.garment_id)).map((i) => i.cf_image_id));
 
   // Igual que untagGarmentFromPost: un look publicado sin prendas vuelve a borrador.
   if (postIds.length) {

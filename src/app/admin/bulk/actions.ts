@@ -7,6 +7,8 @@ import { requireStaff } from "@/lib/auth";
 import { uploadImageField } from "@/lib/upload";
 import { normalizeUrl } from "@/lib/links";
 import { MAX_GARMENT_TAGS_PER_TYPE } from "@/lib/tags";
+import { deleteFromR2 } from "@/lib/r2";
+import { imageKeysFor } from "@/lib/image-keys";
 
 export type RowResult = {
   line: number;
@@ -324,8 +326,10 @@ export async function deleteGarmentAction(
   if (!garmentId) return { ok: false, error: "Falta la prenda" };
 
   const supabase = await createClient();
+  const keys = await imageKeysFor(supabase, { garmentIds: [garmentId] });
   const { error } = await supabase.from("garments").delete().eq("id", garmentId);
   if (error) return { ok: false, error: error.message };
+  await deleteFromR2(keys);
 
   revalidatePath("/admin/bulk");
   revalidatePath("/feed");

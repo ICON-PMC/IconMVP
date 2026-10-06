@@ -1,12 +1,7 @@
-import { FormField } from "@/components/form-field";
-import { ChipSelect } from "@/components/chip-select";
-import { GarmentTagFields } from "@/components/garment-tag-fields";
-import { NativeSelect } from "@/components/native-select";
 import { SubmitButton } from "@/components/submit-button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import type { TagOptions } from "@/lib/tags";
 import { createBrandGarment } from "../actions";
+import { GarmentFields } from "./garment-fields";
 
 export function NewGarmentForm({
   tagOptions,
@@ -17,42 +12,7 @@ export function NewGarmentForm({
 }) {
   return (
     <form action={createBrandGarment} className="flex flex-col gap-4 pb-2">
-      <FormField label="Foto" htmlFor="g-image">
-        <Input id="g-image" name="image" type="file" accept="image/*" required />
-      </FormField>
-      <FormField label="Título" htmlFor="g-title">
-        <Input id="g-title" name="title" required />
-      </FormField>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <FormField label="Precio (COP)" htmlFor="g-price">
-          <Input id="g-price" name="price_cop" type="number" min="0" inputMode="numeric" />
-        </FormField>
-        <FormField label="Categoría" htmlFor="g-category">
-          <NativeSelect id="g-category" name="category" defaultValue="">
-            <option value="">—</option>
-            {tagOptions.category.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </NativeSelect>
-        </FormField>
-        <FormField label="Enlace del producto" htmlFor="g-url">
-          <Input id="g-url" name="product_url" type="text" inputMode="url" placeholder="https://" />
-        </FormField>
-        <FormField label="Color" htmlFor="g-color">
-          <Input id="g-color" name="color" />
-        </FormField>
-      </div>
-      <FormField label="Descripción" htmlFor="g-desc">
-        <Textarea id="g-desc" name="description" rows={3} />
-      </FormField>
-      <ChipSelect
-        name="sizes"
-        legend="Tallas"
-        options={sizes.map((s) => ({ id: s.id, name: s.label }))}
-      />
-      <GarmentTagFields options={tagOptions} />
+      <GarmentFields tagOptions={tagOptions} sizes={sizes} />
       <SubmitButton size="lg" pendingText="Agregando…" className="w-full rounded-full">
         Agregar prenda
       </SubmitButton>
