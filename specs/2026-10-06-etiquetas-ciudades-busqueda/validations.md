@@ -32,11 +32,14 @@ Leyenda: **[build]** = `tsc`/`lint`/`build`; **[db]** = probado con SQL en Supab
 - [x] SQL: `search_garments('hoodie')` → "Buzo con capucha"; "gorra" no trae la capucha;
       `search_brands('marcas tropicales')`, `('tropical inspired brands')` y `p_styles => {boho}`
       traen la marca con esos estilos; `('de la')` no rompe. **[db]**
-- [ ] "hoodie" encuentra una prenda titulada "Buzo con capucha" y viceversa. **[local]**
-- [ ] "marcas tropicales" y "tropical inspired brands" encuentran las marcas con estilo Tropical. **[local]**
+- [x] "hoodie" encuentra una prenda titulada "Buzo con capucha" en la pestaña Prendas. **[local]**
+- [x] "marcas tropicales" encuentra la marca con estilo Tropical y su tarjeta muestra los estilos;
+      la pestaña Marcas tiene el filtro Estilo. **[local]**
 - [ ] Una consulta solo con palabras ignoradas ("de la") no rompe la búsqueda. **[local]**
 - [ ] Las búsquedas de antes siguen dando lo mismo (`abrigos`, nombre de una marca, una palabra de un caption). **[local]**
-- [ ] `/admin` → Sinónimos: un grupo nuevo se aplica a la siguiente búsqueda sin desplegar. **[local]**
+- [x] `/admin` → Sinónimos: "Chaleco, Vest" se guarda normalizado (`{chaleco,vest}`); un grupo de una
+      sola palabra muestra el error en español; agregar "tienda" a ignoradas funciona. **[local]**
+- [ ] Un grupo nuevo se aplica a la siguiente búsqueda sin desplegar (probar en la nube). **[nube]**
 - [x] `anon` puede leer sinónimos pero no escribirlos. **[db]**
 
 ## General
@@ -44,5 +47,6 @@ Leyenda: **[build]** = `tsc`/`lint`/`build`; **[db]** = probado con SQL en Supab
 - [ ] `supabase db reset` aplica todas las migraciones + `seed.sql` sin errores. **[db]**
 - [x] `tsc`, `lint` y `next build` limpios tras el Grupo 2. **[build]**
 - [x] `tsc` y `lint` limpios tras el Grupo 3. **[build]**
+- [x] `tsc`, `lint` y `next build` limpios tras el Grupo 4. **[build]**
 - [x] Migraciones 1–4 aplicadas en la nube (2026-10-06). **[nube]**
 - [x] Migración `20261006040000_tag_usage.sql` aplicada en la nube (2026-10-06). **[nube]**

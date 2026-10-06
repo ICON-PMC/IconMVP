@@ -133,12 +133,13 @@ por páginas. Cualquier `select` nuevo sobre `cities` sin filtro debe pasar por 
   parámetro de URL (`city=slug`) no cambia.
 - **3d.** `/marca/[slug]` y `/prenda/[id]` muestran "Ciudad, Departamento" (hay nombres repetidos).
 
-## Grupo 4 — Búsqueda (depende de 1c y 1f)
+## Grupo 4 — Búsqueda (depende de 1c y 1f) ✅ (2026-10-06)
 
-- **4a.** `src/app/feed/page.tsx`: pasar `p_styles` a `search_brands` y agregar el grupo Estilo a la
-  pestaña Marcas.
-- **4b.** `/admin` → Etiquetas → **Sinónimos**: lista de grupos (chips), crear, editar, borrar; y
-  lista de palabras ignoradas.
+- **4a.** `src/app/feed/page.tsx`: la pestaña Marcas pasa `p_styles` a `search_brands` y muestra el
+  grupo Estilo en Filtros. `BrandCard` muestra los estilos (`getBrandStyleNames` en `tags.ts`).
+- **4b.** `/admin` → Etiquetas, al final: **Sinónimos** (cada grupo editable como texto separado por
+  comas, agregar, borrar) y **Palabras ignoradas** (agregar varias con coma, quitar una). La base
+  normaliza y rechaza grupos de una sola palabra.
 
 ## Grupo 5 — Verificación
 

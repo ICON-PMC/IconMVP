@@ -266,3 +266,65 @@ export async function deleteTag(formData: FormData) {
   revalidateTags();
   redirect(tagsUrl("ok=borrada"));
 }
+
+// ============================================================
+// Sinónimos y palabras ignoradas de la búsqueda (/admin?tab=etiquetas)
+// La base normaliza (minúsculas, sin acentos) y exige 2+ palabras por grupo.
+// ============================================================
+const splitWords = (raw: string | null) =>
+  (raw ?? "").split(/[,\n]/).map((w) => w.trim()).filter(Boolean);
+
+function revalidateSearch() {
+  revalidatePath("/admin");
+  revalidatePath("/feed");
+}
+
+export async function saveSynonymGroup(formData: FormData) {
+  await requireStaff();
+  const id = str(formData, "id");
+  const terms = splitWords(str(formData, "terms"));
+  if (terms.length < 2)
+    redirect(tagsUrl(`error=${encodeURIComponent("Escribe al menos dos palabras separadas por coma.")}`));
+  const supabase = await createClient();
+  const { error } = id
+    ? await supabase.from("search_synonyms").update({ terms }).eq("id", id)
+    : await supabase.from("search_synonyms").insert({ terms });
+  if (error) redirect(tagsUrl(`error=${encodeURIComponent(error.message)}`));
+  revalidateSearch();
+  redirect(tagsUrl("ok=sinonimos"));
+}
+
+export async function deleteSynonymGroup(formData: FormData) {
+  await requireStaff();
+  const id = str(formData, "id");
+  if (!id) redirect(tagsUrl(""));
+  const supabase = await createClient();
+  const { error } = await supabase.from("search_synonyms").delete().eq("id", id);
+  if (error) redirect(tagsUrl(`error=${encodeURIComponent(error.message)}`));
+  revalidateSearch();
+  redirect(tagsUrl("ok=sinonimos-borrados"));
+}
+
+export async function addStopwords(formData: FormData) {
+  await requireStaff();
+  const words = splitWords(str(formData, "words"));
+  if (!words.length) redirect(tagsUrl(`error=${encodeURIComponent("Escribe al menos una palabra.")}`));
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("search_stopwords")
+    .upsert(words.map((word) => ({ word })), { onConflict: "word", ignoreDuplicates: true });
+  if (error) redirect(tagsUrl(`error=${encodeURIComponent(error.message)}`));
+  revalidateSearch();
+  redirect(tagsUrl("ok=ignoradas"));
+}
+
+export async function deleteStopword(formData: FormData) {
+  await requireStaff();
+  const word = str(formData, "word");
+  if (!word) redirect(tagsUrl(""));
+  const supabase = await createClient();
+  const { error } = await supabase.from("search_stopwords").delete().eq("word", word);
+  if (error) redirect(tagsUrl(`error=${encodeURIComponent(error.message)}`));
+  revalidateSearch();
+  redirect(tagsUrl("ok=ignorada-borrada"));
+}
