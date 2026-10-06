@@ -1,4 +1,5 @@
 import { ChipSelect } from "@/components/chip-select";
+import { CityCombobox } from "@/components/city-combobox";
 import { GlassCard } from "@/components/glass-card";
 import { FormField } from "@/components/form-field";
 import { StickyActionBar } from "@/components/sticky-action-bar";
@@ -6,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { MyBrand } from "@/lib/auth";
 import { MAX_BRAND_STYLES, type TagOption } from "@/lib/tags";
+import type { CityOption } from "@/lib/cities";
 import { updateBrandProfile } from "../actions";
 
 const FORM_ID = "brand-profile-form";
@@ -14,8 +16,10 @@ export function ProfileTab({
   brand,
   styles,
   brandStyleIds,
+  cities,
 }: {
   brand: MyBrand;
+  cities: CityOption[];
   styles: TagOption[];
   brandStyleIds: string[];
 }) {
@@ -28,6 +32,9 @@ export function ProfileTab({
           </FormField>
           <FormField label="Bio" htmlFor="bio" hint="Una frase que cuente qué hace tu marca.">
             <Input id="bio" name="bio" defaultValue={brand.bio ?? ""} />
+          </FormField>
+          <FormField label="Ciudad" htmlFor="city">
+            <CityCombobox id="city" name="city" options={cities} defaultValue={brand.city_id} />
           </FormField>
           <FormField label="Tienda online" htmlFor="store_url">
             <Input

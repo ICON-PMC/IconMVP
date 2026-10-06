@@ -50,6 +50,7 @@ export async function updateBrandProfile(formData: FormData) {
       store_url,
       instagram,
       bio: str(formData, "bio"),
+      city_id: str(formData, "city"),
     })
     .eq("id", brandId);
   if (error) redirect(`/marca/panel?tab=perfil&error=${encodeURIComponent(error.message)}`);

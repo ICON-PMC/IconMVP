@@ -1,6 +1,8 @@
 import { GlassCard } from "@/components/glass-card";
 import { FormField } from "@/components/form-field";
 import { ChipSelect } from "@/components/chip-select";
+import { CityCombobox } from "@/components/city-combobox";
+import type { CityOption } from "@/lib/cities";
 import { GarmentTagFields } from "@/components/garment-tag-fields";
 import { LinkTabs } from "@/components/link-tabs";
 import { NativeSelect } from "@/components/native-select";
@@ -21,7 +23,7 @@ export function parseUploadForm(v: string | undefined): UploadForm {
 type Named = { id: string; name: string };
 
 export type UploadData = {
-  cities: Named[];
+  cities: CityOption[];
   categories: Named[];
   occasions: Named[];
   styles: Named[];
@@ -68,14 +70,7 @@ function BrandForm({ data }: { data: UploadData }) {
           <Input id="b-slug" name="slug" required placeholder="mi-marca" autoCapitalize="none" />
         </FormField>
         <FormField label="Ciudad" htmlFor="b-city">
-          <NativeSelect id="b-city" name="city_id" defaultValue="">
-            <option value="">—</option>
-            {data.cities.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </NativeSelect>
+          <CityCombobox id="b-city" name="city_id" options={data.cities} placeholder="Escribe la ciudad" />
         </FormField>
         <FormField label="Rango de precio" htmlFor="b-price">
           <NativeSelect id="b-price" name="price_range" defaultValue="">

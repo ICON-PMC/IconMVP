@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getCityFilterOptions } from "@/lib/cities";
 import { createClient } from "@/lib/supabase/server";
 import { SiteHeader } from "@/components/site-header";
 import { Aurora } from "@/components/aurora";
@@ -54,6 +55,9 @@ async function fetchFeedItemsByIds(
   return data ?? [];
 }
 
+// Hasta este número de ciudades el filtro sigue siendo de chips.
+const CITY_CHIPS_MAX = 8;
+
 export default async function FeedPage({ searchParams }: { searchParams: SearchParams }) {
   const sp = await searchParams;
   const { filters: f, sort } = parseFeedParams(sp);
@@ -63,16 +67,22 @@ export default async function FeedPage({ searchParams }: { searchParams: SearchP
 
   const supabase = await createClient();
 
-  const [catsRes, occsRes, stylesRes, citiesRes] = await Promise.all([
+  const [catsRes, occsRes, stylesRes, cityOptions] = await Promise.all([
     supabase.from("tags").select("slug, name").eq("type", "category").order("name"),
     supabase.from("tags").select("slug, name").eq("type", "occasion").order("name"),
     supabase.from("tags").select("slug, name").eq("type", "style").order("name"),
-    supabase.from("cities").select("slug, name").order("name"),
+    getCityFilterOptions(supabase),
   ]);
   const toOpts = (rows: { slug: string; name: string }[] | null) =>
     (rows ?? []).map((r) => ({ value: r.slug, label: r.name }));
 
-  const cityGroup: FilterGroup = { param: "city", label: "Ciudad", options: toOpts(citiesRes.data) };
+  // Solo ciudades con marcas activas; con muchas, el panel muestra un buscador en vez de chips.
+  const cityGroup: FilterGroup = {
+    param: "city",
+    label: "Ciudad",
+    options: cityOptions,
+    searchable: cityOptions.length > CITY_CHIPS_MAX,
+  };
   const priceGroup: FilterGroup = {
     param: "price",
     label: "Precio",

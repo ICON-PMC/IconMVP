@@ -14,6 +14,7 @@ import { LooksTab } from "./_components/looks-tab";
 import { ProfileTab } from "./_components/profile-tab";
 import { checkStorageQuota } from "@/lib/storage-quota";
 import { EMPTY_TAG_OPTIONS, getTagOptions } from "@/lib/tags";
+import { getCityOptions } from "@/lib/cities";
 
 const FLASH = { perfil: "Perfil guardado.", prenda: "Prenda agregada." };
 
@@ -116,13 +117,14 @@ export default async function BrandPanelPage({
             : Promise.resolve({ data: [] as { garment_id: string; tag_id: string }[] }),
         ])
       : [EMPTY_TAG_OPTIONS, { data: [] }, { data: [] }];
-  const [styleOptions, { data: brandStyles }] =
+  const [styleOptions, { data: brandStyles }, cityOptions] =
     tab === "perfil"
       ? await Promise.all([
           getTagOptions(supabase).then((o) => o.style),
           supabase.from("brand_tags").select("tag_id").eq("brand_id", brand.id),
+          getCityOptions(supabase),
         ])
-      : [[], { data: [] }];
+      : [[], { data: [] }, []];
   const gTagMap = new Map<string, string[]>();
   for (const t of gTags ?? []) gTagMap.set(t.garment_id, [...(gTagMap.get(t.garment_id) ?? []), t.tag_id]);
 
@@ -180,6 +182,7 @@ export default async function BrandPanelPage({
               brand={brand}
               styles={styleOptions}
               brandStyleIds={(brandStyles ?? []).map((t) => t.tag_id)}
+              cities={cityOptions}
             />
           )}
         </div>
