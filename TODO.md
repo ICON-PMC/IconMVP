@@ -22,8 +22,6 @@ Marcado `[ ]` pendiente, `[x]` hecho. Cuando termines algo, muévelo a "Hecho" c
       (la barra de almacenamiento del Resumen debe moverse; elegir estilo/ocasión/clima y ver que
       aparezcan en `/prenda/[id]`), buscar "hoodie" y "marcas tropicales", y elegir ciudad en
       `/settings` desde un celular.
-- [ ] **Confirmar el ajuste de "Confirm email"** en Supabase Auth. El registro ahora maneja los dos
-      casos (con confirmación muestra "Te enviamos un correo…"), pero conviene saber cuál está activo.
 - [ ] **Probar "Reconectar Instagram"** con una cuenta real: poner `token_expires_at` en el pasado
       para una marca de prueba y verificar el aviso en el panel y en `/marca/panel/import`.
 
@@ -52,6 +50,8 @@ Si alguien propone retomarlo antes de tiempo, esta es la razón para decir "toda
 
 ## Hecho
 
+- 2026-10-06 — **"Confirm email" está apagado en la nube** (24/24 cuentas confirmadas, ninguna con
+  correo de confirmación). Ver el bug del registro en `specs/2026-10-06-gestion-marcas-admin/`.
 - 2026-10-06 — **Etiquetas, ciudades y búsqueda** (`specs/2026-10-06-etiquetas-ciudades-busqueda/`):
   estilos de marca y estilo/ocasión/clima en prendas, los 1.122 municipios con desplegable con
   búsqueda, sinónimos y palabras ignoradas en la búsqueda, y `/admin` → Etiquetas. Las 6
