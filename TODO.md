@@ -9,14 +9,9 @@ Marcado `[ ]` pendiente, `[x]` hecho. Cuando termines algo, muévelo a "Hecho" c
 
 ## Para cerrar el release (en este orden)
 
-- [ ] **Aplicar las migraciones nuevas en la nube** (SQL Editor del proyecto `oyzvuckkxzbufncvzcvw`),
-      en orden y **antes** de mergear `dev` → `main`:
-      1. `supabase/migrations/20260926000000_normalize_brand_instagram.sql` — limpia los usuarios de
-         Instagram guardados como URL (hoy afecta a 1 marca).
-      2. `supabase/migrations/20260926010000_storage_quota.sql` — columnas de peso + `check_storage_quota`.
-         **Sin esta migración, subir imágenes en producción falla** (el código ya escribe `bytes`).
 - [ ] **Rellenar el peso de las imágenes existentes:** `npm run db:backfill-image-bytes` con las
-      variables de la nube (ver HANDOFF, "Para apuntar un script a la nube").
+      variables de la nube (ver HANDOFF, "Para apuntar un script a la nube"). Al 2026-10-06 siguen
+      en 0 bytes: 24 imágenes de prendas, 3 de posts y 9 logos.
 - [ ] **Release:** merge `dev` → `main` y smoke test en producción: `/marca/<slug>` con Instagram,
       una ruta 404, login con contraseña incorrecta, subir una prenda desde el panel de marca
       (la barra de almacenamiento del Resumen debe moverse).
@@ -50,6 +45,8 @@ Si alguien propone retomarlo antes de tiempo, esta es la razón para decir "toda
 
 ## Hecho
 
+- 2026-10-06 — **Migraciones de la Fase 0 aplicadas en la nube**: `20260926000000_normalize_brand_instagram.sql`
+  y `20260926010000_storage_quota.sql`. Ya se puede mergear `dev` → `main` sin romper la subida de imágenes.
 - 2026-09-26 — **Links rotos corregidos**: Instagram guardado como URL armaba
   `instagram.com/https://…`; tienda y producto se normalizan al guardar y al renderizar
   (`src/lib/links.ts`). Spec `2026-09-26-fase0-cierre`.

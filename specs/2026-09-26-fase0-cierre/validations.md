@@ -8,8 +8,8 @@ Leyenda: **[build]** = `tsc`/`lint`/`build`; **[db]** = probado con SQL en Supab
       `https:tienda.com`; respeta `http://`; no rompe `httpbin.org`; rechaza `hola`. **[local]**
 - [x] `normalizeInstagramHandle` saca el usuario de `@marca`, URLs con `?hl=es` y URLs duplicadas. **[local]**
 - [x] El SQL de limpieza convierte `https://www.instagram.com/lauqe_apparel/` en `lauqe_apparel`. **[db]**
-- [ ] Migración `20260926000000_normalize_brand_instagram.sql` aplicada en la nube. **[nube]**
-      El MCP de Supabase de la sesión es de solo lectura: pegar el SQL en el SQL Editor.
+- [x] Migración `20260926000000_normalize_brand_instagram.sql` aplicada en la nube (2026-10-06):
+      0 marcas con Instagram guardado como URL o con `@`. **[nube]**
 
 ## 404
 - [x] `/marca/no-existe`, `/prenda/<uuid>`, `/prenda/abc`, `/post/<uuid>` y una ruta inexistente
@@ -26,7 +26,9 @@ Leyenda: **[build]** = `tsc`/`lint`/`build`; **[db]** = probado con SQL en Supab
 - [x] `check_storage_quota`: la marca dueña recibe `allowed` true/false según el tamaño; otro
       usuario recibe `not allowed`; `brand_storage_bytes` no es ejecutable por `authenticated`. **[db]**
 - [x] `tsc`, `lint` y `next build` limpios. **[build]**
-- [ ] Migración `20260926010000_storage_quota.sql` aplicada en la nube **antes** de mergear a `main`. **[nube]**
+- [x] Migración `20260926010000_storage_quota.sql` aplicada en la nube (2026-10-06): columnas
+      `bytes`/`logo_bytes`, `check_storage_quota` y `brand_storage_bytes` presentes;
+      `brand_storage_bytes` no es ejecutable por `authenticated`. **[nube]**
 - [ ] `npm run db:backfill-image-bytes` corrido contra la nube después de la migración. **[nube]**
 - [ ] Subir una prenda desde el panel en producción guarda `bytes > 0` y la barra del Resumen cambia. **[nube]**
 
