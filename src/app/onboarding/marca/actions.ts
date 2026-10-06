@@ -13,6 +13,7 @@ import {
   type BrandProfileInput,
   type FieldErrors,
 } from "@/lib/brand-registration";
+import { replaceBrandStyles, tagIdsFromForm } from "@/lib/tags";
 
 export type GarmentFieldErrors = Partial<
   Record<"title" | "price" | "category" | "photo" | "link", string>
@@ -21,7 +22,7 @@ export type GarmentFieldErrors = Partial<
 export type GarmentFormState = {
   errors?: GarmentFieldErrors;
   message?: string;
-  values?: { title?: string; price?: string; category?: string; link?: string };
+  values?: { title?: string; price?: string; category?: string; link?: string; tags?: string[] };
 };
 
 export type BrandFormState = {
@@ -50,6 +51,7 @@ export async function saveBrandProfile(
     bio: text(formData, "bio"),
     city: text(formData, "city"),
     link: text(formData, "link"),
+    styles: tagIdsFromForm(formData, ["style"]),
   };
   const errors = validateBrandProfile(values);
   if (Object.keys(errors).length) return { errors, values };
@@ -63,6 +65,7 @@ export async function saveBrandProfile(
 
   const supabase = await createClient();
   const existing = await getMyBrand();
+  let brandId = existing?.id ?? null;
 
   if (existing) {
     const { error } = await supabase.from("brands").update(fields).eq("id", existing.id);
@@ -74,12 +77,19 @@ export async function saveBrandProfile(
     const baseSlug = slugify(values.name);
     let created = false;
     for (let attempt = 0; attempt < 5 && !created; attempt++) {
-      const { error } = await supabase.from("brands").insert({
-        ...fields,
-        slug: attempt === 0 ? baseSlug : `${baseSlug}-${attempt + 1}`,
-        owner_user_id: session.profile.id,
-      });
-      if (!error) created = true;
+      const { data, error } = await supabase
+        .from("brands")
+        .insert({
+          ...fields,
+          slug: attempt === 0 ? baseSlug : `${baseSlug}-${attempt + 1}`,
+          owner_user_id: session.profile.id,
+        })
+        .select("id")
+        .single();
+      if (!error) {
+        created = true;
+        brandId = data.id;
+      }
       else if (error.code !== "23505") {
         console.error("[onboarding/marca] crear marca falló:", error.code, error.message);
         return { message: "No pudimos crear tu marca. Intenta de nuevo.", values };
@@ -91,6 +101,12 @@ export async function saveBrandProfile(
     if (session.profile.role === "user") {
       await supabase.from("users").update({ role: "brand" }).eq("id", session.profile.id);
     }
+  }
+
+  // Los estilos son opcionales; si fallan no se pierde el perfil, solo se avisa en el log.
+  if (brandId) {
+    const stylesError = await replaceBrandStyles(supabase, brandId, values.styles ?? []);
+    if (stylesError) console.error("[onboarding/marca] guardar estilos falló:", stylesError);
   }
 
   revalidatePath("/", "layout");
@@ -156,7 +172,8 @@ export async function addOnboardingGarment(
   const category = text(formData, "category");
   const linkRaw = text(formData, "link");
   const photo = formData.get("image");
-  const values = { title, price: text(formData, "price"), category, link: linkRaw };
+  const tags = tagIdsFromForm(formData, ["style", "occasion", "temperature"]);
+  const values = { title, price: text(formData, "price"), category, link: linkRaw, tags };
 
   const errors: GarmentFieldErrors = {};
   if (!title) errors.title = "Escribe el nombre de la prenda.";
@@ -195,7 +212,7 @@ export async function addOnboardingGarment(
 
   const { error: tagErr } = await supabase
     .from("garment_tags")
-    .insert({ garment_id: garment.id, tag_id: category });
+    .insert([category, ...tags].map((tag_id) => ({ garment_id: garment.id, tag_id })));
 
   let img: Awaited<ReturnType<typeof uploadImageField>> = null;
   try {

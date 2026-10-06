@@ -10,6 +10,7 @@ export type BrandProfileInput = {
   bio: string;
   city: string;
   link: string;
+  styles?: string[];
 };
 
 export type FieldErrors = Partial<Record<keyof BrandProfileInput | "cover", string>>;

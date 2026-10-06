@@ -13,6 +13,7 @@ import { CatalogTab } from "./_components/catalog-tab";
 import { LooksTab } from "./_components/looks-tab";
 import { ProfileTab } from "./_components/profile-tab";
 import { checkStorageQuota } from "@/lib/storage-quota";
+import { EMPTY_TAG_OPTIONS, getTagOptions } from "@/lib/tags";
 
 const FLASH = { perfil: "Perfil guardado.", prenda: "Prenda agregada." };
 
@@ -104,21 +105,37 @@ export default async function BrandPanelPage({
     itemCounts.set(it.post_id, (itemCounts.get(it.post_id) ?? 0) + 1);
   }
 
-  const catalog = (garments ?? []).map((g) => ({ ...g, cf_image_id: gImageMap.get(g.id) ?? null }));
+  // Solo el catálogo necesita el vocabulario, las tallas y los tags de cada prenda.
+  const [tagOptions, { data: sizes }, { data: gTags }] =
+    tab === "catalogo"
+      ? await Promise.all([
+          getTagOptions(supabase),
+          supabase.from("sizes").select("id, label").order("sort_order"),
+          gIds.length
+            ? supabase.from("garment_tags").select("garment_id, tag_id").in("garment_id", gIds)
+            : Promise.resolve({ data: [] as { garment_id: string; tag_id: string }[] }),
+        ])
+      : [EMPTY_TAG_OPTIONS, { data: [] }, { data: [] }];
+  const [styleOptions, { data: brandStyles }] =
+    tab === "perfil"
+      ? await Promise.all([
+          getTagOptions(supabase).then((o) => o.style),
+          supabase.from("brand_tags").select("tag_id").eq("brand_id", brand.id),
+        ])
+      : [[], { data: [] }];
+  const gTagMap = new Map<string, string[]>();
+  for (const t of gTags ?? []) gTagMap.set(t.garment_id, [...(gTagMap.get(t.garment_id) ?? []), t.tag_id]);
+
+  const catalog = (garments ?? []).map((g) => ({
+    ...g,
+    cf_image_id: gImageMap.get(g.id) ?? null,
+    tagIds: gTagMap.get(g.id) ?? [],
+  }));
   const looks = (posts ?? []).map((p) => ({
     ...p,
     cf_image_id: pImageMap.get(p.id) ?? null,
     items: itemCounts.get(p.id) ?? 0,
   }));
-
-  // Solo el catálogo necesita categorías y tallas.
-  const [{ data: categories }, { data: sizes }] =
-    tab === "catalogo"
-      ? await Promise.all([
-          supabase.from("tags").select("id, name").eq("type", "category").order("name"),
-          supabase.from("sizes").select("id, label").order("sort_order"),
-        ])
-      : [{ data: [] }, { data: [] }];
 
   return (
     <>
@@ -152,13 +169,19 @@ export default async function BrandPanelPage({
           {tab === "catalogo" && (
             <CatalogTab
               garments={catalog}
-              categories={categories ?? []}
+              tagOptions={tagOptions}
               sizes={sizes ?? []}
               canPublish={brand.status === "active"}
             />
           )}
           {tab === "looks" && <LooksTab looks={looks} canImport={!!connection} />}
-          {tab === "perfil" && <ProfileTab brand={brand} />}
+          {tab === "perfil" && (
+            <ProfileTab
+              brand={brand}
+              styles={styleOptions}
+              brandStyleIds={(brandStyles ?? []).map((t) => t.tag_id)}
+            />
+          )}
         </div>
       </PageShell>
     </>

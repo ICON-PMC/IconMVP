@@ -6,6 +6,8 @@ import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser, isStaff, requireStaff } from "@/lib/auth";
 import { uploadImageField } from "@/lib/upload";
 import { normalizeInstagramHandle, normalizeUrl } from "@/lib/links";
+import { replaceBrandStyles, tagIdsFromForm, type TagType } from "@/lib/tags";
+import { slugify } from "@/lib/brand-registration";
 
 function str(formData: FormData, key: string): string | null {
   const v = formData.get(key);
@@ -30,7 +32,7 @@ export async function createBrand(formData: FormData) {
     redirect(`/admin?tab=cargar&form=marca&error=${encodeURIComponent("El usuario de Instagram no es válido.")}`);
 
   const supabase = await createClient();
-  const { error } = await supabase.from("brands").insert({
+  const { data: brand, error } = await supabase.from("brands").insert({
     name: str(formData, "name") ?? "",
     slug: str(formData, "slug") ?? "",
     city_id: str(formData, "city_id"),
@@ -40,8 +42,12 @@ export async function createBrand(formData: FormData) {
     bio: str(formData, "bio"),
     is_verified: formData.get("is_verified") === "on",
     is_sustainable: formData.get("is_sustainable") === "on",
-  });
-  if (error) redirect(`/admin?tab=cargar&form=marca&error=${encodeURIComponent(error.message)}`);
+  }).select("id").single();
+  if (error || !brand)
+    redirect(`/admin?tab=cargar&form=marca&error=${encodeURIComponent(error?.message ?? "marca")}`);
+  const stylesError = await replaceBrandStyles(supabase, brand.id, tagIdsFromForm(formData, ["style"]));
+  if (stylesError)
+    redirect(`/admin?tab=cargar&form=marca&error=${encodeURIComponent(stylesError)}`);
   revalidatePath("/admin");
   redirect("/admin?tab=cargar&form=marca&ok=marca");
 }
@@ -80,10 +86,14 @@ export async function createGarment(formData: FormData) {
     redirect(`/admin?tab=cargar&form=prenda&error=${encodeURIComponent(error?.message ?? "garment")}`);
 
   const categoryId = str(formData, "category");
-  if (categoryId) {
+  const tagIds = [
+    ...(categoryId ? [categoryId] : []),
+    ...tagIdsFromForm(formData, ["style", "occasion", "temperature"]),
+  ];
+  if (tagIds.length) {
     await supabase
       .from("garment_tags")
-      .insert({ garment_id: garment.id, tag_id: categoryId });
+      .insert(tagIds.map((tag_id) => ({ garment_id: garment.id, tag_id })));
   }
   const sizeIds = formData.getAll("sizes").map(String);
   if (sizeIds.length) {
@@ -192,4 +202,67 @@ export async function approveBrand(brandId: string): Promise<ReviewResult> {
 
 export async function rejectBrand(brandId: string, note: string): Promise<ReviewResult> {
   return reviewBrand("reject_brand", brandId, note.slice(0, 500));
+}
+
+// ============================================================
+// Vocabulario de etiquetas (/admin?tab=etiquetas)
+// ============================================================
+const TAG_TYPES: TagType[] = ["category", "style", "occasion", "temperature"];
+const tagsUrl = (q: string) => `/admin?tab=etiquetas&${q}`;
+
+function revalidateTags() {
+  revalidatePath("/admin");
+  revalidatePath("/feed");
+  revalidatePath("/", "layout");
+}
+
+export async function createTag(formData: FormData) {
+  await requireStaff();
+  const type = str(formData, "type") as TagType | null;
+  const name = str(formData, "name");
+  if (!type || !TAG_TYPES.includes(type) || !name)
+    redirect(tagsUrl(`error=${encodeURIComponent("Elige el tipo y escribe un nombre.")}`));
+  const slug = slugify(name);
+  if (!slug) redirect(tagsUrl(`error=${encodeURIComponent("El nombre no es válido.")}`));
+
+  const supabase = await createClient();
+  const { error } = await supabase.from("tags").insert({ type, name, slug });
+  if (error)
+    redirect(
+      tagsUrl(
+        `error=${encodeURIComponent(error.code === "23505" ? "Ya existe una etiqueta con ese nombre." : error.message)}`,
+      ),
+    );
+  revalidateTags();
+  redirect(tagsUrl("ok=etiqueta"));
+}
+
+// Solo el nombre visible: el slug no cambia porque está en las URLs de los filtros.
+export async function renameTag(formData: FormData) {
+  await requireStaff();
+  const id = str(formData, "id");
+  const name = str(formData, "name");
+  if (!id || !name) redirect(tagsUrl(`error=${encodeURIComponent("Escribe un nombre.")}`));
+  const supabase = await createClient();
+  const { error } = await supabase.from("tags").update({ name }).eq("id", id);
+  if (error) redirect(tagsUrl(`error=${encodeURIComponent(error.message)}`));
+  revalidateTags();
+  redirect(tagsUrl("ok=renombrada"));
+}
+
+// Se bloquea si está en uso: el `on delete cascade` la quitaría en silencio de prendas,
+// posts, marcas y preferencias de usuario.
+export async function deleteTag(formData: FormData) {
+  await requireStaff();
+  const id = str(formData, "id");
+  if (!id) redirect(tagsUrl(""));
+  const supabase = await createClient();
+  const { data: usage, error: usageError } = await supabase.rpc("tag_usage_counts");
+  if (usageError) redirect(tagsUrl(`error=${encodeURIComponent(usageError.message)}`));
+  if ((usage ?? []).some((u) => u.tag_id === id && u.uses > 0))
+    redirect(tagsUrl(`error=${encodeURIComponent("La etiqueta está en uso: no se puede borrar.")}`));
+  const { error } = await supabase.from("tags").delete().eq("id", id);
+  if (error) redirect(tagsUrl(`error=${encodeURIComponent(error.message)}`));
+  revalidateTags();
+  redirect(tagsUrl("ok=borrada"));
 }

@@ -1,16 +1,18 @@
 import { FormField } from "@/components/form-field";
 import { ChipSelect } from "@/components/chip-select";
+import { GarmentTagFields } from "@/components/garment-tag-fields";
 import { NativeSelect } from "@/components/native-select";
 import { SubmitButton } from "@/components/submit-button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import type { TagOptions } from "@/lib/tags";
 import { createBrandGarment } from "../actions";
 
 export function NewGarmentForm({
-  categories,
+  tagOptions,
   sizes,
 }: {
-  categories: { id: string; name: string }[];
+  tagOptions: TagOptions;
   sizes: { id: string; label: string }[];
 }) {
   return (
@@ -28,7 +30,7 @@ export function NewGarmentForm({
         <FormField label="Categoría" htmlFor="g-category">
           <NativeSelect id="g-category" name="category" defaultValue="">
             <option value="">—</option>
-            {categories.map((c) => (
+            {tagOptions.category.map((c) => (
               <option key={c.id} value={c.id}>
                 {c.name}
               </option>
@@ -50,6 +52,7 @@ export function NewGarmentForm({
         legend="Tallas"
         options={sizes.map((s) => ({ id: s.id, name: s.label }))}
       />
+      <GarmentTagFields options={tagOptions} />
       <SubmitButton size="lg" pendingText="Agregando…" className="w-full rounded-full">
         Agregar prenda
       </SubmitButton>
