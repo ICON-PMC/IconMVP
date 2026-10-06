@@ -92,7 +92,15 @@ guarda nada a medias. Borrado con R2 en el panel, en `/admin/bulk` y en el paso 
 - **2d. Borrado**: `deleteGarments` y `/admin/bulk` `deleteGarmentAction`/`deleteAllPendingAction`
   borran las imágenes de R2 (1a).
 
-## Grupo 3 — Looks (depende de 1a, 1d)
+## Grupo 3 — Looks (depende de 1a, 1d) ✅ (local, 2026-10-06)
+
+Hecho: `NewLookSheet` (foto obligatoria + texto) y filtro por estado en `LooksTab` (ahora client
+component); en el editor, `LookDetailsForm` (texto y foto en formularios separados) y
+`DeleteLookButton`. Acciones `updatePostCaption`, `replacePostImage`, `archivePost`, `restorePost`,
+`deletePost` en `marca/panel/actions.ts`. `createBrandPost` ahora exige la foto antes de crear el
+post y, si la subida falla (cuota o R2), borra el borrador recién creado. `deletePost` filtra por
+`status in (draft, archived)` en la misma consulta: un look publicado no se puede borrar aunque se
+llame la acción a mano.
 
 - **3a. Nuevo look**: botón "Nuevo look" en `looks-tab.tsx` (junto a "Importar de Instagram"),
   hoja con foto + caption → `createBrandPost` (ya existe) → redirige al editor.

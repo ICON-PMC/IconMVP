@@ -34,10 +34,17 @@ En local no hay variables de R2: todo lo que sube o borra fotos se prueba en la 
 
 ## Looks
 - [ ] Una marca sin Instagram crea un look (foto + caption) y llega al editor. **[nube]**
-- [ ] Editar caption. **[local]**
-- [ ] Borrador → Eliminar; Publicado → Archivar (sale del feed) → Restaurar (borrador) / Eliminar. **[local]**
-- [ ] `deletePost` sobre un look publicado responde error (validación en servidor). **[local]**
-- [ ] Filtro por estado en Looks. **[local]**
+- [x] Si la foto no se puede subir, "Nuevo look" muestra "No pudimos subir la foto…" y no deja un
+      borrador vacío (local, sin R2). **[local]**
+- [x] Editar texto: "Texto guardado." y se guarda en la base. **[local]**
+- [x] Botones por estado: borrador = Eliminar · Publicar; publicado = Archivar · Despublicar;
+      archivado = Eliminar · Restaurar. **[local]**
+- [x] Archivar: `/post/[id]` da 404 a un visitante; Restaurar lo deja en borrador; Eliminar (con
+      confirmación) vuelve a Looks con "Look eliminado." y lo borra de la base. **[local]**
+- [ ] `deletePost` sobre un look publicado responde error: cubierto por el filtro de estado en la
+      consulta; sin prueba de navegador (la UI no ofrece el botón). **[local]**
+- [ ] Cambiar la foto de un look y borrar su imagen de R2. **[nube]**
+- [x] Filtro por estado en Looks (2 looks → Borradores muestra 1). **[local]**
 
 ## Perfil
 - [ ] Cambiar portada reemplaza la imagen y borra la anterior de R2. **[nube]**
@@ -62,5 +69,6 @@ En local no hay variables de R2: todo lo que sube o borra fotos se prueba en la 
 - [x] `supabase db reset` sin errores y las pruebas SQL del Grupo 1 dan lo mismo. **[db]**
 - [x] `tsc`, `lint` y `next build` limpios tras el Grupo 1. **[build]**
 - [x] `tsc` y `lint` limpios tras el Grupo 2. **[build]**
+- [x] `tsc` y `lint` limpios tras el Grupo 3. **[build]**
 - [x] Migraciones del Grupo 1 aplicadas en la nube (2026-10-06): 6 funciones y el trigger de rol. **[nube]**
 - [ ] Migraciones aplicadas en la nube antes de mergear a `main`. **[nube]**
