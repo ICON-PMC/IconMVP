@@ -286,6 +286,7 @@ export type Database = {
         Returns: { tok: string; alts: string[] }[];
       };
       search_matches: { Args: { p_txt: string; q: string }; Returns: boolean };
+      tag_usage_counts: { Args: Record<string, never>; Returns: { tag_id: string; uses: number }[] };
       popular_content_tags: {
         Args: { p_limit?: number | null };
         Returns: { slug: string; name: string; type: string }[];

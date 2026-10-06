@@ -1,14 +1,24 @@
+import { ChipSelect } from "@/components/chip-select";
 import { GlassCard } from "@/components/glass-card";
 import { FormField } from "@/components/form-field";
 import { StickyActionBar } from "@/components/sticky-action-bar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { MyBrand } from "@/lib/auth";
+import { MAX_BRAND_STYLES, type TagOption } from "@/lib/tags";
 import { updateBrandProfile } from "../actions";
 
 const FORM_ID = "brand-profile-form";
 
-export function ProfileTab({ brand }: { brand: MyBrand }) {
+export function ProfileTab({
+  brand,
+  styles,
+  brandStyleIds,
+}: {
+  brand: MyBrand;
+  styles: TagOption[];
+  brandStyleIds: string[];
+}) {
   return (
     <>
       <GlassCard className="p-5">
@@ -38,6 +48,13 @@ export function ProfileTab({ brand }: { brand: MyBrand }) {
               autoCapitalize="none"
             />
           </FormField>
+          <ChipSelect
+            name="styles"
+            legend="Estilo de tu marca"
+            options={styles}
+            defaultSelected={brandStyleIds}
+            max={MAX_BRAND_STYLES}
+          />
         </form>
       </GlassCard>
       <StickyActionBar>

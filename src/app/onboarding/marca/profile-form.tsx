@@ -6,12 +6,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { ChipSelect } from "@/components/chip-select";
+import { MAX_BRAND_STYLES, type TagOption } from "@/lib/tags";
 import { saveBrandProfile, type BrandFormState } from "./actions";
 import { BRAND_BIO_MAX, BRAND_NAME_MAX } from "@/lib/brand-registration";
 
 type Props = {
   cities: { id: string; name: string }[];
-  defaults: { name: string; bio: string; city: string; link: string };
+  styles: TagOption[];
+  defaults: { name: string; bio: string; city: string; link: string; styles: string[] };
 };
 
 const field = "glass-input h-11 rounded-xl px-4 text-base md:h-10 md:text-sm";
@@ -24,7 +27,7 @@ function FieldError({ id, msg }: { id: string; msg?: string }) {
   ) : null;
 }
 
-export function ProfileForm({ cities, defaults }: Props) {
+export function ProfileForm({ cities, styles, defaults }: Props) {
   const [state, action, pending] = useActionState<BrandFormState, FormData>(
     saveBrandProfile,
     {},
@@ -121,6 +124,19 @@ export function ProfileForm({ cities, defaults }: Props) {
           aria-describedby="link-err"
         />
         <FieldError id="link-err" msg={e.link} />
+      </div>
+
+      <div>
+        <ChipSelect
+          name="styles"
+          legend="Estilo de tu marca (opcional)"
+          options={styles}
+          defaultSelected={v.styles ?? []}
+          max={MAX_BRAND_STYLES}
+        />
+        <p className="mt-1 text-xs text-ink/50">
+          Así te encuentran quienes buscan, por ejemplo, &ldquo;marcas tropicales&rdquo;.
+        </p>
       </div>
 
       <Button

@@ -16,6 +16,10 @@ Migraciones, en orden de aplicación:
 3. `20261006020000_colombia_cities.sql` — 1e (generada por `scripts/build-cities-migration.ts`).
 4. `20261006030000_search_synonyms.sql` — 1f y la parte de `search_*` de 1c (las 3 RPC se
    reescriben una sola vez).
+5. `20261006040000_tag_usage.sql` — `tag_usage_counts()` para 2g (agregada en el Grupo 2).
+
+Las migraciones 1–4 están aplicadas en la nube (2026-10-06). La 3 se reescribió como un solo
+statement con CTE: el SQL Editor no conserva una tabla temporal entre statements.
 
 - **1a. `brand_tags`**
   - `brand_id uuid references brands on delete cascade`, `tag_id uuid references tags on delete cascade`,
@@ -91,20 +95,27 @@ Migraciones, en orden de aplicación:
 
 ---
 
-## Grupo 2 — Etiquetas en la UI (depende de 1a–1d)
+## Grupo 2 — Etiquetas en la UI (depende de 1a–1d) ✅ (código, 2026-10-06; falta prueba en navegador)
 
-- **2a.** Helper `src/lib/tags.ts`: `getTagsByType()` y `saveTags(table, ownerId, type, ids)`
-  (borra e inserta los de un tipo; reutilizado por panel, admin y onboarding).
-- **2b. Prenda (panel):** `new-garment-form.tsx` y la edición de prenda ganan tres `ChipSelect`
-  (Estilo, Ocasión, Clima). `createBrandGarment` / acción de edición los guardan.
+- **2a.** Helper `src/lib/tags.ts`: `getTagOptions()`, `tagIdsFromForm()`, `replaceGarmentTags()`,
+  `replaceBrandStyles()` y los máximos. `ChipSelect` gana `max`; `GarmentTagFields` agrupa los
+  tres `ChipSelect` de la prenda.
+- **2b. Prenda (panel):** `new-garment-form.tsx` gana Estilo, Ocasión y Clima. No había edición de
+  prenda: tocar una prenda del catálogo abre la hoja **Etiquetas** (`garment-tags-sheet.tsx`,
+  acción `updateGarmentTags`) con categoría + los tres tipos, para etiquetar el catálogo existente.
+  También el paso 3 del registro de marca (`/onboarding/marca`).
 - **2c. Prenda (`/admin` y carga masiva):** mismos campos en `upload-tab.tsx`; columnas `estilo`,
   `ocasion`, `clima` en `admin/bulk/actions.ts` y en la plantilla `.xlsx`.
-- **2d. Borradores de Instagram:** el formulario para completar un borrador pide los mismos campos.
+- **2d. Borradores de Instagram:** son posts, no prendas, y el editor de looks ya pide ocasión,
+  estilo y clima (`setPostTags`). Sin cambios.
 - **2e. Marca:** `ChipSelect` de estilos (máx. 5) en `profile-form.tsx` (registro), `profile-tab.tsx`
   (panel) y el formulario de marca de `/admin`.
-- **2f. Mostrar:** chips de estilo en `/marca/[slug]` y en `BrandCard`; estilo/ocasión/clima en
-  `/prenda/[id]`.
-- **2g. `/admin` → Etiquetas:** lista por tipo, crear, renombrar, borrar si no está en uso.
+- **2f. Mostrar:** chips de estilo en `/marca/[slug]`; categoría + estilo/ocasión/clima en
+  `/prenda/[id]`. Los estilos en `BrandCard` pasan al Grupo 4 (se tocan junto con la búsqueda).
+- **2g. `/admin` → Etiquetas:** lista por tipo con usos, crear, renombrar (solo el nombre; el
+  slug no cambia porque está en las URLs de filtros) y borrar si no está en uso. Los usos vienen
+  de `tag_usage_counts()` (security definer, solo staff): con RLS el staff no ve las
+  `user_preferences` de otros y habría podido borrar estilos elegidos por usuarios.
 
 ## Grupo 3 — Ciudades en la UI (depende de 1e)
 

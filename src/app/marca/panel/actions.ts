@@ -8,6 +8,13 @@ import { uploadImageField, uploadImageFromUrl } from "@/lib/upload";
 import { StorageQuotaError } from "@/lib/storage-quota";
 import { fetchRecentMedia, InstagramAuthError, refreshLongLivedToken } from "@/lib/instagram";
 import { normalizeInstagramHandle, normalizeUrl } from "@/lib/links";
+import {
+  getTagOptions,
+  idsOfTypes,
+  replaceBrandStyles,
+  replaceGarmentTags,
+  tagIdsFromForm,
+} from "@/lib/tags";
 
 function str(formData: FormData, key: string): string | null {
   const v = formData.get(key);
@@ -46,7 +53,10 @@ export async function updateBrandProfile(formData: FormData) {
     })
     .eq("id", brandId);
   if (error) redirect(`/marca/panel?tab=perfil&error=${encodeURIComponent(error.message)}`);
+  const stylesError = await replaceBrandStyles(supabase, brandId, tagIdsFromForm(formData, ["style"]));
+  if (stylesError) redirect(`/marca/panel?tab=perfil&error=${encodeURIComponent(stylesError)}`);
   revalidatePath("/marca/panel");
+  revalidatePath("/marca/[slug]", "page");
   redirect("/marca/panel?tab=perfil&ok=perfil");
 }
 
@@ -82,8 +92,14 @@ export async function createBrandGarment(formData: FormData) {
     redirect(`/marca/panel?tab=catalogo&error=${encodeURIComponent(error?.message ?? "prenda")}`);
 
   const categoryId = str(formData, "category");
-  if (categoryId) {
-    await supabase.from("garment_tags").insert({ garment_id: garment.id, tag_id: categoryId });
+  const tagIds = [
+    ...(categoryId ? [categoryId] : []),
+    ...tagIdsFromForm(formData, ["style", "occasion", "temperature"]),
+  ];
+  if (tagIds.length) {
+    await supabase
+      .from("garment_tags")
+      .insert(tagIds.map((tag_id) => ({ garment_id: garment.id, tag_id })));
   }
   const sizeIds = formData.getAll("sizes").map(String);
   if (sizeIds.length) {
@@ -109,6 +125,36 @@ export async function createBrandGarment(formData: FormData) {
 
   revalidatePath("/marca/panel");
   redirect("/marca/panel?tab=catalogo&ok=prenda");
+}
+
+// Categoría + estilo/ocasión/clima de una prenda ya creada (hoja "Etiquetas" del catálogo).
+export async function updateGarmentTags(
+  garmentId: string,
+  formData: FormData,
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const brandId = await myBrandIdOrRedirect();
+  const supabase = await createClient();
+  const { data: garment } = await supabase
+    .from("garments")
+    .select("id")
+    .eq("id", garmentId)
+    .eq("brand_id", brandId)
+    .maybeSingle();
+  if (!garment) return { ok: false, error: "No encontramos esa prenda en tu catálogo." };
+
+  const categoryId = str(formData, "category");
+  const options = await getTagOptions(supabase);
+  const error = await replaceGarmentTags(
+    supabase,
+    garmentId,
+    idsOfTypes(options, ["category", "style", "occasion", "temperature"]),
+    [...(categoryId ? [categoryId] : []), ...tagIdsFromForm(formData, ["style", "occasion", "temperature"])],
+  );
+  if (error) return { ok: false, error };
+  revalidatePath("/marca/panel");
+  revalidatePath(`/prenda/${garmentId}`);
+  revalidatePath("/feed");
+  return { ok: true };
 }
 
 // ============================================================

@@ -62,7 +62,7 @@ export default async function BulkPage() {
         <GlassCard className="mt-6 p-5">
           <SectionHeader
             title="Paso 1 de 2 · Sube la plantilla"
-            description="Completa las columnas marca, titulo, precio_cop, url_producto, color, tela, categoria y tallas. Las prendas se crean como pendientes, sin foto."
+            description="Completa las columnas marca, titulo, precio_cop, url_producto, color, tela, categoria, tallas, estilo, ocasion y clima (estos tres admiten varios valores separados por coma). Las prendas se crean como pendientes, sin foto."
           />
           <div className="mt-4">
             <ImportForm />

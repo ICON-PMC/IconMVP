@@ -12,6 +12,7 @@ import { AdminTabs, parseAdminTab } from "./admin-tabs";
 import { PendingBrands, pendingBrandsCount } from "./pending-brands";
 import { MetricsTab } from "./_components/metrics-tab";
 import { UploadTab, parseUploadForm, type UploadData } from "./_components/upload-tab";
+import { TagsTab, type AdminTag } from "./_components/tags-tab";
 
 const REVIEW_NOTICES: Record<string, string> = {
   aprobada: "✓ Marca aprobada. Verá el resultado al ingresar a su panel; por ahora no enviamos correos.",
@@ -22,7 +23,21 @@ const FLASH = {
   marca: "Marca creada.",
   prenda: "Prenda creada.",
   post: "Post creado.",
+  etiqueta: "Etiqueta creada.",
+  renombrada: "Etiqueta renombrada.",
+  borrada: "Etiqueta borrada.",
 };
+
+// Vocabulario con cuántas veces se usa cada etiqueta (prendas, posts, marcas, preferencias).
+async function loadTags(): Promise<AdminTag[]> {
+  const supabase = await createClient();
+  const [tags, usage] = await Promise.all([
+    supabase.from("tags").select("id, name, slug, type").order("name"),
+    supabase.rpc("tag_usage_counts"),
+  ]);
+  const count = new Map((usage.data ?? []).map((u) => [u.tag_id, u.uses]));
+  return (tags.data ?? []).map((t) => ({ ...t, uses: count.get(t.id) ?? 0 }));
+}
 
 // Fuera del componente: react-hooks/purity prohíbe llamar Date.now() durante el render.
 function daysAgoIso(days: number): string {
@@ -143,6 +158,7 @@ export default async function AdminPage({
               <PendingBrands />
             </>
           )}
+          {tab === "etiquetas" && <TagsTab tags={await loadTags()} />}
         </div>
       </PageShell>
     </>

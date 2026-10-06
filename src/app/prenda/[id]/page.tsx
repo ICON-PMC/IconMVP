@@ -72,14 +72,12 @@ export default async function GarmentPage({
     .select("tag_id")
     .eq("garment_id", id);
   const tagIds = (gt ?? []).map((x) => x.tag_id);
+  // Categoría primero; luego estilo, ocasión y clima.
+  const TAG_ORDER = ["category", "style", "occasion", "temperature"];
   const categories = tagIds.length
-    ? ((
-        await supabase
-          .from("tags")
-          .select("name")
-          .in("id", tagIds)
-          .eq("type", "category")
-      ).data ?? [])
+    ? ((await supabase.from("tags").select("name, type").in("id", tagIds)).data ?? []).sort(
+        (a, b) => TAG_ORDER.indexOf(a.type) - TAG_ORDER.indexOf(b.type) || a.name.localeCompare(b.name),
+      )
     : [];
 
   const gallery = images?.map((i) => i.cf_image_id) ?? [];

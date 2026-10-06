@@ -38,6 +38,15 @@ export default async function BrandPage({
         .data?.name ?? null;
   }
 
+  const { data: brandTags } = await supabase
+    .from("brand_tags")
+    .select("tag_id")
+    .eq("brand_id", brand.id);
+  const styleIds = (brandTags ?? []).map((t) => t.tag_id);
+  const styles = styleIds.length
+    ? ((await supabase.from("tags").select("name, slug").in("id", styleIds).order("name")).data ?? [])
+    : [];
+
   const { data: posts } = await supabase
     .from("post_feed")
     .select("*")
@@ -101,6 +110,18 @@ export default async function BrandPage({
           </div>
           {cityName && <p className="mt-1 text-sm text-ink/50">{cityName}</p>}
           {brand.bio && <p className="mt-3 max-w-xl text-ink/70">{brand.bio}</p>}
+          {styles.length > 0 && (
+            <ul aria-label="Estilos" className="mt-3 flex flex-wrap gap-1.5">
+              {styles.map((s) => (
+                <li
+                  key={s.slug}
+                  className="rounded-full bg-white/50 px-2.5 py-0.5 text-xs text-forest-deep"
+                >
+                  {s.name}
+                </li>
+              ))}
+            </ul>
+          )}
           <div className="mt-4 flex flex-wrap items-center gap-3 text-sm">
             <FollowButton
               brandId={brand.id}

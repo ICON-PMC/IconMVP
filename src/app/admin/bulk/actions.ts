@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { requireStaff } from "@/lib/auth";
 import { uploadImageField } from "@/lib/upload";
 import { normalizeUrl } from "@/lib/links";
+import { MAX_GARMENT_TAGS_PER_TYPE } from "@/lib/tags";
 
 export type RowResult = {
   line: number;
@@ -90,9 +91,9 @@ export async function importGarments(
     };
 
   const supabase = await createClient();
-  const [brandsRes, catsRes, sizesRes] = await Promise.all([
+  const [brandsRes, tagsRes, sizesRes] = await Promise.all([
     supabase.from("brands").select("id, name, slug"),
-    supabase.from("tags").select("id, name, slug").eq("type", "category"),
+    supabase.from("tags").select("id, name, slug, type"),
     supabase.from("sizes").select("id, label, aliases"),
   ]);
 
@@ -101,11 +102,24 @@ export async function importGarments(
     brandMap.set(norm(b.name), b.id);
     brandMap.set(norm(b.slug), b.id);
   }
-  const catMap = new Map<string, string>();
-  for (const c of catsRes.data ?? []) {
-    catMap.set(norm(c.name), c.id);
-    catMap.set(norm(c.slug), c.id);
+  // Un mapa por tipo de tag: nombre o slug normalizado -> id.
+  const tagMaps = {
+    category: new Map<string, string>(),
+    style: new Map<string, string>(),
+    occasion: new Map<string, string>(),
+    temperature: new Map<string, string>(),
+  };
+  for (const t of tagsRes.data ?? []) {
+    tagMaps[t.type].set(norm(t.name), t.id);
+    tagMaps[t.type].set(norm(t.slug), t.id);
   }
+  const catMap = tagMaps.category;
+  // Columnas de estilo/ocasión/clima: varios valores separados por coma (hasta 3 por tipo).
+  const TAG_COLUMNS = [
+    { col: "estilo", type: "style", label: "estilo" },
+    { col: "ocasion", type: "occasion", label: "ocasión" },
+    { col: "clima", type: "temperature", label: "clima" },
+  ] as const;
   const sizeMap = new Map<string, string>();
   for (const s of sizesRes.data ?? []) {
     sizeMap.set(norm(s.label), s.id);
@@ -130,6 +144,7 @@ export async function importGarments(
       created_by_user_id: string | null;
     };
     categoryId: string | null;
+    tagIds: string[];
     sizeIds: string[];
     notes: string[];
   };
@@ -168,6 +183,21 @@ export async function importGarments(
       if (!categoryId) notes.push(`categoría desconocida "${catRaw}" (omitida)`);
     }
 
+    const tagIds: string[] = [];
+    for (const { col, type, label } of TAG_COLUMNS) {
+      const raw = get(row, col);
+      if (!raw) continue;
+      const ids: string[] = [];
+      for (const v of raw.split(/[,;/]/).map((x) => x.trim()).filter(Boolean)) {
+        const id = tagMaps[type].get(norm(v));
+        if (!id) notes.push(`${label} desconocido "${v}" (omitido)`);
+        else if (ids.length >= MAX_GARMENT_TAGS_PER_TYPE)
+          notes.push(`más de ${MAX_GARMENT_TAGS_PER_TYPE} de ${label}: "${v}" (omitido)`);
+        else if (!ids.includes(id)) ids.push(id);
+      }
+      tagIds.push(...ids);
+    }
+
     const sizeIds: string[] = [];
     const tallasRaw = get(row, "tallas");
     if (tallasRaw) {
@@ -199,6 +229,7 @@ export async function importGarments(
         created_by_user_id: profile.id,
       },
       categoryId,
+      tagIds,
       sizeIds,
       notes,
     });
@@ -228,6 +259,7 @@ export async function importGarments(
   pending.forEach((p, i) => {
     const id = inserted[i].id;
     if (p.categoryId) tagRows.push({ garment_id: id, tag_id: p.categoryId });
+    for (const tid of p.tagIds) tagRows.push({ garment_id: id, tag_id: tid });
     for (const sid of p.sizeIds) sizeRows.push({ garment_id: id, size_id: sid });
     results.push({
       line: p.line,

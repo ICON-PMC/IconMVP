@@ -1,11 +1,13 @@
 import { GlassCard } from "@/components/glass-card";
 import { FormField } from "@/components/form-field";
 import { ChipSelect } from "@/components/chip-select";
+import { GarmentTagFields } from "@/components/garment-tag-fields";
 import { LinkTabs } from "@/components/link-tabs";
 import { NativeSelect } from "@/components/native-select";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { MAX_BRAND_STYLES } from "@/lib/tags";
 import { PRICE_BUCKETS } from "@/lib/taxonomy";
 import { createBrand, createGarment, createPost } from "../actions";
 import { GarmentsField } from "./garments-field";
@@ -95,6 +97,7 @@ function BrandForm({ data }: { data: UploadData }) {
       <FormField label="Bio" htmlFor="b-bio">
         <Input id="b-bio" name="bio" />
       </FormField>
+      <ChipSelect name="styles" legend="Estilos de la marca" options={data.styles} max={MAX_BRAND_STYLES} />
       <div className="flex flex-col gap-1 sm:flex-row sm:gap-6">
         <CheckRow name="is_verified" label="Verificada" />
         <CheckRow name="is_sustainable" label="Sostenible" />
@@ -170,6 +173,9 @@ function GarmentForm({ data }: { data: UploadData }) {
         name="sizes"
         legend="Tallas"
         options={data.sizes.map((s) => ({ id: s.id, name: s.label }))}
+      />
+      <GarmentTagFields
+        options={{ style: data.styles, occasion: data.occasions, temperature: data.temperatures }}
       />
       <FormField label="Foto" htmlFor="g-image">
         <Input id="g-image" name="image" type="file" accept="image/*" />

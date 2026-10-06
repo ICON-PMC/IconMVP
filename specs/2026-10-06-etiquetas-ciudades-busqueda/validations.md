@@ -13,7 +13,10 @@ Leyenda: **[build]** = `tsc`/`lint`/`build`; **[db]** = probado con SQL en Supab
 - [x] SQL: `feed_items` muestra los estilos/ocasiones propios de una prenda sin post y
       `get_feed(p_styles => {y2k})` la encuentra. **[db]**
 - [ ] Filtrar el feed por estilo muestra prendas con ese estilo propio (sin post que las etiquete). **[local]**
+- [x] `tag_usage_counts()` cuenta las preferencias de otros usuarios para el staff y rechaza a un
+      usuario normal. **[db]**
 - [ ] `/admin` → Etiquetas: crear y renombrar; borrar un tag en uso está bloqueado. **[local]**
+- [ ] Panel → Catálogo: tocar una prenda abre "Etiquetas" y guarda categoría/estilo/ocasión/clima. **[local]**
 
 ## Ciudades
 - [x] `cities` tiene ~1.100 filas con `department` y `dane_code`; los 3 slugs viejos siguen igual y
@@ -38,5 +41,6 @@ Leyenda: **[build]** = `tsc`/`lint`/`build`; **[db]** = probado con SQL en Supab
 ## General
 - [x] `supabase migration up --local` aplica las 4 migraciones sin errores. **[db]**
 - [ ] `supabase db reset` aplica todas las migraciones + `seed.sql` sin errores. **[db]**
-- [ ] `tsc`, `lint` y `next build` limpios. **[build]**
-- [ ] Migraciones aplicadas en la nube antes de mergear a `main`. **[nube]**
+- [x] `tsc`, `lint` y `next build` limpios tras el Grupo 2. **[build]**
+- [x] Migraciones 1–4 aplicadas en la nube (2026-10-06). **[nube]**
+- [ ] Migración `20261006040000_tag_usage.sql` aplicada en la nube antes de mergear a `main`. **[nube]**

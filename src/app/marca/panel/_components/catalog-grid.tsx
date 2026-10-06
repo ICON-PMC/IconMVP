@@ -13,9 +13,11 @@ import { StatusBadge } from "@/components/status-badge";
 import { StickyActionBar } from "@/components/sticky-action-bar";
 import { imageUrl } from "@/lib/images";
 import { formatCop } from "@/lib/taxonomy";
+import type { TagOptions } from "@/lib/tags";
 import { useSelection } from "@/lib/use-selection";
 import { cn } from "@/lib/utils";
 import { deleteGarments, setGarmentsStatus, type BulkResult } from "../actions";
+import { GarmentTagsSheet } from "./garment-tags-sheet";
 
 export type CatalogGarment = {
   id: string;
@@ -23,6 +25,7 @@ export type CatalogGarment = {
   price_cop: number | null;
   status: string;
   cf_image_id: string | null;
+  tagIds: string[];
 };
 
 const FILTERS = [
@@ -37,9 +40,11 @@ const norm = (s: string) => s.normalize("NFD").replace(/\p{Diacritic}/gu, "").to
 
 export function CatalogGrid({
   garments,
+  tagOptions,
   canPublish,
 }: {
   garments: CatalogGarment[];
+  tagOptions: TagOptions;
   canPublish: boolean;
 }) {
   const router = useRouter();
@@ -48,6 +53,7 @@ export function CatalogGrid({
   const [filter, setFilter] = useState<Filter>("all");
   const [selecting, setSelecting] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [editing, setEditing] = useState<CatalogGarment | null>(null);
 
   const visible = useMemo(() => {
     const q = norm(query.trim());
@@ -146,6 +152,7 @@ export function CatalogGrid({
               selecting={selecting}
               selected={sel.isSelected(g.id)}
               onToggle={() => sel.toggle(g.id)}
+              onEdit={() => setEditing(g)}
             />
           ))}
         </ul>
@@ -201,6 +208,12 @@ export function CatalogGrid({
         description="Se quitan también de los looks donde estén taggeadas; un look publicado que se quede sin prendas vuelve a borrador. No se puede deshacer."
         onConfirm={() => run(() => deleteGarments(ids()), "Eliminadas")}
       />
+
+      <GarmentTagsSheet
+        garment={editing}
+        tagOptions={tagOptions}
+        onOpenChange={(open) => !open && setEditing(null)}
+      />
     </div>
   );
 }
@@ -210,11 +223,13 @@ function GarmentTile({
   selecting,
   selected,
   onToggle,
+  onEdit,
 }: {
   g: CatalogGarment;
   selecting: boolean;
   selected: boolean;
   onToggle: () => void;
+  onEdit: () => void;
 }) {
   const img = imageUrl(g.cf_image_id);
   const body = (
@@ -265,7 +280,17 @@ function GarmentTile({
           {body}
         </button>
       ) : (
-        <div className="glass-input rounded-2xl p-2">{body}</div>
+        <button
+          type="button"
+          aria-label={`Etiquetas de ${g.title}`}
+          onClick={onEdit}
+          className="glass-input block w-full rounded-2xl p-2 text-left hover:bg-white/70 focus-visible:ring-3 focus-visible:ring-ring/50"
+        >
+          {body}
+          <span className="mt-1.5 block text-xs text-forest">
+            {g.tagIds.length ? "Editar etiquetas" : "Agregar etiquetas"}
+          </span>
+        </button>
       )}
     </li>
   );

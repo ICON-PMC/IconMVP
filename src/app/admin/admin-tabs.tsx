@@ -1,9 +1,9 @@
 import { LinkTabs } from "@/components/link-tabs";
 
-export type AdminTab = "metricas" | "cargar" | "marcas";
+export type AdminTab = "metricas" | "cargar" | "marcas" | "etiquetas";
 
 export function parseAdminTab(v: string | undefined): AdminTab {
-  return v === "cargar" || v === "marcas" ? v : "metricas";
+  return v === "cargar" || v === "marcas" || v === "etiquetas" ? v : "metricas";
 }
 
 export function AdminTabs({ active, pendingCount }: { active: AdminTab; pendingCount: number }) {
@@ -16,6 +16,7 @@ export function AdminTabs({ active, pendingCount }: { active: AdminTab; pendingC
         { id: "metricas", label: "Métricas", href: "/admin" },
         { id: "cargar", label: "Cargar contenido", href: "/admin?tab=cargar" },
         { id: "marcas", label: "Marcas pendientes", href: "/admin?tab=marcas", badge: pendingCount },
+        { id: "etiquetas", label: "Etiquetas", href: "/admin?tab=etiquetas" },
       ]}
     />
   );
