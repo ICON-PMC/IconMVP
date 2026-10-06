@@ -27,7 +27,20 @@ const FLASH = {
   etiqueta: "Etiqueta creada.",
   renombrada: "Etiqueta renombrada.",
   borrada: "Etiqueta borrada.",
+  sinonimos: "Sinónimos guardados.",
+  "sinonimos-borrados": "Grupo de sinónimos borrado.",
+  ignoradas: "Palabras agregadas.",
+  "ignorada-borrada": "Palabra quitada.",
 };
+
+async function loadSearchVocabulary() {
+  const supabase = await createClient();
+  const [synonyms, stopwords] = await Promise.all([
+    supabase.from("search_synonyms").select("id, terms").order("created_at"),
+    supabase.from("search_stopwords").select("word").order("word"),
+  ]);
+  return { synonyms: synonyms.data ?? [], stopwords: (stopwords.data ?? []).map((s) => s.word) };
+}
 
 // Vocabulario con cuántas veces se usa cada etiqueta (prendas, posts, marcas, preferencias).
 async function loadTags(): Promise<AdminTag[]> {
@@ -159,7 +172,7 @@ export default async function AdminPage({
               <PendingBrands />
             </>
           )}
-          {tab === "etiquetas" && <TagsTab tags={await loadTags()} />}
+          {tab === "etiquetas" && <TagsTab tags={await loadTags()} {...await loadSearchVocabulary()} />}
         </div>
       </PageShell>
     </>

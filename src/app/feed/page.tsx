@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getBrandStyleNames } from "@/lib/tags";
 import { getCityFilterOptions } from "@/lib/cities";
 import { createClient } from "@/lib/supabase/server";
 import { SiteHeader } from "@/components/site-header";
@@ -169,7 +170,12 @@ export default async function FeedPage({ searchParams }: { searchParams: SearchP
     })();
 
     if (type === "brands") {
-      const { data, error } = await supabase.rpc("search_brands", { q, p_user_city: userCity });
+      groups = [styleGroup];
+      const { data, error } = await supabase.rpc("search_brands", {
+        q,
+        p_user_city: userCity,
+        p_styles: f.style.length ? f.style : null,
+      });
       const rows = [...(data ?? [])].sort((a, b) => {
         if (sort === "az") return a.name.localeCompare(b.name);
         if (sort === "new") return (b.created_at ?? "").localeCompare(a.created_at ?? "");
@@ -180,12 +186,19 @@ export default async function FeedPage({ searchParams }: { searchParams: SearchP
         return b.sim - a.sim;
       });
       if (error) console.error("[feed] search_brands falló:", error.message);
+      const brandStyles = await getBrandStyleNames(
+        supabase,
+        rows.map((b) => b.id),
+      );
       body = error ? (
         <p className="text-sm text-ink/60">
           No pudimos cargar marcas en este momento. Intenta de nuevo.
         </p>
       ) : rows.length === 0 ? (
-        <EmptyState text={`No encontramos marcas para «${q}».`} />
+        <EmptyState
+          text={`No encontramos marcas para «${q}».`}
+          clearHref={f.style.length ? clearFiltersHref : undefined}
+        />
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {rows.map((b) => (
@@ -198,6 +211,7 @@ export default async function FeedPage({ searchParams }: { searchParams: SearchP
               isVerified={b.is_verified}
               isSustainable={b.is_sustainable}
               garments={b.garments}
+              styles={brandStyles.get(b.id)}
             />
           ))}
         </div>

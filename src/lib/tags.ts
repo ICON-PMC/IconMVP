@@ -83,3 +83,26 @@ export async function replaceBrandStyles(
 }
 
 export const EMPTY_TAG_OPTIONS: TagOptions = { category: [], style: [], occasion: [], temperature: [] };
+
+/** Nombres de los estilos de cada marca (tarjetas de la búsqueda). */
+export async function getBrandStyleNames(
+  supabase: Supabase,
+  brandIds: string[],
+): Promise<Map<string, string[]>> {
+  const out = new Map<string, string[]>();
+  if (!brandIds.length) return out;
+  const { data: links } = await supabase
+    .from("brand_tags")
+    .select("brand_id, tag_id")
+    .in("brand_id", brandIds);
+  const tagIds = [...new Set((links ?? []).map((l) => l.tag_id))];
+  if (!tagIds.length) return out;
+  const { data: tags } = await supabase.from("tags").select("id, name").in("id", tagIds).order("name");
+  const names = new Map((tags ?? []).map((t) => [t.id, t.name]));
+  for (const l of links ?? []) {
+    const name = names.get(l.tag_id);
+    if (name) out.set(l.brand_id, [...(out.get(l.brand_id) ?? []), name]);
+  }
+  for (const list of out.values()) list.sort((a, b) => a.localeCompare(b));
+  return out;
+}
