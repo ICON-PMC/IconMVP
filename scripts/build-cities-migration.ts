@@ -90,7 +90,7 @@ for (const [code, slug] of [["11001", "bogota"], ["05001", "medellin"], ["08001"
 const q = (s: string) => `'${s.replace(/'/g, "''")}'`;
 const values = withSlugs
   .sort((a, b) => a.code.localeCompare(b.code))
-  .map((c) => `  (${q(c.code)}, ${q(c.name)}, ${q(c.department)}, ${q(c.slug)})`)
+  .map((c) => `    (${q(c.code)}, ${q(c.name)}, ${q(c.department)}, ${q(c.slug)})`)
   .join(",\n");
 
 const sql = `-- Todos los municipios de Colombia (DIVIPOLA del DANE) con su departamento.
@@ -105,20 +105,23 @@ alter table cities
   add column if not exists department text,
   add column if not exists dane_code  text unique;
 
-create temporary table divipola (dane_code text, name text, department text, slug text);
-insert into divipola (dane_code, name, department, slug) values
-${values};
-
-update cities c
-set dane_code = d.dane_code, department = d.department
-from divipola d
-where c.slug = d.slug and c.dane_code is null;
-
+-- Un solo statement con CTE (sin tabla temporal): el SQL Editor de Supabase no conserva una
+-- tabla temporal entre statements. El update completa las 3 ciudades existentes; el insert
+-- choca con sus slugs y las salta.
+with divipola (dane_code, name, department, slug) as (
+  values
+${values}
+),
+completar as (
+  update cities c
+  set dane_code = d.dane_code, department = d.department
+  from divipola d
+  where c.slug = d.slug and c.dane_code is null
+  returning c.id
+)
 insert into cities (dane_code, name, department, slug)
 select dane_code, name, department, slug from divipola
 on conflict do nothing;
-
-drop table divipola;
 
 -- Búsqueda del combobox ("medellin" sin tilde, subcadenas).
 create index if not exists cities_name_trgm
