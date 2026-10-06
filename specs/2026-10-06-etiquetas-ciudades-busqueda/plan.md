@@ -17,6 +17,8 @@ Migraciones, en orden de aplicación:
 4. `20261006030000_search_synonyms.sql` — 1f y la parte de `search_*` de 1c (las 3 RPC se
    reescriben una sola vez).
 5. `20261006040000_tag_usage.sql` — `tag_usage_counts()` para 2g (agregada en el Grupo 2).
+6. `20261006050000_grant_select_social.sql` — `select` en `post_likes`, `garment_likes` y
+   `brand_follows` (agregada en el Grupo 5; en la nube ya existían).
 
 Las migraciones 1–5 están aplicadas en la nube (2026-10-06). La 3 se reescribió como un solo
 statement con CTE: el SQL Editor no conserva una tabla temporal entre statements.
@@ -141,7 +143,9 @@ por páginas. Cualquier `select` nuevo sobre `cities` sin filtro debe pasar por 
   comas, agregar, borrar) y **Palabras ignoradas** (agregar varias con coma, quitar una). La base
   normaliza y rechaza grupos de una sola palabra.
 
-## Grupo 5 — Verificación
+## Grupo 5 — Verificación ✅ (2026-10-06)
 
-Ver `validations.md`. `tsc`, `lint`, `next build`; `supabase db reset` local; pruebas en navegador
-(incluido celular) de los formularios y de la búsqueda.
+Ver `validations.md`. `tsc`, `lint`, `next build`; `supabase db reset` local; formularios y búsqueda
+en Chrome headless a 390 px de ancho. Lo que queda abierto se prueba en el smoke test de producción
+(subidas con foto, celular real). El reset destapó permisos que faltaban en tablas sociales:
+migración 6, `20261006050000_grant_select_social.sql`.
