@@ -18,9 +18,9 @@ export type Database = {
   public: {
     Tables: {
       cities: {
-        Row: { id: string; name: string; slug: string; created_at: string };
-        Insert: { id?: string; name: string; slug: string; created_at?: string };
-        Update: { id?: string; name?: string; slug?: string; created_at?: string };
+        Row: { id: string; name: string; slug: string; department: string | null; dane_code: string | null; created_at: string };
+        Insert: { id?: string; name: string; slug: string; department?: string | null; dane_code?: string | null; created_at?: string };
+        Update: { id?: string; name?: string; slug?: string; department?: string | null; dane_code?: string | null; created_at?: string };
         Relationships: [];
       };
       tags: {
@@ -63,6 +63,24 @@ export type Database = {
         Row: { garment_id: string; tag_id: string };
         Insert: { garment_id: string; tag_id: string };
         Update: { garment_id?: string; tag_id?: string };
+        Relationships: [];
+      };
+      brand_tags: {
+        Row: { brand_id: string; tag_id: string };
+        Insert: { brand_id: string; tag_id: string };
+        Update: { brand_id?: string; tag_id?: string };
+        Relationships: [];
+      };
+      search_synonyms: {
+        Row: { id: string; terms: string[]; created_at: string };
+        Insert: { id?: string; terms: string[]; created_at?: string };
+        Update: { id?: string; terms?: string[]; created_at?: string };
+        Relationships: [];
+      };
+      search_stopwords: {
+        Row: { word: string };
+        Insert: { word: string };
+        Update: { word?: string };
         Relationships: [];
       };
       garment_sizes: {
@@ -247,7 +265,7 @@ export type Database = {
         Returns: { id: string; sim: number; same_city: boolean }[];
       };
       search_brands: {
-        Args: { q?: string | null; p_user_city?: string | null };
+        Args: { q?: string | null; p_user_city?: string | null; p_styles?: string[] | null };
         Returns: {
           id: string;
           slug: string;
@@ -263,6 +281,11 @@ export type Database = {
           same_city: boolean;
         }[];
       };
+      search_terms: {
+        Args: { q: string | null };
+        Returns: { tok: string; alts: string[] }[];
+      };
+      search_matches: { Args: { p_txt: string; q: string }; Returns: boolean };
       popular_content_tags: {
         Args: { p_limit?: number | null };
         Returns: { slug: string; name: string; type: string }[];
