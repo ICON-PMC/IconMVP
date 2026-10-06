@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { cookies } from "next/headers";
 import { MANAGED_BRAND_COOKIE, quotaBrandId, requireBrandOwner } from "@/lib/auth";
 import { saveBrandCoverImage } from "@/lib/brand-cover";
+import { brandNameMatches, deleteBrandWithImages } from "@/lib/brand-delete";
 import { uploadImageField, uploadImageFromUrl } from "@/lib/upload";
 import { StorageQuotaError } from "@/lib/storage-quota";
 import { deleteFromR2 } from "@/lib/r2";
@@ -112,15 +113,11 @@ export async function closeBrandAccount(confirmName: string): Promise<ActionResu
   const ctx = await requireBrandOwner();
   const brand = ctx.brand;
   if (!brand) return { ok: false, error: "No encontramos la marca." };
-  const norm = (v: string) => v.trim().toLocaleLowerCase("es");
-  if (norm(confirmName) !== norm(brand.name))
+  if (!brandNameMatches(confirmName, brand.name))
     return { ok: false, error: "El nombre no coincide con el de la marca." };
 
-  const supabase = await createClient();
-  const keys = await imageKeysFor(supabase, { brandId: brand.id });
-  const { error } = await supabase.rpc("close_brand", { p_brand_id: brand.id });
-  if (error) return { ok: false, error: error.message };
-  await deleteFromR2(keys);
+  const error = await deleteBrandWithImages(await createClient(), brand.id);
+  if (error) return { ok: false, error };
 
   revalidatePath("/", "layout");
   if (ctx.actingAsStaff) {
