@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser, getMyBrand } from "@/lib/auth";
 import { uploadImageField } from "@/lib/upload";
+import { StorageQuotaError } from "@/lib/storage-quota";
 import {
   normalizeBrandLink,
   slugify,
@@ -12,6 +13,10 @@ import {
   type BrandProfileInput,
   type FieldErrors,
 } from "@/lib/brand-registration";
+import { replaceBrandStyles, tagIdsFromForm } from "@/lib/tags";
+import { deleteFromR2 } from "@/lib/r2";
+import { saveBrandCoverImage } from "@/lib/brand-cover";
+import { imageKeysFor } from "@/lib/image-keys";
 
 export type GarmentFieldErrors = Partial<
   Record<"title" | "price" | "category" | "photo" | "link", string>
@@ -20,7 +25,7 @@ export type GarmentFieldErrors = Partial<
 export type GarmentFormState = {
   errors?: GarmentFieldErrors;
   message?: string;
-  values?: { title?: string; price?: string; category?: string; link?: string };
+  values?: { title?: string; price?: string; category?: string; link?: string; tags?: string[] };
 };
 
 export type BrandFormState = {
@@ -49,6 +54,7 @@ export async function saveBrandProfile(
     bio: text(formData, "bio"),
     city: text(formData, "city"),
     link: text(formData, "link"),
+    styles: tagIdsFromForm(formData, ["style"]),
   };
   const errors = validateBrandProfile(values);
   if (Object.keys(errors).length) return { errors, values };
@@ -62,6 +68,7 @@ export async function saveBrandProfile(
 
   const supabase = await createClient();
   const existing = await getMyBrand();
+  let brandId = existing?.id ?? null;
 
   if (existing) {
     const { error } = await supabase.from("brands").update(fields).eq("id", existing.id);
@@ -73,12 +80,19 @@ export async function saveBrandProfile(
     const baseSlug = slugify(values.name);
     let created = false;
     for (let attempt = 0; attempt < 5 && !created; attempt++) {
-      const { error } = await supabase.from("brands").insert({
-        ...fields,
-        slug: attempt === 0 ? baseSlug : `${baseSlug}-${attempt + 1}`,
-        owner_user_id: session.profile.id,
-      });
-      if (!error) created = true;
+      const { data, error } = await supabase
+        .from("brands")
+        .insert({
+          ...fields,
+          slug: attempt === 0 ? baseSlug : `${baseSlug}-${attempt + 1}`,
+          owner_user_id: session.profile.id,
+        })
+        .select("id")
+        .single();
+      if (!error) {
+        created = true;
+        brandId = data.id;
+      }
       else if (error.code !== "23505") {
         console.error("[onboarding/marca] crear marca falló:", error.code, error.message);
         return { message: "No pudimos crear tu marca. Intenta de nuevo.", values };
@@ -90,6 +104,12 @@ export async function saveBrandProfile(
     if (session.profile.role === "user") {
       await supabase.from("users").update({ role: "brand" }).eq("id", session.profile.id);
     }
+  }
+
+  // Los estilos son opcionales; si fallan no se pierde el perfil, solo se avisa en el log.
+  if (brandId) {
+    const stylesError = await replaceBrandStyles(supabase, brandId, values.styles ?? []);
+    if (stylesError) console.error("[onboarding/marca] guardar estilos falló:", stylesError);
   }
 
   revalidatePath("/", "layout");
@@ -111,24 +131,9 @@ export async function saveBrandCover(
   if (!hasFile && !brand.logo_url)
     return { errors: { cover: "Sube una foto de portada para continuar." } };
   if (hasFile) {
-    if (!file.type.startsWith("image/"))
-      return { errors: { cover: "El archivo debe ser una imagen (JPG, PNG o WebP)." } };
-    if (file.size > MAX_COVER_BYTES)
-      return { errors: { cover: "La imagen pesa más de 10 MB. Prueba con una más liviana." } };
-
-    let key: string | null;
-    try {
-      key = await uploadImageField(formData, `brands/${brand.id}/cover`);
-    } catch (e) {
-      console.error("[onboarding/marca] subida de portada falló:", e);
-      return { message: "No pudimos subir la imagen. Intenta de nuevo." };
-    }
     const supabase = await createClient();
-    const { error } = await supabase.from("brands").update({ logo_url: key }).eq("id", brand.id);
-    if (error) {
-      console.error("[onboarding/marca] guardar portada falló:", error.code, error.message);
-      return { message: "No pudimos guardar la imagen. Intenta de nuevo." };
-    }
+    const coverError = await saveBrandCoverImage(supabase, brand.id, formData, brand.id);
+    if (coverError) return { errors: { cover: coverError } };
   }
 
   revalidatePath("/", "layout");
@@ -149,7 +154,8 @@ export async function addOnboardingGarment(
   const category = text(formData, "category");
   const linkRaw = text(formData, "link");
   const photo = formData.get("image");
-  const values = { title, price: text(formData, "price"), category, link: linkRaw };
+  const tags = tagIdsFromForm(formData, ["style", "occasion", "temperature"]);
+  const values = { title, price: text(formData, "price"), category, link: linkRaw, tags };
 
   const errors: GarmentFieldErrors = {};
   if (!title) errors.title = "Escribe el nombre de la prenda.";
@@ -188,19 +194,25 @@ export async function addOnboardingGarment(
 
   const { error: tagErr } = await supabase
     .from("garment_tags")
-    .insert({ garment_id: garment.id, tag_id: category });
+    .insert([category, ...tags].map((tag_id) => ({ garment_id: garment.id, tag_id })));
 
-  let key: string | null = null;
+  let img: Awaited<ReturnType<typeof uploadImageField>> = null;
   try {
-    key = await uploadImageField(formData, `garments/${garment.id}`);
+    img = await uploadImageField(formData, `garments/${garment.id}`, "image", {
+      enforceQuotaFor: brand.id,
+    });
   } catch (e) {
+    if (e instanceof StorageQuotaError) {
+      await supabase.from("garments").delete().eq("id", garment.id);
+      return { message: e.message, values };
+    }
     console.error("[onboarding/marca] subida de prenda falló:", e);
   }
-  const imgErr = key
+  const imgErr = img
     ? (
         await supabase
           .from("garment_images")
-          .insert({ garment_id: garment.id, cf_image_id: key, position: 0 })
+          .insert({ garment_id: garment.id, cf_image_id: img.key, bytes: img.bytes, position: 0 })
       ).error
     : true;
 
@@ -221,7 +233,14 @@ export async function removeOnboardingGarment(formData: FormData) {
   const id = text(formData, "id");
   if (id) {
     const supabase = await createClient();
-    await supabase.from("garments").delete().eq("id", id).eq("brand_id", brand.id);
+    const keys = await imageKeysFor(supabase, { garmentIds: [id] });
+    const { data } = await supabase
+      .from("garments")
+      .delete()
+      .eq("id", id)
+      .eq("brand_id", brand.id)
+      .select("id");
+    if (data?.length) await deleteFromR2(keys);
   }
   revalidatePath("/onboarding/marca");
   redirect("/onboarding/marca?paso=3");

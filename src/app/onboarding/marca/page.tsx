@@ -9,6 +9,8 @@ import { Stepper } from "./stepper";
 import { ProfileForm } from "./profile-form";
 import { CoverForm } from "./cover-form";
 import { GarmentForm } from "./garment-form";
+import { getTagOptions } from "@/lib/tags";
+import { getCityOptions } from "@/lib/cities";
 import { removeOnboardingGarment, submitBrandForReview } from "./actions";
 import Image from "next/image";
 import Link from "next/link";
@@ -68,10 +70,14 @@ export default async function BrandOnboardingPage({
           ? 3
           : 1;
 
-  const [{ data: cities }, { data: categories }] = await Promise.all([
-    supabase.from("cities").select("id, name").order("name"),
-    supabase.from("tags").select("id, name").eq("type", "category").order("name"),
+  const [cities, tagOptions, { data: brandTags }] = await Promise.all([
+    getCityOptions(supabase),
+    getTagOptions(supabase),
+    brand
+      ? supabase.from("brand_tags").select("tag_id").eq("brand_id", brand.id)
+      : Promise.resolve({ data: [] as { tag_id: string }[] }),
   ]);
+  const categories = tagOptions.category;
 
   const saved: { id: string; title: string; price: number | null; image: string | null }[] = [];
   if (brand && step === 3) {
@@ -115,8 +121,10 @@ export default async function BrandOnboardingPage({
                 Icon es para marcas colombianas independientes. Revisamos cada perfil antes de publicarlo.
               </p>
               <ProfileForm
-                cities={cities ?? []}
+                cities={cities}
+                styles={tagOptions.style}
                 defaults={{
+                  styles: (brandTags ?? []).map((t) => t.tag_id),
                   name: brand?.name ?? "",
                   bio: brand?.bio ?? "",
                   city: brand?.city_id ?? "",
@@ -158,7 +166,7 @@ export default async function BrandOnboardingPage({
               <h2 className="mb-3 text-sm font-medium text-forest">
                 {saved.length ? "Agregar otra prenda" : "Datos de la prenda"}
               </h2>
-              <GarmentForm key={saved.length} categories={categories ?? []} />
+              <GarmentForm key={saved.length} categories={categories} tagOptions={tagOptions} />
 
               <form id="submit-review" action={submitBrandForReview} />
             </>

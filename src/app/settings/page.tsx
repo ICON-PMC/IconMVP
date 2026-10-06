@@ -1,6 +1,9 @@
 import { redirect } from "next/navigation";
+import { DeleteAccountSection } from "./delete-account-section";
+import { CityCombobox } from "@/components/city-combobox";
+import { getCityOptions } from "@/lib/cities";
 import { createClient } from "@/lib/supabase/server";
-import { getCurrentUser } from "@/lib/auth";
+import { getCurrentUser, getMyBrand } from "@/lib/auth";
 import { Aurora } from "@/components/aurora";
 import { GlassCard } from "@/components/glass-card";
 import { SiteHeader } from "@/components/site-header";
@@ -17,13 +20,14 @@ export default async function SettingsPage({
 
   const supabase = await createClient();
   const userId = session.profile.id;
-  const [{ data: styles }, { data: cities }, { data: prefs }] = await Promise.all([
+  const [{ data: styles }, cities, { data: prefs }] = await Promise.all([
     supabase.from("tags").select("id, name").eq("type", "style").order("name"),
-    supabase.from("cities").select("id, name").order("name"),
+    getCityOptions(supabase),
     supabase.from("user_preferences").select("tag_id").eq("user_id", userId),
   ]);
   const myStyles = new Set((prefs ?? []).map((p) => p.tag_id));
   const myCity = session.profile.home_city_id;
+  const myBrand = await getMyBrand();
 
   return (
     <>
@@ -57,25 +61,13 @@ export default async function SettingsPage({
             </div>
 
             <div>
-              <p className="mb-2 text-xs font-medium uppercase tracking-wide text-ink/50">
+              <label
+                htmlFor="city"
+                className="mb-2 block text-xs font-medium uppercase tracking-wide text-ink/50"
+              >
                 Tu ciudad
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {(cities ?? []).map((c) => (
-                  <label key={c.id} className="cursor-pointer">
-                    <input
-                      type="radio"
-                      name="city"
-                      value={c.id}
-                      defaultChecked={c.id === myCity}
-                      className="peer sr-only"
-                    />
-                    <span className="glass-input inline-block rounded-full px-3 py-1 text-sm text-ink/80 peer-checked:bg-forest peer-checked:text-white">
-                      {c.name}
-                    </span>
-                  </label>
-                ))}
-              </div>
+              </label>
+              <CityCombobox id="city" name="city" options={cities} defaultValue={myCity} />
             </div>
 
             <div>
@@ -110,6 +102,7 @@ export default async function SettingsPage({
             </div>
           </form>
         </GlassCard>
+        <DeleteAccountSection brandName={myBrand?.name ?? null} />
       </div>
     </>
   );

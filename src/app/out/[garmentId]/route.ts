@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/lib/database.types";
+import { normalizeUrl } from "@/lib/links";
 
 const SOURCES: Database["public"]["Enums"]["click_source"][] = [
   "feed",
@@ -54,6 +55,6 @@ export async function GET(
     source,
   });
 
-  const dest = garment.product_url ?? new URL("/feed", req.url).toString();
+  const dest = normalizeUrl(garment.product_url) ?? new URL("/feed", req.url).toString();
   return NextResponse.redirect(dest);
 }

@@ -3,9 +3,23 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { requireBrandOwner } from "@/lib/auth";
+import { cookies } from "next/headers";
+import { MANAGED_BRAND_COOKIE, quotaBrandId, requireBrandOwner } from "@/lib/auth";
+import { saveBrandCoverImage } from "@/lib/brand-cover";
+import { brandNameMatches, deleteBrandWithImages } from "@/lib/brand-delete";
 import { uploadImageField, uploadImageFromUrl } from "@/lib/upload";
-import { fetchRecentMedia } from "@/lib/instagram";
+import { StorageQuotaError } from "@/lib/storage-quota";
+import { deleteFromR2 } from "@/lib/r2";
+import { imageKeysFor } from "@/lib/image-keys";
+import { fetchRecentMedia, InstagramAuthError, refreshLongLivedToken } from "@/lib/instagram";
+import { normalizeInstagramHandle, normalizeUrl } from "@/lib/links";
+import {
+  getTagOptions,
+  idsOfTypes,
+  replaceBrandStyles,
+  replaceGarmentTags,
+  tagIdsFromForm,
+} from "@/lib/tags";
 
 function str(formData: FormData, key: string): string | null {
   const v = formData.get(key);
@@ -14,9 +28,37 @@ function str(formData: FormData, key: string): string | null {
 }
 
 async function myBrandIdOrRedirect(): Promise<string> {
+  return (await panelBrandOrRedirect()).brandId;
+}
+
+// Marca del panel (la propia o la que gestiona el staff) y a quién exigirle cuota al subir.
+async function panelBrandOrRedirect(): Promise<{ brandId: string; quotaFor: string | undefined }> {
+  const ctx = await requireBrandOwner();
+  if (!ctx.brand) redirect("/marca/panel");
+  return { brandId: ctx.brand.id, quotaFor: quotaBrandId(ctx) };
+}
+
+// El look es de la marca del panel. Con staff la RLS deja tocar cualquier post, así que cada
+// acción sobre un look lo comprueba antes (un id equivocado no debe tocar otra marca).
+async function ownPostOrNull(postId: string): Promise<string | null> {
   const { brand } = await requireBrandOwner();
-  if (!brand) redirect("/marca/panel");
-  return brand.id;
+  if (!brand || !postId) return null;
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("posts")
+    .select("id")
+    .eq("id", postId)
+    .eq("author_brand_id", brand.id)
+    .maybeSingle();
+  return data ? brand.id : null;
+}
+
+// Solo las prendas de la marca (para no etiquetar en un look prendas de otra).
+async function ownGarmentIds(brandId: string, ids: string[]): Promise<string[]> {
+  if (!ids.length) return [];
+  const supabase = await createClient();
+  const { data } = await supabase.from("garments").select("id").in("id", ids).eq("brand_id", brandId);
+  return (data ?? []).map((g) => g.id);
 }
 
 // ============================================================
@@ -24,26 +66,76 @@ async function myBrandIdOrRedirect(): Promise<string> {
 // ============================================================
 export async function updateBrandProfile(formData: FormData) {
   const brandId = await myBrandIdOrRedirect();
+  const storeRaw = str(formData, "store_url");
+  const store_url = normalizeUrl(storeRaw);
+  if (storeRaw && !store_url)
+    redirect(`/marca/panel?tab=perfil&error=${encodeURIComponent("El link de la tienda no es válido.")}`);
+  const instagramRaw = str(formData, "instagram");
+  const instagram = normalizeInstagramHandle(instagramRaw);
+  if (instagramRaw && !instagram)
+    redirect(`/marca/panel?tab=perfil&error=${encodeURIComponent("El usuario de Instagram no es válido.")}`);
+
   const supabase = await createClient();
   const { error } = await supabase
     .from("brands")
     .update({
       name: str(formData, "name") ?? "",
-      store_url: str(formData, "store_url"),
-      instagram: str(formData, "instagram"),
+      store_url,
+      instagram,
       bio: str(formData, "bio"),
+      city_id: str(formData, "city"),
     })
     .eq("id", brandId);
   if (error) redirect(`/marca/panel?tab=perfil&error=${encodeURIComponent(error.message)}`);
+  const stylesError = await replaceBrandStyles(supabase, brandId, tagIdsFromForm(formData, ["style"]));
+  if (stylesError) redirect(`/marca/panel?tab=perfil&error=${encodeURIComponent(stylesError)}`);
   revalidatePath("/marca/panel");
+  revalidatePath("/marca/[slug]", "page");
   redirect("/marca/panel?tab=perfil&ok=perfil");
+}
+
+// Portada (Panel → Perfil). Misma lógica que el paso 2 del registro (src/lib/brand-cover.ts).
+export async function updateBrandCover(formData: FormData) {
+  const { brandId, quotaFor } = await panelBrandOrRedirect();
+  const supabase = await createClient();
+  const error = await saveBrandCoverImage(supabase, brandId, formData, quotaFor);
+  if (error) redirect(`/marca/panel?tab=perfil&error=${encodeURIComponent(error)}`);
+  revalidatePath("/marca/panel");
+  revalidatePath("/marca/[slug]", "page");
+  revalidatePath("/feed");
+  redirect("/marca/panel?tab=perfil&ok=portada");
+}
+
+// Cerrar la cuenta de la marca: borra la marca y todo su contenido (RPC `close_brand`) y sus
+// imágenes de R2. La persona sigue con su cuenta como usuario. `confirmName` se vuelve a validar
+// aquí (el diálogo ya lo exige). Si es el staff gestionando, vuelve a /admin.
+export async function closeBrandAccount(confirmName: string): Promise<ActionResult> {
+  const ctx = await requireBrandOwner();
+  const brand = ctx.brand;
+  if (!brand) return { ok: false, error: "No encontramos la marca." };
+  if (!brandNameMatches(confirmName, brand.name))
+    return { ok: false, error: "El nombre no coincide con el de la marca." };
+
+  const error = await deleteBrandWithImages(await createClient(), brand.id);
+  if (error) return { ok: false, error };
+
+  revalidatePath("/", "layout");
+  if (ctx.actingAsStaff) {
+    (await cookies()).delete(MANAGED_BRAND_COOKIE);
+    redirect("/admin?tab=marcas&ok=marca-eliminada");
+  }
+  redirect("/feed?ok=marca-cerrada");
 }
 
 // ============================================================
 // Catálogo (prendas) — mismos campos que /admin, sin elegir marca (es la propia).
 // ============================================================
 export async function createBrandGarment(formData: FormData) {
-  const brandId = await myBrandIdOrRedirect();
+  const { brandId, quotaFor } = await panelBrandOrRedirect();
+  const productUrlRaw = str(formData, "product_url");
+  const product_url = normalizeUrl(productUrlRaw);
+  if (productUrlRaw && !product_url)
+    redirect(`/marca/panel?tab=catalogo&error=${encodeURIComponent("El link de compra no es válido.")}`);
   const supabase = await createClient();
 
   const priceRaw = str(formData, "price_cop");
@@ -54,7 +146,7 @@ export async function createBrandGarment(formData: FormData) {
       title: str(formData, "title") ?? "",
       description: str(formData, "description"),
       price_cop: priceRaw ? Number(priceRaw) : null,
-      product_url: str(formData, "product_url"),
+      product_url,
       color: str(formData, "color"),
       fabric: str(formData, "fabric"),
       status: "published",
@@ -67,8 +159,14 @@ export async function createBrandGarment(formData: FormData) {
     redirect(`/marca/panel?tab=catalogo&error=${encodeURIComponent(error?.message ?? "prenda")}`);
 
   const categoryId = str(formData, "category");
-  if (categoryId) {
-    await supabase.from("garment_tags").insert({ garment_id: garment.id, tag_id: categoryId });
+  const tagIds = [
+    ...(categoryId ? [categoryId] : []),
+    ...tagIdsFromForm(formData, ["style", "occasion", "temperature"]),
+  ];
+  if (tagIds.length) {
+    await supabase
+      .from("garment_tags")
+      .insert(tagIds.map((tag_id) => ({ garment_id: garment.id, tag_id })));
   }
   const sizeIds = formData.getAll("sizes").map(String);
   if (sizeIds.length) {
@@ -76,22 +174,158 @@ export async function createBrandGarment(formData: FormData) {
       .from("garment_sizes")
       .insert(sizeIds.map((size_id) => ({ garment_id: garment.id, size_id })));
   }
-  const key = await uploadImageField(formData, `garments/${garment.id}`);
-  if (key) {
+  let img: Awaited<ReturnType<typeof uploadImageField>>;
+  try {
+    img = await uploadImageField(formData, `garments/${garment.id}`, "image", {
+      enforceQuotaFor: quotaFor,
+    });
+  } catch (e) {
+    if (!(e instanceof StorageQuotaError)) throw e;
+    await supabase.from("garments").delete().eq("id", garment.id);
+    redirect(`/marca/panel?tab=catalogo&error=${encodeURIComponent(e.message)}`);
+  }
+  if (img) {
     await supabase
       .from("garment_images")
-      .insert({ garment_id: garment.id, cf_image_id: key, position: 0 });
+      .insert({ garment_id: garment.id, cf_image_id: img.key, bytes: img.bytes, position: 0 });
   }
 
   revalidatePath("/marca/panel");
   redirect("/marca/panel?tab=catalogo&ok=prenda");
 }
 
+// Editar una prenda ya creada (hoja "Editar prenda" del catálogo): campos, categoría, tallas,
+// estilo/ocasión/clima y, si llega, una foto nueva.
+export async function updateBrandGarment(
+  garmentId: string,
+  formData: FormData,
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const { brandId, quotaFor } = await panelBrandOrRedirect();
+  const supabase = await createClient();
+  const { data: garment } = await supabase
+    .from("garments")
+    .select("id")
+    .eq("id", garmentId)
+    .eq("brand_id", brandId)
+    .maybeSingle();
+  if (!garment) return { ok: false, error: "No encontramos esa prenda en tu catálogo." };
+
+  const title = str(formData, "title");
+  if (!title) return { ok: false, error: "Escribe el título de la prenda." };
+  const productUrlRaw = str(formData, "product_url");
+  const product_url = normalizeUrl(productUrlRaw);
+  if (productUrlRaw && !product_url) return { ok: false, error: "El link de compra no es válido." };
+  const priceRaw = str(formData, "price_cop");
+  if (priceRaw && !/^\d+$/.test(priceRaw)) return { ok: false, error: "El precio debe ser un número." };
+
+  // La foto va primero: si la cuota la bloquea, no queda nada guardado a medias.
+  let newImage: Awaited<ReturnType<typeof uploadImageField>> = null;
+  try {
+    // Clave nueva en cada cambio: reusar `garments/<id>/0.webp` pisaría el archivo (y el CDN
+    // podría seguir mostrando el viejo) y el borrado de la vieja se llevaría la nueva.
+    newImage = await uploadImageField(formData, `garments/${garmentId}/${Date.now()}`, "image", {
+      enforceQuotaFor: quotaFor,
+    });
+  } catch (e) {
+    if (e instanceof StorageQuotaError) return { ok: false, error: e.message };
+    throw e;
+  }
+
+  const { error } = await supabase
+    .from("garments")
+    .update({
+      title,
+      description: str(formData, "description"),
+      price_cop: priceRaw ? Number(priceRaw) : null,
+      product_url,
+      color: str(formData, "color"),
+      fabric: str(formData, "fabric"),
+    })
+    .eq("id", garmentId)
+    .eq("brand_id", brandId);
+  if (error) return { ok: false, error: error.message };
+
+  const categoryId = str(formData, "category");
+  const options = await getTagOptions(supabase);
+  const tagError = await replaceGarmentTags(
+    supabase,
+    garmentId,
+    idsOfTypes(options, ["category", "style", "occasion", "temperature"]),
+    [...(categoryId ? [categoryId] : []), ...tagIdsFromForm(formData, ["style", "occasion", "temperature"])],
+  );
+  if (tagError) return { ok: false, error: tagError };
+
+  await supabase.from("garment_sizes").delete().eq("garment_id", garmentId);
+  const sizeIds = [...new Set(formData.getAll("sizes").map(String))].filter(Boolean);
+  if (sizeIds.length) {
+    const { error: sizeError } = await supabase
+      .from("garment_sizes")
+      .insert(sizeIds.map((size_id) => ({ garment_id: garmentId, size_id })));
+    if (sizeError) return { ok: false, error: sizeError.message };
+  }
+
+  if (newImage) {
+    const imageError = await replaceCoverImage(supabase, "garment", garmentId, newImage);
+    if (imageError) return { ok: false, error: imageError };
+  }
+
+  revalidatePath("/marca/panel");
+  revalidatePath(`/prenda/${garmentId}`);
+  revalidatePath("/feed");
+  return { ok: true };
+}
+
+// Deja `image` como foto principal (posición 0) de una prenda o un look y borra la anterior
+// de R2. Devuelve el mensaje de error o null.
+async function replaceCoverImage(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  kind: "garment" | "post",
+  ownerId: string,
+  image: { key: string; bytes: number },
+): Promise<string | null> {
+  const row = { cf_image_id: image.key, bytes: image.bytes };
+  let oldKey: string | null = null;
+  let error: { message: string } | null = null;
+  if (kind === "garment") {
+    const { data: current } = await supabase
+      .from("garment_images")
+      .select("id, cf_image_id")
+      .eq("garment_id", ownerId)
+      .eq("position", 0)
+      .maybeSingle();
+    oldKey = current?.cf_image_id ?? null;
+    ({ error } = current
+      ? await supabase.from("garment_images").update(row).eq("id", current.id)
+      : await supabase.from("garment_images").insert({ ...row, garment_id: ownerId, position: 0 }));
+  } else {
+    const { data: current } = await supabase
+      .from("post_images")
+      .select("id, cf_image_id")
+      .eq("post_id", ownerId)
+      .eq("position", 0)
+      .maybeSingle();
+    oldKey = current?.cf_image_id ?? null;
+    ({ error } = current
+      ? await supabase.from("post_images").update(row).eq("id", current.id)
+      : await supabase.from("post_images").insert({ ...row, post_id: ownerId, position: 0 }));
+  }
+  if (error) return error.message;
+  if (oldKey && oldKey !== image.key) await deleteFromR2([oldKey]);
+  return null;
+}
+
 // ============================================================
 // Posts manuales (sin pasar por Instagram) — por si la marca prefiere subir directo.
 // ============================================================
+// Look subido a mano (sin Instagram): foto + caption -> borrador -> editor del look.
 export async function createBrandPost(formData: FormData) {
-  const brandId = await myBrandIdOrRedirect();
+  const { brandId, quotaFor } = await panelBrandOrRedirect();
+  const looksError: (msg: string) => never = (msg) =>
+    redirect(`/marca/panel?tab=looks&error=${encodeURIComponent(msg)}`);
+  const photo = formData.get("image");
+  if (!(photo instanceof File) || photo.size === 0) looksError("Sube la foto del look.");
+  if (photo instanceof File && !photo.type.startsWith("image/"))
+    looksError("El archivo debe ser una imagen (JPG, PNG o WebP).");
   const supabase = await createClient();
 
   const { data: post, error } = await supabase
@@ -104,12 +338,22 @@ export async function createBrandPost(formData: FormData) {
     })
     .select("id")
     .single();
-  if (error || !post)
-    redirect(`/marca/panel?error=${encodeURIComponent(error?.message ?? "post")}`);
+  if (error || !post) looksError(error?.message ?? "No pudimos crear el look.");
 
-  const key = await uploadImageField(formData, `posts/${post.id}`);
-  if (key) {
-    await supabase.from("post_images").insert({ post_id: post.id, cf_image_id: key, position: 0 });
+  let img: Awaited<ReturnType<typeof uploadImageField>>;
+  try {
+    img = await uploadImageField(formData, `posts/${post.id}`, "image", { enforceQuotaFor: quotaFor });
+  } catch (e) {
+    // Sin foto el look no sirve: se borra el borrador recién creado.
+    await supabase.from("posts").delete().eq("id", post.id);
+    if (e instanceof StorageQuotaError) looksError(e.message);
+    console.error("[panel] subida de look falló:", e);
+    looksError("No pudimos subir la foto. Intenta de nuevo.");
+  }
+  if (img) {
+    await supabase
+      .from("post_images")
+      .insert({ post_id: post.id, cf_image_id: img.key, bytes: img.bytes, position: 0 });
   }
 
   revalidatePath("/marca/panel");
@@ -171,6 +415,11 @@ export async function deleteGarments(ids: string[]): Promise<BulkResult> {
     .select("post_id")
     .in("garment_id", ids);
   const postIds = [...new Set((affected ?? []).map((r) => r.post_id))];
+  // Las claves de R2 se leen antes: después del borrado la cascada ya se llevó las filas.
+  const { data: images } = await supabase
+    .from("garment_images")
+    .select("garment_id, cf_image_id")
+    .in("garment_id", ids);
 
   const { data, error } = await supabase
     .from("garments")
@@ -179,6 +428,8 @@ export async function deleteGarments(ids: string[]): Promise<BulkResult> {
     .eq("brand_id", brand.id)
     .select("id");
   if (error) return { ok: false, error: error.message };
+  const deleted = new Set((data ?? []).map((g) => g.id));
+  await deleteFromR2((images ?? []).filter((i) => deleted.has(i.garment_id)).map((i) => i.cf_image_id));
 
   // Igual que untagGarmentFromPost: un look publicado sin prendas vuelve a borrador.
   if (postIds.length) {
@@ -208,10 +459,11 @@ export async function deleteGarments(ids: string[]): Promise<BulkResult> {
 // patrón que src/app/saved/actions.ts): sin cliente que lea un valor de retorno, así que la
 // señal de error es un redirect con ?error=, no un ActionResult.
 export async function tagGarmentOnPost(formData: FormData) {
-  await requireBrandOwner();
   const postId = String(formData.get("post_id") ?? "");
   const garmentId = String(formData.get("garment_id") ?? "");
-  if (!postId || !garmentId) redirect("/marca/panel");
+  const brandId = await ownPostOrNull(postId);
+  if (!brandId || !garmentId || !(await ownGarmentIds(brandId, [garmentId])).length)
+    redirect("/marca/panel");
   const sizeId = str(formData, "size_id");
 
   const supabase = await createClient();
@@ -234,12 +486,14 @@ export async function tagGarmentsOnPost(
   postId: string,
   garmentIds: string[],
 ): Promise<ActionResult> {
-  await requireBrandOwner();
-  if (!postId || !garmentIds.length) return { ok: false, error: "Elige al menos una prenda." };
+  const brandId = await ownPostOrNull(postId);
+  if (!brandId) return { ok: false, error: "No encontramos ese look en tu marca." };
+  const own = await ownGarmentIds(brandId, garmentIds);
+  if (!own.length) return { ok: false, error: "Elige al menos una prenda." };
   const supabase = await createClient();
   const { error } = await supabase
     .from("post_items")
-    .insert(garmentIds.map((garment_id) => ({ post_id: postId, garment_id })));
+    .insert(own.map((garment_id) => ({ post_id: postId, garment_id })));
   if (error) return { ok: false, error: error.message };
   revalidatePath(`/marca/panel/post/${postId}`);
   revalidatePath("/marca/panel");
@@ -251,7 +505,7 @@ export async function setPostItemSize(
   itemId: string,
   sizeId: string | null,
 ): Promise<ActionResult> {
-  await requireBrandOwner();
+  if (!(await ownPostOrNull(postId))) return { ok: false, error: "No encontramos ese look en tu marca." };
   const supabase = await createClient();
   const { error } = await supabase
     .from("post_items")
@@ -264,9 +518,9 @@ export async function setPostItemSize(
 }
 
 export async function untagGarmentFromPost(postId: string, itemId: string) {
-  await requireBrandOwner();
+  if (!(await ownPostOrNull(postId))) redirect("/marca/panel");
   const supabase = await createClient();
-  const { error } = await supabase.from("post_items").delete().eq("id", itemId);
+  const { error } = await supabase.from("post_items").delete().eq("id", itemId).eq("post_id", postId);
   if (error) {
     redirect(`/marca/panel/post/${postId}?error=${encodeURIComponent(error.message)}`);
   }
@@ -290,9 +544,8 @@ export async function untagGarmentFromPost(postId: string, itemId: string) {
 }
 
 export async function setPostTags(formData: FormData) {
-  await requireBrandOwner();
   const postId = String(formData.get("post_id") ?? "");
-  if (!postId) redirect("/marca/panel");
+  if (!(await ownPostOrNull(postId))) redirect("/marca/panel");
   const tagIds = [
     ...formData.getAll("occasions"),
     ...formData.getAll("styles"),
@@ -310,6 +563,110 @@ export async function setPostTags(formData: FormData) {
     }
   }
   revalidatePath(`/marca/panel/post/${postId}`);
+}
+
+// ============================================================
+// Editar un look: caption, foto, archivar / restaurar / eliminar.
+// Estados: draft -> (Publicar) published -> (Archivar) archived -> (Restaurar) draft.
+// Solo se elimina un borrador o un archivado: un look publicado primero se archiva.
+// ============================================================
+const lookUrl = (postId: string, q: string) => `/marca/panel/post/${postId}?${q}`;
+
+function revalidateLook(postId: string) {
+  revalidatePath(`/marca/panel/post/${postId}`);
+  revalidatePath("/marca/panel");
+  revalidatePath("/feed");
+  revalidatePath(`/post/${postId}`);
+}
+
+export async function updatePostCaption(formData: FormData) {
+  const postId = String(formData.get("post_id") ?? "");
+  const brandId = await ownPostOrNull(postId);
+  if (!brandId) redirect("/marca/panel?tab=looks");
+  const caption = str(formData, "caption");
+  if (caption && caption.length > 2200)
+    redirect(lookUrl(postId, `error=${encodeURIComponent("El texto es muy largo (máximo 2.200 caracteres).")}`));
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("posts")
+    .update({ caption })
+    .eq("id", postId)
+    .eq("author_brand_id", brandId);
+  if (error) redirect(lookUrl(postId, `error=${encodeURIComponent(error.message)}`));
+  revalidateLook(postId);
+  redirect(lookUrl(postId, "ok=caption"));
+}
+
+export async function replacePostImage(formData: FormData) {
+  const postId = String(formData.get("post_id") ?? "");
+  if (!(await ownPostOrNull(postId))) redirect("/marca/panel?tab=looks");
+  const { quotaFor } = await panelBrandOrRedirect();
+  const photo = formData.get("image");
+  if (!(photo instanceof File) || photo.size === 0 || !photo.type.startsWith("image/"))
+    redirect(lookUrl(postId, `error=${encodeURIComponent("Elige una imagen (JPG, PNG o WebP).")}`));
+
+  let img: Awaited<ReturnType<typeof uploadImageField>>;
+  try {
+    // Clave nueva: ver updateBrandGarment.
+    img = await uploadImageField(formData, `posts/${postId}/${Date.now()}`, "image", {
+      enforceQuotaFor: quotaFor,
+    });
+  } catch (e) {
+    if (e instanceof StorageQuotaError) redirect(lookUrl(postId, `error=${encodeURIComponent(e.message)}`));
+    throw e;
+  }
+  if (!img) redirect(lookUrl(postId, `error=${encodeURIComponent("Elige una imagen.")}`));
+  const supabase = await createClient();
+  const error = await replaceCoverImage(supabase, "post", postId, img);
+  if (error) redirect(lookUrl(postId, `error=${encodeURIComponent(error)}`));
+  revalidateLook(postId);
+  redirect(lookUrl(postId, "ok=foto"));
+}
+
+async function setLookStatus(postId: string, from: string[], to: "draft" | "archived", ok: string) {
+  const brandId = await ownPostOrNull(postId);
+  if (!brandId) redirect("/marca/panel?tab=looks");
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("posts")
+    .update({ status: to })
+    .eq("id", postId)
+    .eq("author_brand_id", brandId)
+    .in("status", from as ("draft" | "published" | "archived")[])
+    .select("id");
+  if (error) redirect(lookUrl(postId, `error=${encodeURIComponent(error.message)}`));
+  if (!data?.length)
+    redirect(lookUrl(postId, `error=${encodeURIComponent("El look cambió de estado. Recarga la página.")}`));
+  revalidateLook(postId);
+  redirect(lookUrl(postId, `ok=${ok}`));
+}
+
+export async function archivePost(postId: string) {
+  await setLookStatus(postId, ["published", "draft"], "archived", "archivado");
+}
+
+export async function restorePost(postId: string) {
+  await setLookStatus(postId, ["archived"], "draft", "restaurado");
+}
+
+export async function deletePost(postId: string): Promise<ActionResult> {
+  const brandId = await ownPostOrNull(postId);
+  if (!brandId) return { ok: false, error: "No encontramos ese look en tu marca." };
+  const supabase = await createClient();
+  const keys = await imageKeysFor(supabase, { postIds: [postId] });
+  const { data, error } = await supabase
+    .from("posts")
+    .delete()
+    .eq("id", postId)
+    .eq("author_brand_id", brandId)
+    .in("status", ["draft", "archived"])
+    .select("id");
+  if (error) return { ok: false, error: error.message };
+  if (!data?.length) return { ok: false, error: "Archiva el look antes de eliminarlo." };
+  await deleteFromR2(keys);
+  revalidatePath("/marca/panel");
+  revalidatePath("/feed");
+  return { ok: true };
 }
 
 export async function publishPost(postId: string) {
@@ -335,7 +692,8 @@ export async function publishPost(postId: string) {
   const { error } = await supabase
     .from("posts")
     .update({ status: "published", published_at: new Date().toISOString() })
-    .eq("id", postId);
+    .eq("id", postId)
+    .eq("author_brand_id", brand.id);
   if (error) {
     redirect(`/marca/panel/post/${postId}?error=${encodeURIComponent(error.message)}`);
   }
@@ -345,9 +703,14 @@ export async function publishPost(postId: string) {
 }
 
 export async function unpublishPost(postId: string) {
-  await requireBrandOwner();
+  const brandId = await ownPostOrNull(postId);
+  if (!brandId) redirect("/marca/panel");
   const supabase = await createClient();
-  const { error } = await supabase.from("posts").update({ status: "draft" }).eq("id", postId);
+  const { error } = await supabase
+    .from("posts")
+    .update({ status: "draft" })
+    .eq("id", postId)
+    .eq("author_brand_id", brandId);
   if (error) {
     redirect(`/marca/panel/post/${postId}?error=${encodeURIComponent(error.message)}`);
   }
@@ -366,23 +729,57 @@ export type IgMediaOption = {
   permalink: string | null;
 };
 
+const RECONNECT_MESSAGE =
+  "Tu conexión con Instagram venció o fue revocada. Vuelve a conectar tu cuenta para importar fotos.";
+const REFRESH_WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
+
+// Devuelve un token vigente de la marca. El token de larga duración dura ~60 días: si le
+// queda menos de una semana se renueva aquí (al usarlo), así no hace falta un cron.
+async function instagramTokenFor(
+  brandId: string,
+): Promise<{ token: string } | { error: string; reconnect?: true }> {
+  const supabase = await createClient();
+  const { data: conn } = await supabase
+    .from("brand_instagram_connections")
+    .select("access_token, token_expires_at")
+    .eq("brand_id", brandId)
+    .maybeSingle();
+  if (!conn) return { error: "Conecta tu Instagram primero." };
+
+  const msLeft = new Date(conn.token_expires_at).getTime() - Date.now();
+  if (msLeft <= 0) return { error: RECONNECT_MESSAGE, reconnect: true };
+  if (msLeft > REFRESH_WINDOW_MS) return { token: conn.access_token };
+
+  try {
+    const fresh = await refreshLongLivedToken(conn.access_token);
+    await supabase
+      .from("brand_instagram_connections")
+      .update({
+        access_token: fresh.access_token,
+        token_expires_at: new Date(Date.now() + fresh.expires_in * 1000).toISOString(),
+      })
+      .eq("brand_id", brandId);
+    return { token: fresh.access_token };
+  } catch (e) {
+    if (e instanceof InstagramAuthError) return { error: RECONNECT_MESSAGE, reconnect: true };
+    // Fallo transitorio: el token actual sigue vigente, se reintenta en el próximo uso.
+    console.error("[instagram] refresh del token falló:", e);
+    return { token: conn.access_token };
+  }
+}
+
 // Trae la media reciente de la marca conectada para que elija cuáles importar.
 export async function listInstagramMedia(): Promise<
-  { ok: true; items: IgMediaOption[] } | { ok: false; error: string }
+  { ok: true; items: IgMediaOption[] } | { ok: false; error: string; reconnect?: true }
 > {
   const { brand } = await requireBrandOwner();
   if (!brand) return { ok: false, error: "No tienes una marca conectada." };
 
-  const supabase = await createClient();
-  const { data: conn } = await supabase
-    .from("brand_instagram_connections")
-    .select("access_token")
-    .eq("brand_id", brand.id)
-    .maybeSingle();
-  if (!conn) return { ok: false, error: "Conecta tu Instagram primero." };
+  const auth = await instagramTokenFor(brand.id);
+  if ("error" in auth) return { ok: false, ...auth };
 
   try {
-    const media = await fetchRecentMedia(conn.access_token);
+    const media = await fetchRecentMedia(auth.token);
     return {
       ok: true,
       items: media
@@ -395,6 +792,7 @@ export async function listInstagramMedia(): Promise<
         })),
     };
   } catch (e) {
+    if (e instanceof InstagramAuthError) return { ok: false, error: RECONNECT_MESSAGE, reconnect: true };
     return { ok: false, error: e instanceof Error ? e.message : "Error al leer Instagram." };
   }
 }
@@ -404,7 +802,8 @@ export async function listInstagramMedia(): Promise<
 export async function importInstagramMedia(
   items: { id: string; caption: string | null; imageUrl: string }[],
 ): Promise<{ ok: true; created: number; errors: string[] } | { ok: false; error: string }> {
-  const { brand } = await requireBrandOwner();
+  const ctx = await requireBrandOwner();
+  const { brand } = ctx;
   if (!brand) return { ok: false, error: "No tienes una marca conectada." };
   if (!items.length) return { ok: false, error: "No seleccionaste ninguna foto." };
 
@@ -428,12 +827,20 @@ export async function importInstagramMedia(
       continue;
     }
     try {
-      const key = await uploadImageFromUrl(item.imageUrl, `posts/${post.id}`);
+      const img = await uploadImageFromUrl(item.imageUrl, `posts/${post.id}`, {
+        enforceQuotaFor: quotaBrandId(ctx),
+      });
       await supabase
         .from("post_images")
-        .insert({ post_id: post.id, cf_image_id: key, position: 0 });
+        .insert({ post_id: post.id, cf_image_id: img.key, bytes: img.bytes, position: 0 });
       created++;
     } catch (e) {
+      if (e instanceof StorageQuotaError) {
+        // Sin espacio: se borra el borrador vacío y no tiene sentido seguir con el resto.
+        await supabase.from("posts").delete().eq("id", post.id);
+        errors.push(e.message);
+        break;
+      }
       errors.push(`${item.id}: ${e instanceof Error ? e.message : "fallo al subir la imagen"}`);
     }
   }
