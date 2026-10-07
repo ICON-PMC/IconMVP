@@ -79,3 +79,12 @@ En local no hay variables de R2: todo lo que sube o borra fotos se prueba en la 
 - [x] Cierre: `supabase db reset`, `lint` y `next build` limpios tras el Grupo 5. **[build]**
 - [x] Migraciones del Grupo 1 aplicadas en la nube (2026-10-06): 6 funciones y el trigger de rol. **[nube]**
 - [ ] Migraciones aplicadas en la nube antes de mergear a `main`. **[nube]**
+
+## Ajustes 2026-10-07
+- [x] `tsc`, `lint` y `next build` limpios con la variable de Instagram. **[build]**
+- [x] Favicon legible a 16 y 32 px. **[local]**
+- [ ] `INSTAGRAM_IMPORT_ENABLED=true` solo en Preview en Vercel; en Production sin la variable. **[nube]**
+- [ ] En producción: el Resumen no muestra Instagram, Looks no muestra "Importar" y
+      `/marca/panel/import` y `/api/instagram/authorize` dan 404. **[nube]**
+- [ ] En el Preview de `dev`: la importación sigue funcionando. **[nube]**
+- [ ] Peso de imágenes rellenado en la nube y la barra del Resumen ya no marca 0 %. **[nube]**
