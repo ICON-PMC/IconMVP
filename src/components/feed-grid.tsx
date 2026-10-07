@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { FeedCard } from "@/components/feed-card";
@@ -11,6 +11,35 @@ type LikedIds = { posts: Set<string>; garments: Set<string> };
 
 function itemKey(item: FeedItem) {
   return `${item.kind}:${item.id}`;
+}
+
+// Columnas reales (no CSS `columns`): el multicolumn de iOS Safari a veces no pinta el
+// contenido de una tarjeta con backdrop-filter. Cada ítem va a la columna más corta
+// según su proporción; es estable al añadir ítems al final (scroll infinito).
+function subscribeCols(cb: () => void) {
+  const mq = window.matchMedia("(min-width: 768px)");
+  mq.addEventListener("change", cb);
+  return () => mq.removeEventListener("change", cb);
+}
+function useColumnCount() {
+  return useSyncExternalStore(
+    subscribeCols,
+    () => (window.matchMedia("(min-width: 768px)").matches ? 3 : 2),
+    () => 2,
+  );
+}
+
+function splitColumns(items: FeedItem[], count: number): FeedItem[][] {
+  const cols: FeedItem[][] = Array.from({ length: count }, () => []);
+  const heights = new Array(count).fill(0);
+  for (const it of items) {
+    const ratio = it.image_width && it.image_height ? it.image_height / it.image_width : 1.25;
+    let target = 0;
+    for (let i = 1; i < count; i++) if (heights[i] < heights[target]) target = i;
+    cols[target].push(it);
+    heights[target] += ratio + 0.45; // + alto aproximado del texto y las acciones
+  }
+  return cols;
 }
 
 // Grilla masonry del feed mixto con scroll infinito. Recibe la primera página ya
@@ -39,6 +68,8 @@ export function FeedGrid({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
+  const colCount = useColumnCount();
+  const columns = useMemo(() => splitColumns(items, colCount), [items, colCount]);
 
   const loadMore = useCallback(async () => {
     if (loading || nextOffset == null) return;
@@ -99,17 +130,21 @@ export function FeedGrid({
 
   return (
     <div>
-      <div className="columns-2 gap-4 md:columns-3">
-        {items.map((item) => (
-          <FeedCard
-            key={itemKey(item)}
-            item={item}
-            tagNames={tagNames}
-            saved={item.kind === "post" ? saved.posts.has(item.id) : saved.garments.has(item.id)}
-            liked={item.kind === "post" ? liked.posts.has(item.id) : liked.garments.has(item.id)}
-            isLoggedIn={isLoggedIn}
-            path="/feed"
-          />
+      <div className="flex items-start gap-4">
+        {columns.map((col, i) => (
+          <div key={i} className="min-w-0 flex-1">
+            {col.map((item) => (
+              <FeedCard
+                key={itemKey(item)}
+                item={item}
+                tagNames={tagNames}
+                saved={item.kind === "post" ? saved.posts.has(item.id) : saved.garments.has(item.id)}
+                liked={item.kind === "post" ? liked.posts.has(item.id) : liked.garments.has(item.id)}
+                isLoggedIn={isLoggedIn}
+                path="/feed"
+              />
+            ))}
+          </div>
         ))}
       </div>
       {nextOffset != null && (
