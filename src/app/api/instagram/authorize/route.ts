@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
-import { buildAuthorizeUrl, absoluteUrl } from "@/lib/instagram";
+import { buildAuthorizeUrl, absoluteUrl, instagramImportEnabled } from "@/lib/instagram";
 
 export const STATE_COOKIE = "ig_oauth_state";
 
@@ -8,6 +8,7 @@ export const STATE_COOKIE = "ig_oauth_state";
 // página) solo porque necesita ESCRIBIR una cookie (el nonce anti-CSRF de `state`), y en
 // Next eso requiere un route handler o server action, no un <a href> plano en una página.
 export async function GET() {
+  if (!instagramImportEnabled()) return new NextResponse(null, { status: 404 });
   const session = await getCurrentUser();
   if (!session) {
     return NextResponse.redirect(absoluteUrl("/login?next=/marca/panel"));

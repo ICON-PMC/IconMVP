@@ -11,7 +11,12 @@ import { uploadImageField, uploadImageFromUrl } from "@/lib/upload";
 import { StorageQuotaError } from "@/lib/storage-quota";
 import { deleteFromR2 } from "@/lib/r2";
 import { imageKeysFor } from "@/lib/image-keys";
-import { fetchRecentMedia, InstagramAuthError, refreshLongLivedToken } from "@/lib/instagram";
+import {
+  fetchRecentMedia,
+  instagramImportEnabled,
+  InstagramAuthError,
+  refreshLongLivedToken,
+} from "@/lib/instagram";
 import { normalizeInstagramHandle, normalizeUrl } from "@/lib/links";
 import {
   getTagOptions,
@@ -729,6 +734,7 @@ export type IgMediaOption = {
   permalink: string | null;
 };
 
+const IMPORT_DISABLED_MESSAGE = "La importación desde Instagram todavía no está disponible.";
 const RECONNECT_MESSAGE =
   "Tu conexión con Instagram venció o fue revocada. Vuelve a conectar tu cuenta para importar fotos.";
 const REFRESH_WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
@@ -772,6 +778,7 @@ async function instagramTokenFor(
 export async function listInstagramMedia(): Promise<
   { ok: true; items: IgMediaOption[] } | { ok: false; error: string; reconnect?: true }
 > {
+  if (!instagramImportEnabled()) return { ok: false, error: IMPORT_DISABLED_MESSAGE };
   const { brand } = await requireBrandOwner();
   if (!brand) return { ok: false, error: "No tienes una marca conectada." };
 
@@ -802,6 +809,7 @@ export async function listInstagramMedia(): Promise<
 export async function importInstagramMedia(
   items: { id: string; caption: string | null; imageUrl: string }[],
 ): Promise<{ ok: true; created: number; errors: string[] } | { ok: false; error: string }> {
+  if (!instagramImportEnabled()) return { ok: false, error: IMPORT_DISABLED_MESSAGE };
   const ctx = await requireBrandOwner();
   const { brand } = ctx;
   if (!brand) return { ok: false, error: "No tienes una marca conectada." };

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { notFound } from "next/navigation";
 import { ChevronLeftIcon } from "lucide-react";
 import { Aurora } from "@/components/aurora";
 import { GlassCard } from "@/components/glass-card";
@@ -7,10 +8,12 @@ import { PageShell } from "@/components/page-shell";
 import { SiteHeader } from "@/components/site-header";
 import { Button } from "@/components/ui/button";
 import { requireBrandOwner } from "@/lib/auth";
+import { instagramImportEnabled } from "@/lib/instagram";
 import { listInstagramMedia } from "../actions";
 import { ImportPicker } from "./import-picker";
 
 export default async function InstagramImportPage() {
+  if (!instagramImportEnabled()) notFound();
   await requireBrandOwner();
   const result = await listInstagramMedia();
 
