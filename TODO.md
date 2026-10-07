@@ -17,14 +17,17 @@ Marcado `[ ]` pendiente, `[x]` hecho. Cuando termines algo, muévelo a "Hecho" c
       Perfil) y etiqueten sus prendas (Catálogo → "Agregar etiquetas"); sin eso la búsqueda por
       estilo no encuentra nada en producción.
 - [ ] **Rellenar el peso de las imágenes existentes:** `npm run db:backfill-image-bytes` con las
-      variables de la nube (ver HANDOFF, "Para apuntar un script a la nube"). Al 2026-10-06 siguen
-      en 0 bytes: 24 imágenes de prendas, 3 de posts y 9 logos.
+      variables de la nube (ver HANDOFF, "Para apuntar un script a la nube"), incluida
+      `NEXT_PUBLIC_R2_PUBLIC_BASE`. Al 2026-10-07 siguen en 0 bytes: 24 imágenes de prendas, 3 de
+      posts y 9 portadas (por eso la barra de almacenamiento marca ~0 %).
+- [ ] **Instagram solo en dev:** en Vercel, `INSTAGRAM_IMPORT_ENABLED=true` solo en Preview; en
+      Production sin la variable (`specs/2026-10-06-gestion-marcas-admin/`, "Ajustes").
 - [ ] **Release:** merge `dev` → `main` y smoke test en producción: `/marca/<slug>` con Instagram,
-      una ruta 404, login con contraseña incorrecta, subir una prenda desde el panel de marca
+      una ruta 404, `/marca/panel/import` da 404, login con contraseña incorrecta, subir una prenda desde el panel de marca
       (la barra de almacenamiento del Resumen debe moverse; elegir estilo/ocasión/clima y ver que
       aparezcan en `/prenda/[id]`), buscar "hoodie" y "marcas tropicales", y elegir ciudad en
       `/settings` desde un celular.
-- [ ] **Probar "Reconectar Instagram"** con una cuenta real: poner `token_expires_at` en el pasado
+- [ ] **Probar "Reconectar Instagram"** en el Preview de `dev` (en producción está apagado) con una cuenta real: poner `token_expires_at` en el pasado
       para una marca de prueba y verificar el aviso en el panel y en `/marca/panel/import`.
 
 ## Anotado para después (no bloquea)
@@ -34,8 +37,9 @@ Marcado `[ ]` pendiente, `[x]` hecho. Cuando termines algo, muévelo a "Hecho" c
       cliente de Supabase. No expone tokens de otras marcas, pero el roadmap pide "solo
       server-side": mover la lectura del token a `service_role` y quitar el `select` de esa
       columna a `authenticated`.
-- [ ] **Meta App Review:** confirmar el estado de la revisión de permisos de Instagram si se van a
-      sumar marcas que no estén como testers de la app.
+- [ ] **Meta App Review:** cuando Meta apruebe los permisos de Instagram, prender
+      `INSTAGRAM_IMPORT_ENABLED=true` también en Production. Hasta entonces la importación está
+      apagada allí (2026-10-07).
 - [ ] **Feedback dentro de la app** — en pausa por decisión de producto (2026-09-26).
 - [ ] **Dominio propio para las imágenes.** Hoy se sirven desde `pub-*.r2.dev`, que tiene rate limit.
       También es prerrequisito del correo transaccional (Fase 2) si se usa el mismo dominio.

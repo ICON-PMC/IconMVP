@@ -122,3 +122,19 @@
   gestiona el staff. Fuera de alcance: el staff no conecta Instagram por una marca.
 - **Cuota al reemplazar una foto:** la nueva se suma antes de borrar la vieja, así que una marca
   muy cerca del límite podría no poder cambiar una foto aunque el total final cupiera.
+
+## Ajustes después del cierre (2026-10-07)
+
+- **Importación de Instagram apagada en producción.** Meta todavía no aprueba los permisos de la app,
+  así que la importación queda solo para desarrollo. Se prende con `INSTAGRAM_IMPORT_ENABLED=true`
+  (local y Preview/`dev` en Vercel); en Production la variable no existe. Sin ella:
+  `/api/instagram/authorize`, `/api/instagram/callback` y `/marca/panel/import` dan 404, las acciones
+  de importar devuelven error, el Resumen no muestra la tarjeta de Instagram, Looks no muestra
+  "Importar" ni lo menciona, y un usuario sin marca ve "Registrar mi marca" (→ `/onboarding/marca`)
+  en vez de "Conectar con Instagram". Se usa una variable y no se borra el código en `main` para
+  que los merges `dev` → `main` no choquen.
+- **Favicon nuevo:** la "I" de Icon en `src/app/favicon.ico` (16–256 px, fondo blanco para que se
+  vea en pestañas oscuras). El ícono del manifest (`public/icon.svg`) sigue siendo el anterior.
+- **Peso de imágenes en la nube:** al 2026-10-07 siguen en 0 bytes las 24 imágenes de prendas, las
+  3 de posts y 9 portadas, así que la barra de almacenamiento marca ~0 % en todas las marcas. Se
+  arregla con `npm run db:backfill-image-bytes` apuntando a la nube (ver `TODO.md`).

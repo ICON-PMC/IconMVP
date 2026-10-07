@@ -168,3 +168,11 @@ Hecho en cada grupo (SQL + Chrome headless a 390 px) y al final: `supabase db re
 Ver `validations.md`. `tsc`, `lint`, `next build`; `supabase db reset`; SQL de las RPC con usuarios
 de prueba (dueño, otra marca, curator, admin); recorrido en Chrome headless (390 px) de los flujos
 de marca y de admin. Las subidas con foto se prueban en la nube (en local no hay R2).
+
+## Grupo 7 — Ajustes después del cierre ✅ (local, 2026-10-07)
+
+- `instagramImportEnabled()` en `src/lib/instagram.ts` (lee `INSTAGRAM_IMPORT_ENABLED`, solo
+  servidor). La revisan las dos rutas de `/api/instagram`, `import/page.tsx` (`notFound()`),
+  `listInstagramMedia` / `importInstagramMedia`, y el panel, que pasa `instagramEnabled` a
+  `OverviewTab` y `LooksTab` y no consulta `brand_instagram_connections` si está apagada.
+- `src/app/favicon.ico` regenerado desde el PNG de la "I" (recorte al glifo + 20 % de aire).
