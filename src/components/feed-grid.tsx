@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { FeedCard } from "@/components/feed-card";
+import { FeedCard, cardRatio } from "@/components/feed-card";
 import type { FeedItem } from "@/lib/feed";
 
 type SavedIds = { posts: Set<string>; garments: Set<string> };
@@ -33,11 +33,11 @@ function splitColumns(items: FeedItem[], count: number): FeedItem[][] {
   const cols: FeedItem[][] = Array.from({ length: count }, () => []);
   const heights = new Array(count).fill(0);
   for (const it of items) {
-    const ratio = it.image_width && it.image_height ? it.image_height / it.image_width : 1.25;
+    const ratio = cardRatio(it);
     let target = 0;
     for (let i = 1; i < count; i++) if (heights[i] < heights[target]) target = i;
     cols[target].push(it);
-    heights[target] += ratio + 0.45; // + alto aproximado del texto y las acciones
+    heights[target] += ratio + 0.2; // + alto aproximado del título
   }
   return cols;
 }
