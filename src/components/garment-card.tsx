@@ -30,10 +30,10 @@ export function GarmentCard({
   const img = imageUrl(image);
   return (
     <article className="break-inside-avoid">
-      <div className="glass overflow-hidden rounded-2xl">
+      <div className="glass transform-gpu overflow-hidden rounded-2xl">
         <Link
           href={`/prenda/${id}`}
-          className="block transition hover:opacity-95"
+          className="block"
         >
           {img && (
             // eslint-disable-next-line @next/next/no-img-element

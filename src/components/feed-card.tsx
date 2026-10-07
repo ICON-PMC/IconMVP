@@ -41,10 +41,10 @@ export function FeedCard({
 
   return (
     <article className="mb-4 break-inside-avoid">
-      <div className="glass overflow-hidden rounded-2xl">
+      <div className="glass transform-gpu overflow-hidden rounded-2xl">
         <Link
           href={href}
-          className="block transition hover:opacity-95"
+          className="block"
         >
           <div className="relative w-full overflow-hidden bg-white/40" style={{ aspectRatio: aspect }}>
             {img && (
