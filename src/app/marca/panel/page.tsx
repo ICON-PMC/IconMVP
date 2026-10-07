@@ -13,6 +13,7 @@ import { CatalogTab } from "./_components/catalog-tab";
 import { LooksTab } from "./_components/looks-tab";
 import { ProfileTab } from "./_components/profile-tab";
 import { checkStorageQuota } from "@/lib/storage-quota";
+import { instagramImportEnabled } from "@/lib/instagram";
 import { EMPTY_TAG_OPTIONS, getTagOptions } from "@/lib/tags";
 import { getCityOptions } from "@/lib/cities";
 
@@ -31,6 +32,7 @@ export default async function BrandPanelPage({
   const { brand } = await requireBrandOwner();
   const { error, tab: tabParam } = await searchParams;
   const tab = parseTab(tabParam);
+  const igEnabled = instagramImportEnabled();
 
   if (!brand) {
     return (
@@ -43,8 +45,9 @@ export default async function BrandPanelPage({
               Conecta tu marca
             </h1>
             <p className="mt-2 text-sm text-ink/60">
-              Inicia sesión con tu cuenta de Instagram profesional (Business o Creator)
-              para traer tus fotos a Icon.
+              {igEnabled
+                ? "Inicia sesión con tu cuenta de Instagram profesional (Business o Creator) para traer tus fotos a Icon."
+                : "Registra tu marca para subir tu catálogo y tus looks a Icon."}
             </p>
             {error && (
               <p className="mt-4 rounded-xl bg-coral/15 px-3 py-2 text-sm text-coral">
@@ -52,10 +55,10 @@ export default async function BrandPanelPage({
               </p>
             )}
             <a
-              href="/api/instagram/authorize"
+              href={igEnabled ? "/api/instagram/authorize" : "/onboarding/marca"}
               className="mt-6 inline-block rounded-full bg-forest px-6 py-2.5 text-sm font-medium text-white hover:bg-forest-deep"
             >
-              Conectar con Instagram
+              {igEnabled ? "Conectar con Instagram" : "Registrar mi marca"}
             </a>
           </GlassCard>
         </PageShell>
@@ -65,11 +68,13 @@ export default async function BrandPanelPage({
 
   const supabase = await createClient();
   const [{ data: connection }, { data: garments }, { data: posts }] = await Promise.all([
-    supabase
-      .from("brand_instagram_connections")
-      .select("username, account_type, connected_at, token_expires_at")
-      .eq("brand_id", brand.id)
-      .maybeSingle(),
+    igEnabled
+      ? supabase
+          .from("brand_instagram_connections")
+          .select("username, account_type, connected_at, token_expires_at")
+          .eq("brand_id", brand.id)
+          .maybeSingle()
+      : { data: null },
     supabase
       .from("garments")
       .select("id, title, price_cop, status, description, product_url, color, fabric")
@@ -170,6 +175,7 @@ export default async function BrandPanelPage({
         <div className="mt-6">
           {tab === "resumen" && (
             <OverviewTab
+              instagramEnabled={igEnabled}
               connection={connection}
               storage={await checkStorageQuota(brand.id, 0).catch(() => null)}
               counts={{
@@ -187,7 +193,7 @@ export default async function BrandPanelPage({
               canPublish={brand.status === "active"}
             />
           )}
-          {tab === "looks" && <LooksTab looks={looks} canImport={!!connection} />}
+          {tab === "looks" && <LooksTab looks={looks} canImport={!!connection} instagramEnabled={igEnabled} />}
           {tab === "perfil" && (
             <ProfileTab
               brand={brand}

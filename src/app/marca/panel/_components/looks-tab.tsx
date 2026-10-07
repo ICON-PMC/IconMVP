@@ -26,7 +26,15 @@ const FILTERS = [
 ] as const;
 type Filter = (typeof FILTERS)[number]["id"];
 
-export function LooksTab({ looks, canImport }: { looks: LookRow[]; canImport: boolean }) {
+export function LooksTab({
+  looks,
+  canImport,
+  instagramEnabled,
+}: {
+  looks: LookRow[];
+  canImport: boolean;
+  instagramEnabled: boolean;
+}) {
   const [filter, setFilter] = useState<Filter>("all");
   const visible = looks.filter((l) => filter === "all" || l.status === filter);
 
@@ -113,7 +121,9 @@ export function LooksTab({ looks, canImport }: { looks: LookRow[]; canImport: bo
               ? "Prueba con otro filtro."
               : canImport
                 ? "Sube una foto con «Nuevo look» o impórtala desde Instagram."
-                : "Sube una foto con «Nuevo look». También puedes conectar Instagram desde el Resumen."
+                : instagramEnabled
+                  ? "Sube una foto con «Nuevo look». También puedes conectar Instagram desde el Resumen."
+                  : "Sube una foto con «Nuevo look»."
           }
         />
       )}

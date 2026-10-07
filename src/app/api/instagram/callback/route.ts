@@ -7,6 +7,7 @@ import {
   exchangeForLongLivedToken,
   fetchProfile,
   absoluteUrl,
+  instagramImportEnabled,
 } from "@/lib/instagram";
 import { STATE_COOKIE } from "@/app/api/instagram/authorize/route";
 
@@ -25,6 +26,7 @@ function slugify(s: string): string {
 }
 
 export async function GET(request: Request) {
+  if (!instagramImportEnabled()) return new NextResponse(null, { status: 404 });
   const { searchParams } = new URL(request.url);
   const code = searchParams.get("code");
   const state = searchParams.get("state");
