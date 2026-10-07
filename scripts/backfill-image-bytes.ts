@@ -81,6 +81,8 @@ async function backfillCovers() {
 }
 
 async function main() {
+  // Sin variables en línea, .env.local apunta al Supabase local: decirlo evita creer que corrió en la nube.
+  console.log(`Supabase: ${url}${url!.includes("127.0.0.1") || url!.includes("localhost") ? " (LOCAL)" : ""}`);
   await backfill("garment_images");
   await backfill("post_images");
   await backfillCovers();
