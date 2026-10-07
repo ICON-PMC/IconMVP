@@ -135,6 +135,10 @@
   que los merges `dev` → `main` no choquen.
 - **Favicon nuevo:** la "I" de Icon en `src/app/favicon.ico` (16–256 px, fondo blanco para que se
   vea en pestañas oscuras). El ícono del manifest (`public/icon.svg`) sigue siendo el anterior.
+- **Landing con contexto y footer:** `/` explica cómo funciona para usuarios y para marcas (3 pasos
+  cada uno), cómo unirse (usuario o marca, con el paso de revisión), tres preguntas frecuentes y un
+  footer (`SiteFooter`) con enlaces y el WhatsApp de contacto +57 315 242 9478 para ideas, dudas o
+  info. El footer solo está en la landing.
 - **Peso de imágenes en la nube:** al 2026-10-07 siguen en 0 bytes las 24 imágenes de prendas, las
   3 de posts y 9 portadas, así que la barra de almacenamiento marca ~0 % en todas las marcas. Se
   arregla con `npm run db:backfill-image-bytes` apuntando a la nube (ver `TODO.md`).
