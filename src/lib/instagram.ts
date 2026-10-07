@@ -8,6 +8,12 @@
 //
 // Referencia: https://developers.facebook.com/docs/instagram-platform
 
+// Apagada en producción hasta que Meta apruebe los permisos de la app. Se prende con
+// INSTAGRAM_IMPORT_ENABLED=true (local y Preview/dev en Vercel). Solo servidor.
+export function instagramImportEnabled(): boolean {
+  return process.env.INSTAGRAM_IMPORT_ENABLED === "true";
+}
+
 const GRAPH_VERSION = "v21.0";
 const GRAPH_BASE = `https://graph.instagram.com/${GRAPH_VERSION}`;
 const SCOPES = "instagram_business_basic"; // solo lectura de perfil + media; no publicamos.

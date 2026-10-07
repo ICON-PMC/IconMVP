@@ -17,10 +17,12 @@ const mb = (b: number) => (b / 1024 / 1024).toFixed(b < 10 * 1024 * 1024 ? 1 : 0
 
 export function OverviewTab({
   counts,
+  instagramEnabled,
   connection,
   storage,
 }: {
   counts: { garments: number; looks: number; drafts: number };
+  instagramEnabled: boolean;
   connection: Connection;
   storage: Storage;
 }) {
@@ -54,62 +56,64 @@ export function OverviewTab({
 
       {storage && <StorageMeter storage={storage} />}
 
-      <GlassCard className="p-5">
-        <SectionHeader title="Instagram" />
-        {connection ? (
-          <div className="mt-3 space-y-4">
-            <p className="text-sm text-ink">
-              Conectado como <span className="font-medium">@{connection.username}</span>
-              <span className="block text-xs text-ink/60">
-                {connection.account_type} · desde{" "}
-                {new Date(connection.connected_at).toLocaleDateString("es-CO")}
-              </span>
-            </p>
-            {expired && (
-              <p role="alert" className="rounded-xl bg-coral/15 px-3 py-2 text-sm text-coral">
-                La conexión con Instagram venció. Reconéctala para seguir importando fotos.
+      {instagramEnabled && (
+        <GlassCard className="p-5">
+          <SectionHeader title="Instagram" />
+          {connection ? (
+            <div className="mt-3 space-y-4">
+              <p className="text-sm text-ink">
+                Conectado como <span className="font-medium">@{connection.username}</span>
+                <span className="block text-xs text-ink/60">
+                  {connection.account_type} · desde{" "}
+                  {new Date(connection.connected_at).toLocaleDateString("es-CO")}
+                </span>
               </p>
-            )}
-            <div className="flex flex-col gap-2 sm:flex-row">
-              {expired ? (
-                <Button
-                  nativeButton={false}
-                  render={<a href="/api/instagram/authorize" />}
-                  className="rounded-full sm:px-5"
-                >
-                  Reconectar Instagram
-                </Button>
-              ) : (
-                <Button
-                  nativeButton={false}
-                  render={<Link href="/marca/panel/import" />}
-                  className="rounded-full sm:px-5"
-                >
-                  Importar fotos
-                </Button>
+              {expired && (
+                <p role="alert" className="rounded-xl bg-coral/15 px-3 py-2 text-sm text-coral">
+                  La conexión con Instagram venció. Reconéctala para seguir importando fotos.
+                </p>
               )}
-              <form action={disconnectInstagram}>
-                <Button variant="ghost" type="submit" className="w-full rounded-full sm:w-auto">
-                  Desconectar
-                </Button>
-              </form>
+              <div className="flex flex-col gap-2 sm:flex-row">
+                {expired ? (
+                  <Button
+                    nativeButton={false}
+                    render={<a href="/api/instagram/authorize" />}
+                    className="rounded-full sm:px-5"
+                  >
+                    Reconectar Instagram
+                  </Button>
+                ) : (
+                  <Button
+                    nativeButton={false}
+                    render={<Link href="/marca/panel/import" />}
+                    className="rounded-full sm:px-5"
+                  >
+                    Importar fotos
+                  </Button>
+                )}
+                <form action={disconnectInstagram}>
+                  <Button variant="ghost" type="submit" className="w-full rounded-full sm:w-auto">
+                    Desconectar
+                  </Button>
+                </form>
+              </div>
             </div>
-          </div>
-        ) : (
-          <div className="mt-3 space-y-3">
-            <p className="text-sm text-ink/70">
-              Conecta tu cuenta profesional para traer tus fotos como borradores de looks.
-            </p>
-            <Button
-              nativeButton={false}
-              render={<a href="/api/instagram/authorize" />}
-              className="w-full rounded-full sm:w-auto sm:px-5"
-            >
-              Conectar con Instagram
-            </Button>
-          </div>
-        )}
-      </GlassCard>
+          ) : (
+            <div className="mt-3 space-y-3">
+              <p className="text-sm text-ink/70">
+                Conecta tu cuenta profesional para traer tus fotos como borradores de looks.
+              </p>
+              <Button
+                nativeButton={false}
+                render={<a href="/api/instagram/authorize" />}
+                className="w-full rounded-full sm:w-auto sm:px-5"
+              >
+                Conectar con Instagram
+              </Button>
+            </div>
+          )}
+        </GlassCard>
+      )}
     </div>
   );
 }
