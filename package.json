@@ -9,7 +9,8 @@
     "lint": "eslint",
     "db:import": "tsx scripts/import-content.ts",
     "db:upload-images": "tsx scripts/upload-images.ts",
-    "db:seed-clicks": "tsx scripts/seed-clicks.ts"
+    "db:seed-clicks": "tsx scripts/seed-clicks.ts",
+    "catalog:excel": "tsx scripts/catalog-to-excel.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",
