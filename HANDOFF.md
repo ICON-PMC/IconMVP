@@ -22,8 +22,8 @@ falta para dejar el release redondo; `specs/roadmap.md`, lo que sigue (Fase 1).
 Requisitos: Node 20+, Docker, [Supabase CLI](https://supabase.com/docs/guides/cli).
 
 ```bash
-git clone https://github.com/awangran/Icon.git
-cd Icon
+git clone https://github.com/ICON-PMC/IconMVP.git
+cd IconMVP
 git checkout dev              # se trabaja en dev, nunca directo en main
 
 supabase start                # levanta Postgres local en Docker
@@ -70,6 +70,12 @@ Reglas:
 2. **Las migraciones de base de datos se aplican a la nube ANTES de mergear el código que las usa.**
    Si el código llega primero, la app en producción falla contra un esquema que todavía no existe.
 3. Un release es un merge `dev` → `main`.
+
+**Un solo remoto:** `origin` = `https://github.com/ICON-PMC/IconMVP.git`. No hay forks ni segundos remotos
+(`git remote -v` debe mostrar solo esa URL). Las ramas de trabajo se abren desde `dev`, se mergean por PR
+contra `dev` y se borran después. Si creas una rama con `git switch -c mi-rama origin/dev`, hereda
+`origin/dev` como upstream y «Sync» intentará empujar a `dev`; súbela con
+`git push -u origin mi-rama` para que apunte a su propia rama.
 
 ### Aplicar una migración nueva a la nube
 
@@ -208,5 +214,5 @@ NEXT_PUBLIC_SUPABASE_URL=<url_nube> SUPABASE_SERVICE_ROLE_KEY=<key_nube> npm run
 
 ## Contexto de equipo
 
-- Repo: `awangran/Icon` en GitHub.
+- Repo: `ICON-PMC/IconMVP` en GitHub (único remoto, `origin`).
 - Responsable del proyecto: Ashlee (decide prioridades, config de producción, cuentas externas).
