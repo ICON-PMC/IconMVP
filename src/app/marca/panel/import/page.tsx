@@ -1,15 +1,19 @@
 import Link from "next/link";
+import { notFound } from "next/navigation";
 import { ChevronLeftIcon } from "lucide-react";
 import { Aurora } from "@/components/aurora";
 import { GlassCard } from "@/components/glass-card";
 import { EmptyState } from "@/components/empty-state";
 import { PageShell } from "@/components/page-shell";
 import { SiteHeader } from "@/components/site-header";
+import { Button } from "@/components/ui/button";
 import { requireBrandOwner } from "@/lib/auth";
+import { instagramImportEnabled } from "@/lib/instagram";
 import { listInstagramMedia } from "../actions";
 import { ImportPicker } from "./import-picker";
 
 export default async function InstagramImportPage() {
+  if (!instagramImportEnabled()) notFound();
   await requireBrandOwner();
   const result = await listInstagramMedia();
 
@@ -32,9 +36,20 @@ export default async function InstagramImportPage() {
 
         <GlassCard className="mt-6 p-4 sm:p-6">
           {!result.ok ? (
-            <p role="alert" className="rounded-xl bg-coral/15 px-3 py-2 text-sm text-coral">
-              {result.error}
-            </p>
+            <div className="space-y-3">
+              <p role="alert" className="rounded-xl bg-coral/15 px-3 py-2 text-sm text-coral">
+                {result.error}
+              </p>
+              {result.reconnect && (
+                <Button
+                  nativeButton={false}
+                  render={<a href="/api/instagram/authorize" />}
+                  className="w-full rounded-full sm:w-auto sm:px-5"
+                >
+                  Reconectar Instagram
+                </Button>
+              )}
+            </div>
           ) : result.items.length === 0 ? (
             <EmptyState
               title="No encontramos fotos"

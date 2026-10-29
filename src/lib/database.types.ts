@@ -18,9 +18,9 @@ export type Database = {
   public: {
     Tables: {
       cities: {
-        Row: { id: string; name: string; slug: string; created_at: string };
-        Insert: { id?: string; name: string; slug: string; created_at?: string };
-        Update: { id?: string; name?: string; slug?: string; created_at?: string };
+        Row: { id: string; name: string; slug: string; department: string | null; dane_code: string | null; created_at: string };
+        Insert: { id?: string; name: string; slug: string; department?: string | null; dane_code?: string | null; created_at?: string };
+        Update: { id?: string; name?: string; slug?: string; department?: string | null; dane_code?: string | null; created_at?: string };
         Relationships: [];
       };
       tags: {
@@ -42,9 +42,9 @@ export type Database = {
         Relationships: [];
       };
       brands: {
-        Row: { id: string; name: string; slug: string; city_id: string | null; store_url: string | null; instagram: string | null; price_range: Database["public"]["Enums"]["price_range"] | null; bio: string | null; logo_url: string | null; is_active: boolean; is_verified: boolean; is_sustainable: boolean; owner_user_id: string | null; status: Database["public"]["Enums"]["brand_status"]; rejection_note: string | null; submitted_at: string | null; created_at: string; updated_at: string };
-        Insert: { id?: string; name: string; slug: string; city_id?: string | null; store_url?: string | null; instagram?: string | null; price_range?: Database["public"]["Enums"]["price_range"] | null; bio?: string | null; logo_url?: string | null; is_active?: boolean; is_verified?: boolean; is_sustainable?: boolean; owner_user_id?: string | null; status?: Database["public"]["Enums"]["brand_status"]; rejection_note?: string | null; submitted_at?: string | null; created_at?: string; updated_at?: string };
-        Update: { id?: string; name?: string; slug?: string; city_id?: string | null; store_url?: string | null; instagram?: string | null; price_range?: Database["public"]["Enums"]["price_range"] | null; bio?: string | null; logo_url?: string | null; is_active?: boolean; is_verified?: boolean; is_sustainable?: boolean; owner_user_id?: string | null; status?: Database["public"]["Enums"]["brand_status"]; rejection_note?: string | null; submitted_at?: string | null; created_at?: string; updated_at?: string };
+        Row: { id: string; name: string; slug: string; city_id: string | null; store_url: string | null; instagram: string | null; price_range: Database["public"]["Enums"]["price_range"] | null; bio: string | null; logo_url: string | null; logo_bytes: number; is_active: boolean; is_verified: boolean; is_sustainable: boolean; owner_user_id: string | null; status: Database["public"]["Enums"]["brand_status"]; rejection_note: string | null; submitted_at: string | null; created_at: string; updated_at: string };
+        Insert: { id?: string; name: string; slug: string; city_id?: string | null; store_url?: string | null; instagram?: string | null; price_range?: Database["public"]["Enums"]["price_range"] | null; bio?: string | null; logo_url?: string | null; logo_bytes?: number; is_active?: boolean; is_verified?: boolean; is_sustainable?: boolean; owner_user_id?: string | null; status?: Database["public"]["Enums"]["brand_status"]; rejection_note?: string | null; submitted_at?: string | null; created_at?: string; updated_at?: string };
+        Update: { id?: string; name?: string; slug?: string; city_id?: string | null; store_url?: string | null; instagram?: string | null; price_range?: Database["public"]["Enums"]["price_range"] | null; bio?: string | null; logo_url?: string | null; logo_bytes?: number; is_active?: boolean; is_verified?: boolean; is_sustainable?: boolean; owner_user_id?: string | null; status?: Database["public"]["Enums"]["brand_status"]; rejection_note?: string | null; submitted_at?: string | null; created_at?: string; updated_at?: string };
         Relationships: [];
       };
       garments: {
@@ -54,15 +54,33 @@ export type Database = {
         Relationships: [];
       };
       garment_images: {
-        Row: { id: string; garment_id: string; cf_image_id: string; position: number; alt: string | null; created_at: string };
-        Insert: { id?: string; garment_id: string; cf_image_id: string; position?: number; alt?: string | null; created_at?: string };
-        Update: { id?: string; garment_id?: string; cf_image_id?: string; position?: number; alt?: string | null; created_at?: string };
+        Row: { id: string; garment_id: string; cf_image_id: string; position: number; bytes: number; alt: string | null; created_at: string };
+        Insert: { id?: string; garment_id: string; cf_image_id: string; position?: number; bytes?: number; alt?: string | null; created_at?: string };
+        Update: { id?: string; garment_id?: string; cf_image_id?: string; position?: number; bytes?: number; alt?: string | null; created_at?: string };
         Relationships: [];
       };
       garment_tags: {
         Row: { garment_id: string; tag_id: string };
         Insert: { garment_id: string; tag_id: string };
         Update: { garment_id?: string; tag_id?: string };
+        Relationships: [];
+      };
+      brand_tags: {
+        Row: { brand_id: string; tag_id: string };
+        Insert: { brand_id: string; tag_id: string };
+        Update: { brand_id?: string; tag_id?: string };
+        Relationships: [];
+      };
+      search_synonyms: {
+        Row: { id: string; terms: string[]; created_at: string };
+        Insert: { id?: string; terms: string[]; created_at?: string };
+        Update: { id?: string; terms?: string[]; created_at?: string };
+        Relationships: [];
+      };
+      search_stopwords: {
+        Row: { word: string };
+        Insert: { word: string };
+        Update: { word?: string };
         Relationships: [];
       };
       garment_sizes: {
@@ -78,9 +96,9 @@ export type Database = {
         Relationships: [];
       };
       post_images: {
-        Row: { id: string; post_id: string; cf_image_id: string; position: number; width: number | null; height: number | null; created_at: string };
-        Insert: { id?: string; post_id: string; cf_image_id: string; position?: number; width?: number | null; height?: number | null; created_at?: string };
-        Update: { id?: string; post_id?: string; cf_image_id?: string; position?: number; width?: number | null; height?: number | null; created_at?: string };
+        Row: { id: string; post_id: string; cf_image_id: string; position: number; bytes: number; width: number | null; height: number | null; created_at: string };
+        Insert: { id?: string; post_id: string; cf_image_id: string; position?: number; bytes?: number; width?: number | null; height?: number | null; created_at?: string };
+        Update: { id?: string; post_id?: string; cf_image_id?: string; position?: number; bytes?: number; width?: number | null; height?: number | null; created_at?: string };
         Relationships: [];
       };
       post_items: {
@@ -216,6 +234,7 @@ export type Database = {
     Functions: {
       current_user_id: { Args: Record<string, never>; Returns: string };
       is_staff: { Args: Record<string, never>; Returns: boolean };
+      check_storage_quota: { Args: { p_brand_id: string; p_bytes: number }; Returns: Json };
       approve_brand: { Args: { p_brand_id: string }; Returns: { brand_name: string; owner_email: string | null }[] };
       reject_brand: { Args: { p_brand_id: string; p_note?: string | null }; Returns: { brand_name: string; owner_email: string | null }[] };
       search_garments: {
@@ -246,7 +265,7 @@ export type Database = {
         Returns: { id: string; sim: number; same_city: boolean }[];
       };
       search_brands: {
-        Args: { q?: string | null; p_user_city?: string | null };
+        Args: { q?: string | null; p_user_city?: string | null; p_styles?: string[] | null };
         Returns: {
           id: string;
           slug: string;
@@ -262,6 +281,31 @@ export type Database = {
           same_city: boolean;
         }[];
       };
+      search_terms: {
+        Args: { q: string | null };
+        Returns: { tok: string; alts: string[] }[];
+      };
+      search_matches: { Args: { p_txt: string; q: string }; Returns: boolean };
+      tag_usage_counts: { Args: Record<string, never>; Returns: { tag_id: string; uses: number }[] };
+      is_admin: { Args: Record<string, never>; Returns: boolean };
+      admin_list_users: {
+        Args: { q?: string | null };
+        Returns: {
+          id: string;
+          email: string | null;
+          display_name: string | null;
+          role: Database["public"]["Enums"]["user_role"];
+          brand_id: string | null;
+          brand_name: string | null;
+          created_at: string;
+        }[];
+      };
+      set_user_role: {
+        Args: { p_user_id: string; p_role: Database["public"]["Enums"]["user_role"] };
+        Returns: undefined;
+      };
+      close_brand: { Args: { p_brand_id: string }; Returns: undefined };
+      delete_my_account: { Args: Record<string, never>; Returns: undefined };
       popular_content_tags: {
         Args: { p_limit?: number | null };
         Returns: { slug: string; name: string; type: string }[];

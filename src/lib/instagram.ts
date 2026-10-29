@@ -8,6 +8,12 @@
 //
 // Referencia: https://developers.facebook.com/docs/instagram-platform
 
+// Apagada en producción hasta que Meta apruebe los permisos de la app. Se prende con
+// INSTAGRAM_IMPORT_ENABLED=true (local y Preview/dev en Vercel). Solo servidor.
+export function instagramImportEnabled(): boolean {
+  return process.env.INSTAGRAM_IMPORT_ENABLED === "true";
+}
+
 const GRAPH_VERSION = "v21.0";
 const GRAPH_BASE = `https://graph.instagram.com/${GRAPH_VERSION}`;
 const SCOPES = "instagram_business_basic"; // solo lectura de perfil + media; no publicamos.
@@ -57,11 +63,22 @@ export type InstagramMedia = {
   timestamp: string;
 };
 
+// Token vencido o revocado por la marca desde Instagram (error 190 / OAuthException):
+// la única salida es que la marca vuelva a conectar su cuenta.
+export class InstagramAuthError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "InstagramAuthError";
+  }
+}
+
 async function graphFetch<T>(url: string): Promise<T> {
   const res = await fetch(url);
   const body = await res.json();
   if (!res.ok) {
     const msg = body?.error?.message ?? `Instagram API respondió ${res.status}`;
+    if (body?.error?.code === 190 || body?.error?.type === "OAuthException")
+      throw new InstagramAuthError(msg);
     throw new Error(msg);
   }
   return body as T;

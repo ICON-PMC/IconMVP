@@ -10,6 +10,7 @@
     "db:import": "tsx scripts/import-content.ts",
     "db:upload-images": "tsx scripts/upload-images.ts",
     "db:seed-clicks": "tsx scripts/seed-clicks.ts",
+    "db:backfill-image-bytes": "tsx scripts/backfill-image-bytes.ts",
     "catalog:excel": "tsx scripts/catalog-to-excel.ts"
   },
   "dependencies": {

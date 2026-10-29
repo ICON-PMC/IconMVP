@@ -20,6 +20,7 @@ export function LikeButton({
   initialCount,
   path,
   isLoggedIn,
+  compact = false,
 }: {
   kind?: "post" | "garment";
   itemId: string;
@@ -27,6 +28,7 @@ export function LikeButton({
   initialCount: number;
   path: string;
   isLoggedIn: boolean;
+  compact?: boolean;
 }) {
   // Mismo patrón que SaveButton: un solo componente y la acción depende del tipo.
   const like = kind === "post" ? likePost : likeGarment;
@@ -35,13 +37,15 @@ export function LikeButton({
   const [count, setCount] = useState(initialCount);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  // Sobre la imagen: más pequeño y con fondo más opaco para que se lea.
+  const size = compact ? "min-h-8 px-2.5 text-xs bg-white/75!" : "min-h-11 px-3 text-sm";
 
   if (!isLoggedIn) {
     return (
       <Link
         href={`/login?next=${encodeURIComponent(path)}`}
         aria-label={`${count} me gusta — inicia sesión para dar like`}
-        className="glass inline-flex min-h-11 items-center gap-1.5 rounded-full px-3 text-sm text-ink/70 hover:bg-white/70"
+        className={`glass inline-flex ${size} items-center gap-1.5 rounded-full text-ink/70 hover:bg-white/70`}
       >
         <Heart className="h-4 w-4" aria-hidden />
         <span className="tabular-nums">{count}</span>
@@ -72,7 +76,7 @@ export function LikeButton({
         disabled={pending}
         aria-pressed={liked}
         aria-label={liked ? "Quitar me gusta" : "Me gusta"}
-        className={`glass inline-flex min-h-11 items-center gap-1.5 rounded-full px-3 text-sm transition disabled:opacity-60 hover:bg-white/70 ${
+        className={`glass inline-flex ${size} items-center gap-1.5 rounded-full transition disabled:opacity-60 hover:bg-white/70 ${
           liked ? "text-coral" : "text-ink/70"
         }`}
       >
