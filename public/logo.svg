@@ -1,0 +1,16 @@
+<svg width="760" height="220" viewBox="0 0 760 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Icon — moda colombiana independiente">
+  <!-- símbolo -->
+  <g transform="translate(10 10) scale(0.390625)">
+    <rect width="512" height="512" rx="112" fill="#1f5638"/>
+    <path d="M256 238 V198 A40 40 0 0 1 336 198" fill="none" stroke="#ee5a2d" stroke-width="50" stroke-linecap="round"/>
+    <path d="M256 238 L88 356 H424 Z" fill="none" stroke="#faf7ef" stroke-width="50" stroke-linejoin="round"/>
+  </g>
+  <!-- nombre: "icon" en trazo monolínea redondeado -->
+  <g transform="translate(262 -4)" fill="none" stroke="#1f5638" stroke-width="30" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M15 105 V195"/>
+    <circle cx="15" cy="56" r="19" fill="#ee5a2d" stroke="none"/>
+    <path d="M136 121 A45 45 0 1 0 136 179"/>
+    <circle cx="223" cy="150" r="45"/>
+    <path d="M324 105 V195 M324 150 A45 45 0 0 1 414 150 V195"/>
+  </g>
+</svg>
