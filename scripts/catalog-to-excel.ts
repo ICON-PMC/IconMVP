@@ -114,14 +114,32 @@ async function politeFetch(url: string, tries = 4): Promise<Response> {
 // Se lee de la base (tablas públicas: lo ve cualquiera con la anon key) para que el Excel use
 // EXACTAMENTE los nombres que acepta el importador. Si no hay conexión, se usa la lista de
 // supabase/seed.sql y se avisa.
+// Máximo de etiquetas por tipo (estilo/ocasión/clima) que acepta el importador: src/lib/tags.ts
+const MAX_TAGS_PER_TYPE = 3;
+type TagOption = { name: string; slug: string };
+
 type Vocabulary = {
   categories: string[];
+  styles: TagOption[];
+  occasions: TagOption[];
+  climates: TagOption[];
   sizes: { label: string; aliases: string[] }[];
   brands: string[];
   source: string;
 };
 
 const FALLBACK_VOCABULARY: Vocabulary = {
+  styles: [
+    ["Artesanal", "artesanal"], ["Boho", "boho"], ["Clásico", "clasico"], ["Minimalista", "minimalista"],
+    ["Streetwear", "streetwear"], ["Tropical", "tropical"], ["Vintage", "vintage"],
+  ].map(([name, slug]) => ({ name, slug })),
+  occasions: [
+    ["Beachwear", "beachwear"], ["Brunch", "brunch"], ["Casual", "casual"], ["Fiesta", "fiesta"],
+    ["Formal", "formal"], ["Trabajo", "trabajo"], ["Viaje", "viaje"], ["Workout", "workout"],
+  ].map(([name, slug]) => ({ name, slug })),
+  climates: [
+    ["Cálido", "calido"], ["Frío", "frio"], ["Templado", "templado"],
+  ].map(([name, slug]) => ({ name, slug })),
   categories: [
     "Abrigos y tejidos", "Accesorios", "Blusas", "Bolsos", "Calzado", "Camisas", "Chaquetas",
     "Enterizos y conjuntos", "Faldas", "Jeans", "Pantalones", "Shorts", "Swimwear", "Tops", "Vestidos",
@@ -159,14 +177,19 @@ async function loadVocabulary(): Promise<Vocabulary> {
     return (await res.json()) as T;
   };
   try {
-    const [cats, sizes, brands] = await Promise.all([
-      get<{ name: string }[]>("tags?select=name&type=eq.category&order=name"),
+    const [tags, sizes, brands] = await Promise.all([
+      get<{ name: string; slug: string; type: string }[]>("tags?select=name,slug,type&order=name"),
       get<{ label: string; aliases: string[] | null }[]>("sizes?select=label,aliases&order=sort_order"),
       get<{ name: string }[]>("brands?select=name&order=name"),
     ]);
-    if (!cats.length || !sizes.length) return FALLBACK_VOCABULARY;
+    const ofType = (t: string) => tags.filter((x) => x.type === t);
+    const options = (t: string): TagOption[] => ofType(t).map((x) => ({ name: x.name, slug: x.slug }));
+    if (!ofType("category").length || !sizes.length) return FALLBACK_VOCABULARY;
     return {
-      categories: cats.map((c) => c.name),
+      categories: ofType("category").map((c) => c.name),
+      styles: options("style"),
+      occasions: options("occasion"),
+      climates: options("temperature"),
       sizes: sizes.map((s) => ({ label: s.label, aliases: s.aliases ?? [] })),
       brands: brands.map((b) => b.name),
       source: `la base de Icon (${new URL(url).host})`,
@@ -444,6 +467,23 @@ const CATEGORY_RULES: [string, RegExp][] = [
   ["Accesorios", /\b(collar|arete|pulsera|anillo|gafa|lente|sombrero|gorra|cinturon|bufanda|panuelo|accesorio|jewel|earring|necklace|bracelet|\bhat|belt|scarf)/],
 ];
 
+// Estilo / ocasión / clima: se prellenan SOLO cuando un tag de la tienda coincide exactamente (sin acentos
+// ni mayúsculas) con el nombre o slug de la base. No se infiere del título ni de la descripción: sería
+// adivinar. Lo demás queda vacío para que lo elijas tú. Respeta el tope del importador (3 por tipo).
+function matchTags(p: Product, options: TagOption[]): { names: string[]; overflow: number } {
+  const byKey = new Map<string, string>();
+  for (const o of options) {
+    byKey.set(norm(o.name), o.name);
+    byKey.set(norm(o.slug), o.name);
+  }
+  const found: string[] = [];
+  for (const t of [...p.tags, p.productType]) {
+    const name = byKey.get(norm(t));
+    if (name && !found.includes(name)) found.push(name);
+  }
+  return { names: found.slice(0, MAX_TAGS_PER_TYPE), overflow: Math.max(0, found.length - MAX_TAGS_PER_TYPE) };
+}
+
 // Devuelve el nombre tal como está en la base, o "" si no hay certeza o esa categoría no existe allí.
 function inferCategory(p: Product, vocab: Vocabulary): string {
   const known = new Map(vocab.categories.map((c) => [norm(c), c]));
@@ -551,6 +591,9 @@ async function main() {
     { header: "tela", key: "tela", width: 18 },
     { header: "categoria", key: "categoria", width: 22 },
     { header: "tallas", key: "tallas", width: 22 },
+    { header: "estilo", key: "estilo", width: 24 },
+    { header: "ocasion", key: "ocasion", width: 24 },
+    { header: "clima", key: "clima", width: 16 },
     // Las dos últimas las ignora el importador; son para ti.
     { header: "foto", key: "foto", width: 40 },
     { header: "revisar", key: "revisar", width: 60 },
@@ -561,7 +604,7 @@ async function main() {
   ws.getRow(1).font = { bold: true };
   ws.views = [{ state: "frozen", ySplit: 1 }];
 
-  const stats = { sinCategoria: 0, sinTalla: 0, sinPrecio: 0, sinFoto: 0, fotos: 0 };
+  const stats = { sinCategoria: 0, sinTalla: 0, sinPrecio: 0, sinFoto: 0, fotos: 0, conEstilo: 0, conOcasion: 0, conClima: 0 };
   let fotosBloqueadas = false;
   const tallasDesconocidas = new Map<string, number>();
 
@@ -584,6 +627,15 @@ async function main() {
       notes.push("sin precio");
     }
     if (currency && currency !== "COP") notes.push(`precio en ${currency}, no COP`);
+
+    const estilo = matchTags(p, vocab.styles);
+    const ocasion = matchTags(p, vocab.occasions);
+    const clima = matchTags(p, vocab.climates);
+    for (const [label, m] of [["estilo", estilo], ["ocasión", ocasion], ["clima", clima]] as const)
+      if (m.overflow) notes.push(`más de ${MAX_TAGS_PER_TYPE} de ${label} en la tienda: se dejaron ${MAX_TAGS_PER_TYPE}`);
+    if (estilo.names.length) stats.conEstilo++;
+    if (ocasion.names.length) stats.conOcasion++;
+    if (clima.names.length) stats.conClima++;
 
     let foto = "";
     if (!p.imageUrl) {
@@ -623,6 +675,9 @@ async function main() {
       tela: "",
       categoria,
       tallas: sizes.join(", "),
+      estilo: estilo.names.join(", "),
+      ocasion: ocasion.names.join(", "),
+      clima: clima.names.join(", "),
       foto,
       revisar: notes.join("; "),
     });
@@ -637,12 +692,15 @@ async function main() {
     { header: "Marcas", key: "marcas", width: 28 },
     { header: "Categorías", key: "categorias", width: 24 },
     { header: "Tallas", key: "tallas", width: 14 },
+    { header: "Estilos (hasta 3, con coma)", key: "estilos", width: 28 },
+    { header: "Ocasiones (hasta 3, con coma)", key: "ocasiones", width: 30 },
+    { header: "Climas (hasta 3, con coma)", key: "climas", width: 28 },
   ];
   ref.getRow(1).font = { bold: true };
   const brandList = vocab.brands.length ? vocab.brands : [MARCA!];
   const sizeList = vocab.sizes.map((x) => x.label);
-  for (let r = 0; r < Math.max(brandList.length, vocab.categories.length, sizeList.length); r++)
-    ref.addRow([brandList[r] ?? null, vocab.categories[r] ?? null, sizeList[r] ?? null]);
+  const lists = [brandList, vocab.categories, sizeList, vocab.styles.map((t) => t.name), vocab.occasions.map((t) => t.name), vocab.climates.map((t) => t.name)];
+  for (let r = 0; r < Math.max(...lists.map((l) => l.length)); r++) ref.addRow(lists.map((l) => l[r] ?? null));
 
   const q = `'${refName}'`;
   const lastRow = Math.max(501, products.length + 1 + 200);
@@ -664,12 +722,35 @@ async function main() {
       error: "Elige una categoría de la lista (hoja Referencia).",
     };
   }
+  // Estilo/ocasión/clima admiten varios valores separados por coma, y un desplegable estricto solo deja uno:
+  // por eso aquí el desplegable ayuda a elegir pero NO bloquea lo que escribas.
+  for (const [col, refCol, list, title] of [
+    ["J", "D", vocab.styles, "Estilo"],
+    ["K", "E", vocab.occasions, "Ocasión"],
+    ["L", "F", vocab.climates, "Clima"],
+  ] as const) {
+    if (!list.length) continue;
+    for (let r = 2; r <= lastRow; r++) {
+      ws.getCell(`${col}${r}`).dataValidation = {
+        type: "list",
+        allowBlank: true,
+        formulae: [`${q}!$${refCol}$2:$${refCol}$${list.length + 1}`],
+        showErrorMessage: false,
+        showInputMessage: true,
+        promptTitle: title,
+        prompt: `Elige uno de la lista o escribe hasta ${MAX_TAGS_PER_TYPE} separados por coma.`,
+      };
+    }
+  }
+  ws.getCell("J1").note = `Estilo: hasta ${MAX_TAGS_PER_TYPE}, separados por coma. Valores válidos en la hoja «Referencia (no editar)».`;
+  ws.getCell("K1").note = `Ocasión: hasta ${MAX_TAGS_PER_TYPE}, separadas por coma. Valores válidos en la hoja «Referencia (no editar)».`;
+  ws.getCell("L1").note = `Clima: hasta ${MAX_TAGS_PER_TYPE}, separados por coma. Valores válidos en la hoja «Referencia (no editar)».`;
   ws.getCell("H1").note = "Elige de la lista desplegable. Son las categorías que existen en Icon.";
   ws.getCell("I1").note =
     "Varias tallas separadas por coma, por ejemplo: S, M, L. Excel no permite elegir varias de una lista: " +
     "los valores válidos están en la hoja «Referencia (no editar)». Una talla que no esté ahí se omite al importar.";
-  ws.getCell("J1").note = "Solo para ti: nombre del archivo en la carpeta fotos/. El importador la ignora.";
-  ws.getCell("K1").note = "Solo para ti: cosas por revisar en esa fila. El importador la ignora.";
+  ws.getCell("M1").note = "Solo para ti: nombre del archivo en la carpeta fotos/. El importador la ignora.";
+  ws.getCell("N1").note = "Solo para ti: cosas por revisar en esa fila. El importador la ignora.";
 
   const xlsxPath = join(outDir, "catalogo.xlsx");
   await wb.xlsx.writeFile(xlsxPath);
@@ -695,6 +776,7 @@ async function main() {
   console.log(`\n✓ ${products.length} productos`);
   console.log(`  Excel:  ${xlsxPath}`);
   if (!SIN_FOTOS) console.log(`  Fotos:  ${photosDir}  (${stats.fotos} descargadas)`);
+  console.log(`  Etiquetas prellenadas desde la tienda: ${stats.conEstilo} con estilo · ${stats.conOcasion} con ocasión · ${stats.conClima} con clima (el resto, a elegir en el Excel)`);
   console.log(`  A revisar: ${stats.sinCategoria} sin categoría · ${stats.sinTalla} sin talla · ${stats.sinPrecio} sin precio · ${stats.sinFoto} sin foto`);
   if (tallasDesconocidas.size) {
     const lista = [...tallasDesconocidas].map(([t, c]) => `${t} (${c})`).join(", ");
