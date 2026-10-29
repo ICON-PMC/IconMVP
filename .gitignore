@@ -46,3 +46,5 @@ CLAUDE.md
 
 #mcp
 .mcp.json
+# catálogos exportados de las marcas (fotos y precios ajenos: no van al repo)
+/catalog-export/
