@@ -15,10 +15,19 @@ import { FlashToast } from "@/components/flash-toast";
 import { Button } from "@/components/ui/button";
 import { imageUrl } from "@/lib/images";
 import { formatCop } from "@/lib/taxonomy";
-import { publishPost, unpublishPost } from "../../actions";
+import { archivePost, publishPost, restorePost, unpublishPost } from "../../actions";
+import { DeleteLookButton } from "./_components/delete-look-button";
+import { LookDetailsForm } from "./_components/look-details-form";
 import { GarmentPicker } from "./_components/garment-picker";
 import { TaggedItems } from "./_components/tagged-items";
 import { TagsForm } from "./_components/tags-form";
+
+const FLASH = {
+  caption: "Texto guardado.",
+  foto: "Foto cambiada.",
+  archivado: "Look archivado: ya no se ve en el feed.",
+  restaurado: "Look restaurado como borrador.",
+};
 
 export default async function BrandPostEditorPage({
   params,
@@ -61,6 +70,7 @@ export default async function BrandPostEditorPage({
   const taggedIds = new Set((items ?? []).map((it) => it.garment_id));
   const img = imageUrl(images?.[0]?.cf_image_id);
   const isPublished = post.status === "published";
+  const isArchived = post.status === "archived";
 
   const tagged = (items ?? []).map((it) => {
     const g = garmentMap.get(it.garment_id);
@@ -80,7 +90,7 @@ export default async function BrandPostEditorPage({
     }));
 
   // Por qué no se puede publicar (se muestra junto al botón en vez de fallar al pulsar).
-  const blocker = isPublished
+  const blocker = isPublished || isArchived
     ? null
     : brand.status !== "active"
       ? "Podrás publicar cuando tu marca sea aprobada."
@@ -94,7 +104,7 @@ export default async function BrandPostEditorPage({
       <PageShell width="2xl">
         <SiteHeader />
         <Suspense>
-          <FlashToast />
+          <FlashToast messages={FLASH} />
         </Suspense>
 
         <Link
@@ -119,10 +129,22 @@ export default async function BrandPostEditorPage({
                 className="mx-auto max-h-[60dvh] w-full rounded-2xl object-cover md:sticky md:top-6 md:max-h-none"
               />
             )}
-            {post.caption && <p className="mt-2 text-sm text-ink/70">{post.caption}</p>}
           </div>
 
           <div className="space-y-6">
+            {isArchived && (
+              <p role="status" className="rounded-xl bg-blush/40 px-3 py-2 text-sm text-ink/80">
+                Este look está archivado: no se ve en el feed. Restáuralo para volver a publicarlo,
+                o elimínalo.
+              </p>
+            )}
+            <GlassCard className="p-5">
+              <SectionHeader title="Texto y foto" />
+              <div className="mt-4">
+                <LookDetailsForm postId={id} caption={post.caption} />
+              </div>
+            </GlassCard>
+
             <GlassCard className="p-5">
               <SectionHeader
                 title={`1 · Prendas (${tagged.length})`}
@@ -172,8 +194,21 @@ export default async function BrandPostEditorPage({
         </div>
       </PageShell>
 
+      {/* Borrador: Eliminar · Publicar. Publicado: Archivar · Despublicar. Archivado: Eliminar · Restaurar. */}
       <StickyActionBar label={blocker ?? undefined}>
-        <form action={(isPublished ? unpublishPost : publishPost).bind(null, id)} className="w-full sm:w-auto">
+        {isPublished ? (
+          <form action={archivePost.bind(null, id)} className="w-full sm:w-auto">
+            <Button type="submit" size="lg" variant="ghost" className="w-full rounded-full sm:w-auto sm:px-6">
+              Archivar
+            </Button>
+          </form>
+        ) : (
+          <DeleteLookButton postId={id} />
+        )}
+        <form
+          action={(isArchived ? restorePost : isPublished ? unpublishPost : publishPost).bind(null, id)}
+          className="w-full sm:w-auto"
+        >
           <Button
             type="submit"
             size="lg"
@@ -181,7 +216,7 @@ export default async function BrandPostEditorPage({
             disabled={!!blocker}
             className="w-full rounded-full sm:w-auto sm:px-8"
           >
-            {isPublished ? "Despublicar" : "Publicar look"}
+            {isArchived ? "Restaurar" : isPublished ? "Despublicar" : "Publicar look"}
           </Button>
         </form>
       </StickyActionBar>

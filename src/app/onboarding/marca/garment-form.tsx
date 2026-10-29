@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { GarmentTagFields } from "@/components/garment-tag-fields";
+import type { TagOptions } from "@/lib/tags";
 import { addOnboardingGarment, type GarmentFormState } from "./actions";
 
 const field = "glass-input h-11 rounded-xl px-4 text-base md:h-10 md:text-sm";
@@ -17,7 +19,13 @@ function FieldError({ id, msg }: { id: string; msg?: string }) {
   ) : null;
 }
 
-export function GarmentForm({ categories }: { categories: { id: string; name: string }[] }) {
+export function GarmentForm({
+  categories,
+  tagOptions,
+}: {
+  categories: { id: string; name: string }[];
+  tagOptions: Pick<TagOptions, "style" | "occasion" | "temperature">;
+}) {
   const [state, action, pending] = useActionState<GarmentFormState, FormData>(
     addOnboardingGarment,
     {},
@@ -87,6 +95,8 @@ export function GarmentForm({ categories }: { categories: { id: string; name: st
         {preview && <img src={preview} alt="Vista previa" className="mt-2 h-28 rounded-xl object-cover" />}
         <FieldError id="photo-err" msg={e.photo} />
       </div>
+
+      <GarmentTagFields options={tagOptions} defaultSelected={v.tags} />
 
       <Button type="submit" disabled={pending}
         size="lg" className="rounded-xl bg-forest text-base text-white hover:bg-forest-deep md:text-sm">

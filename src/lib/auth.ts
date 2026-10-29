@@ -1,3 +1,4 @@
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { Tables } from "@/lib/database.types";
@@ -57,12 +58,43 @@ export async function getMyBrand(): Promise<MyBrand | null> {
   return data;
 }
 
-// Exige sesión con una marca vinculada o redirige a /login. No exige `role === "brand"`
-// porque la propiedad real la determina `brands.owner_user_id` (la RLS de la base usa lo
-// mismo vía `is_brand_owner()`); el rol es solo para la UI (mostrar el link en el header).
-export async function requireBrandOwner(): Promise<{ profile: Profile; brand: MyBrand | null }> {
+// Cookie con la marca que el staff está gestionando desde /admin ("Gestionar"). De sesión,
+// httpOnly. Solo se respeta para staff: para cualquier otro usuario se ignora.
+export const MANAGED_BRAND_COOKIE = "icon_admin_brand";
+
+export type PanelContext = {
+  profile: Profile;
+  brand: MyBrand | null;
+  /** El staff está gestionando una marca ajena: no se bloquea por cuota (el peso sí cuenta). */
+  actingAsStaff: boolean;
+};
+
+// Exige sesión y devuelve la marca del panel: la propia, o la que el staff eligió gestionar.
+// No exige `role === "brand"` porque la propiedad real la determina `brands.owner_user_id`
+// (la RLS de la base usa lo mismo vía `is_brand_owner()`); el rol es solo para la UI.
+//
+// Con staff la RLS deja tocar cualquier marca, así que las acciones del panel deben filtrar
+// siempre por `brand.id` (no confiar solo en la RLS).
+export async function requireBrandOwner(): Promise<PanelContext> {
   const session = await getCurrentUser();
   if (!session?.profile) redirect("/login?next=/marca/panel");
-  const brand = await getMyBrand();
-  return { profile: session.profile, brand };
+
+  if (isStaff(session.profile)) {
+    const managedId = (await cookies()).get(MANAGED_BRAND_COOKIE)?.value;
+    if (managedId) {
+      const supabase = await createClient();
+      const { data: managed } = await supabase
+        .from("brands")
+        .select("*")
+        .eq("id", managedId)
+        .maybeSingle();
+      if (managed) return { profile: session.profile, brand: managed, actingAsStaff: true };
+    }
+  }
+  return { profile: session.profile, brand: await getMyBrand(), actingAsStaff: false };
+}
+
+/** Marca a la que se le exige cuota al subir: ninguna si el staff está gestionando. */
+export function quotaBrandId(ctx: { brand: MyBrand | null; actingAsStaff: boolean }): string | undefined {
+  return ctx.actingAsStaff ? undefined : ctx.brand?.id;
 }

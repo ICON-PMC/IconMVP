@@ -20,7 +20,7 @@
       o post. **[CLI]** — `post_likes_pkey` + ambos FK `ON DELETE CASCADE`
 - [x] Ambas tablas tienen RLS habilitado **y** GRANT explícito a `authenticated`
       (constitución §7.2). **[CLI]** — `relrowsecurity = true`; policies `_insert`/`_delete`/`_read`
-- [x] Una usuaria **no** puede insertar/borrar filas a nombre de otra (RLS lo bloquea).
+- [x] Un usuario **no** puede insertar/borrar filas a nombre de otro (RLS lo bloquea).
       **[CLI]** — insert de A con `user_id` de B → `42501` en `post_likes` y `saved_posts`
 - [x] `post_feed` incluye `like_count` y conserva todos los campos previos. **[CLI]**
       (el render del feed en el navegador: **[manual]** — verificado en navegador 22/09)
@@ -33,7 +33,7 @@
 - [x] `database.types.ts` actualizado: `brand_follows`, `post_likes` y `like_count` en
       `post_feed` (constitución §7.4). **[build]**
 - [x] `src/lib/social.ts` exporta `getMyFollowedBrandIds`, `getMyLikedPostIds` y
-      `getMyFollowedBrands`; devuelven vacío para usuaria anónima. **[build]**
+      `getMyFollowedBrands`; devuelven vacío para un usuario anónimo. **[build]**
       (early return `if (!session?.profile)`; cubierto por `npm run build`)
 - [x] `brand_follows_brand_idx` y `post_likes_post_idx` existen (índices de la migración).
       **[CLI]** — verificado con `pg_indexes`
@@ -42,13 +42,13 @@
 
 ## Grupo 2 — Seguir marcas
 
-- [x] El botón "Seguir" aparece en `/marca/[slug]` para usuarias logueadas. **[manual]** — verificado en navegador 22/09
+- [x] El botón "Seguir" aparece en `/marca/[slug]` para usuarios logueados. **[manual]** — verificado en navegador 22/09
 - [x] Al hacer clic, el botón cambia a "Siguiendo" **al instante** (optimistic) y persiste
       tras recargar. **[manual]** — verificado en navegador 22/09
 - [x] Al hacer clic en "Siguiendo", se deja de seguir al instante y persiste tras recargar. **[manual]** — verificado en navegador 22/09
 - [x] Si el server action falla, el botón revierte al estado anterior. **[manual]** — verificado en navegador 22/09
 - [x] Doble clic rápido no crea filas duplicadas (PK compuesta). **[manual]** — verificado en navegador 22/09
-- [x] Una usuaria anónima ve el botón como enlace a `/login?next=/marca/[slug]`. **[manual]** — verificado en navegador 22/09
+- [x] Un usuario anónimo ve el botón como enlace a `/login?next=/marca/[slug]`. **[manual]** — verificado en navegador 22/09
 - [x] El server action rechaza peticiones sin sesión (devuelve error, no 500). **[manual]** — verificado en navegador 22/09
 - [x] **No** se muestra contador de seguidores en la página de marca (decisión 7). **[manual]** — verificado en navegador 22/09
 - [x] Seguir una marca **no** cambia el orden ni el contenido del feed. **[manual]** — verificado en navegador 22/09
@@ -62,7 +62,7 @@
 - [x] Al hacer clic de nuevo, se quita el like al instante y persiste tras recargar. **[manual]** — verificado en navegador 22/09
 - [x] El contador de likes sube/baja correctamente y coincide con `post_feed.like_count`. **[manual]** — verificado en navegador 22/09
 - [x] El contador de likes es **visible sin login** (decisión 8). **[manual]** — verificado en navegador 22/09
-- [x] Una usuaria anónima que hace clic en el corazón va a `/login?next=<ruta actual>`. **[manual]** — verificado en navegador 22/09
+- [x] Un usuario anónimo que hace clic en el corazón va a `/login?next=<ruta actual>`. **[manual]** — verificado en navegador 22/09
 - [x] Si el server action falla, el corazón y el contador revierten. **[manual]** — verificado en navegador 22/09
 - [x] El server action rechaza peticiones sin sesión (devuelve error, no 500). **[manual]** — verificado en navegador 22/09
 - [x] Dar like **no** modifica `posts.popularity` (verificar por query directa). **[CLI]**
@@ -139,7 +139,7 @@
 - [x] Los tokens glass/tropical siguen intactos (`--color-forest` presente en `globals.css`).
       **[build]** — `--color-forest` (`#1f5638`), `--color-forest-deep`, `--color-coral` y
       `--color-coral-soft` presentes en `src/app/globals.css`
-- [x] Para usuarias anónimas, seguir/like no aparecen como elementos interactivos (son
+- [x] Para usuarios anónimos, seguir/like no aparecen como elementos interactivos (son
       enlaces a `/login`). **[build]** — `FollowButton` y `LikeButton` renderizan
       `<Link href="/login?next=…">` cuando `isLoggedIn` es false
 
@@ -205,7 +205,7 @@
 | 2 | Fila simultánea en `post_likes` + `saved_posts` + `saved_garments` | `count(*)` por tabla, mismo `user_id`/`post_id` | `1 / 1 / 1` |
 | 3a | Borrar el like no toca el guardado | `delete` + aserción | `post_likes=0`, `saved_posts=1` |
 | 3b | Borrar el guardado no toca el like | `delete` + aserción | `post_likes=1`, `saved_posts=0` |
-| 4 | RLS bloquea escribir a nombre de otra usuaria | `insert` con `user_id` real de B, esperando `42501` | `DO`; B quedó con 0 filas |
+| 4 | RLS bloquea escribir a nombre de otro usuario | `insert` con `user_id` real de B, esperando `42501` | `DO`; B quedó con 0 filas |
 
 El check 4 es el que hace concluyentes a los checks 1–3: sin él, un insert exitoso no
 distinguiría "RLS permite" de "RLS está apagada".

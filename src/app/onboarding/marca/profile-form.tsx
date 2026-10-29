@@ -4,14 +4,18 @@ import { useActionState, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { CityCombobox } from "@/components/city-combobox";
 import { Textarea } from "@/components/ui/textarea";
+import { ChipSelect } from "@/components/chip-select";
+import { MAX_BRAND_STYLES, type TagOption } from "@/lib/tags";
+import type { CityOption } from "@/lib/cities";
 import { saveBrandProfile, type BrandFormState } from "./actions";
 import { BRAND_BIO_MAX, BRAND_NAME_MAX } from "@/lib/brand-registration";
 
 type Props = {
-  cities: { id: string; name: string }[];
-  defaults: { name: string; bio: string; city: string; link: string };
+  cities: CityOption[];
+  styles: TagOption[];
+  defaults: { name: string; bio: string; city: string; link: string; styles: string[] };
 };
 
 const field = "glass-input h-11 rounded-xl px-4 text-base md:h-10 md:text-sm";
@@ -24,7 +28,7 @@ function FieldError({ id, msg }: { id: string; msg?: string }) {
   ) : null;
 }
 
-export function ProfileForm({ cities, defaults }: Props) {
+export function ProfileForm({ cities, styles, defaults }: Props) {
   const [state, action, pending] = useActionState<BrandFormState, FormData>(
     saveBrandProfile,
     {},
@@ -32,8 +36,6 @@ export function ProfileForm({ cities, defaults }: Props) {
   const v = { ...defaults, ...state.values };
   const e = state.errors ?? {};
   const [bioLen, setBioLen] = useState(v.bio.length);
-  const [city, setCity] = useState(v.city);
-  const cityItems = cities.map((c) => ({ value: c.id, label: c.name }));
 
   return (
     <form action={action} className="flex flex-col gap-4" noValidate>
@@ -85,23 +87,14 @@ export function ProfileForm({ cities, defaults }: Props) {
         <Label htmlFor="city" className="mb-1 text-ink/60">
           Ciudad
         </Label>
-        <Select name="city" value={city} onValueChange={(c) => setCity(c ?? "")} items={cityItems}>
-          <SelectTrigger
-            id="city"
-            className={`${field} w-full`}
-            aria-invalid={!!e.city}
-            aria-describedby="city-err"
-          >
-            <SelectValue placeholder="Elige una ciudad" />
-          </SelectTrigger>
-          <SelectContent>
-            {cityItems.map((c) => (
-              <SelectItem key={c.value} value={c.value}>
-                {c.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <CityCombobox
+          id="city"
+          name="city"
+          options={cities}
+          defaultValue={v.city}
+          invalid={!!e.city}
+          describedBy="city-err"
+        />
         <FieldError id="city-err" msg={e.city} />
       </div>
 
@@ -121,6 +114,19 @@ export function ProfileForm({ cities, defaults }: Props) {
           aria-describedby="link-err"
         />
         <FieldError id="link-err" msg={e.link} />
+      </div>
+
+      <div>
+        <ChipSelect
+          name="styles"
+          legend="Estilo de tu marca (opcional)"
+          options={styles}
+          defaultSelected={v.styles ?? []}
+          max={MAX_BRAND_STYLES}
+        />
+        <p className="mt-1 text-xs text-ink/50">
+          Así te encuentran quienes buscan, por ejemplo, &ldquo;marcas tropicales&rdquo;.
+        </p>
       </div>
 
       <Button

@@ -40,7 +40,9 @@ Que `/feed` sea un panel básico y agradable que mezcle **outfits (posts)** y **
 - [x] 10. Despublicar marcas de muestra (nube) — aplicado 2026-09-21 (confirmado con Ashlee), migración
       `20260921010000_unpublish_sample_brands.sql`. Verificado: bruma/raiz/marea en `status='pending'`,
       `is_active=false`; `get_feed`/`bump_garment_popularity`/`popular_content_tags` ya viven en la nube.
-- [~] 11. QA y regresión — `lint`/`next build` (incluye `tsc`) limpios; producción local
+- [x] 11. QA y regresión — cerrado (2026-09-26): el feed mixto está en producción desde el release
+      `b101485` y el equipo probó la usabilidad (navegador y celular) durante el piloto. Nota original:
+      QA y regresión — `lint`/`next build` (incluye `tsc`) limpios; producción local
       (`next build` + `next start`) contra Supabase local, humo por `curl` hecho (ver nota).
       Falta: pase real en navegador (clicks, `Sheet` de filtros, scroll infinito), móvil, y
       más de 24 elementos (solo hay 9 en local).

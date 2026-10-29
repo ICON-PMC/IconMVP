@@ -1,11 +1,15 @@
 import { GlassCard } from "@/components/glass-card";
 import { FormField } from "@/components/form-field";
 import { ChipSelect } from "@/components/chip-select";
+import { CityCombobox } from "@/components/city-combobox";
+import type { CityOption } from "@/lib/cities";
+import { GarmentTagFields } from "@/components/garment-tag-fields";
 import { LinkTabs } from "@/components/link-tabs";
 import { NativeSelect } from "@/components/native-select";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { MAX_BRAND_STYLES } from "@/lib/tags";
 import { PRICE_BUCKETS } from "@/lib/taxonomy";
 import { createBrand, createGarment, createPost } from "../actions";
 import { GarmentsField } from "./garments-field";
@@ -19,7 +23,7 @@ export function parseUploadForm(v: string | undefined): UploadForm {
 type Named = { id: string; name: string };
 
 export type UploadData = {
-  cities: Named[];
+  cities: CityOption[];
   categories: Named[];
   occasions: Named[];
   styles: Named[];
@@ -66,14 +70,7 @@ function BrandForm({ data }: { data: UploadData }) {
           <Input id="b-slug" name="slug" required placeholder="mi-marca" autoCapitalize="none" />
         </FormField>
         <FormField label="Ciudad" htmlFor="b-city">
-          <NativeSelect id="b-city" name="city_id" defaultValue="">
-            <option value="">—</option>
-            {data.cities.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </NativeSelect>
+          <CityCombobox id="b-city" name="city_id" options={data.cities} placeholder="Escribe la ciudad" />
         </FormField>
         <FormField label="Rango de precio" htmlFor="b-price">
           <NativeSelect id="b-price" name="price_range" defaultValue="">
@@ -86,7 +83,7 @@ function BrandForm({ data }: { data: UploadData }) {
           </NativeSelect>
         </FormField>
         <FormField label="Tienda online" htmlFor="b-store">
-          <Input id="b-store" name="store_url" type="url" inputMode="url" placeholder="https://" />
+          <Input id="b-store" name="store_url" type="text" inputMode="url" placeholder="https://" />
         </FormField>
         <FormField label="Instagram" htmlFor="b-ig">
           <Input id="b-ig" name="instagram" placeholder="marca.co" autoCapitalize="none" />
@@ -95,6 +92,7 @@ function BrandForm({ data }: { data: UploadData }) {
       <FormField label="Bio" htmlFor="b-bio">
         <Input id="b-bio" name="bio" />
       </FormField>
+      <ChipSelect name="styles" legend="Estilos de la marca" options={data.styles} max={MAX_BRAND_STYLES} />
       <div className="flex flex-col gap-1 sm:flex-row sm:gap-6">
         <CheckRow name="is_verified" label="Verificada" />
         <CheckRow name="is_sustainable" label="Sostenible" />
@@ -137,7 +135,7 @@ function GarmentForm({ data }: { data: UploadData }) {
           <Input id="g-price" name="price_cop" type="number" min="0" inputMode="numeric" />
         </FormField>
         <FormField label="Enlace del producto" htmlFor="g-url">
-          <Input id="g-url" name="product_url" type="url" inputMode="url" placeholder="https://" />
+          <Input id="g-url" name="product_url" type="text" inputMode="url" placeholder="https://" />
         </FormField>
         <FormField label="Color" htmlFor="g-color">
           <Input id="g-color" name="color" />
@@ -170,6 +168,9 @@ function GarmentForm({ data }: { data: UploadData }) {
         name="sizes"
         legend="Tallas"
         options={data.sizes.map((s) => ({ id: s.id, name: s.label }))}
+      />
+      <GarmentTagFields
+        options={{ style: data.styles, occasion: data.occasions, temperature: data.temperatures }}
       />
       <FormField label="Foto" htmlFor="g-image">
         <Input id="g-image" name="image" type="file" accept="image/*" />

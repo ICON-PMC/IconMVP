@@ -2,6 +2,7 @@ import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
 import { GlassCard } from "@/components/glass-card";
 import { imageUrl } from "@/lib/images";
+import { normalizeUrl } from "@/lib/links";
 import { ReviewActions } from "./review-actions";
 
 // Marcas que ya se enviaron a revisión (los registros a medias no tienen `submitted_at`).
@@ -73,7 +74,7 @@ export async function PendingBrands() {
                   <p className="mt-2 text-sm text-ink/80">{b.bio}</p>
                   {b.store_url && (
                     <a
-                      href={b.store_url}
+                      href={normalizeUrl(b.store_url) ?? undefined}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="mt-1 inline-block truncate text-xs text-coral hover:underline"

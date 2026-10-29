@@ -2,6 +2,18 @@
 
 All checks must pass before merging `feat/fase0-social-infra` → `main`.
 
+> **Estado (2026-09-26): spec cerrado — reemplazado por otros specs.** Las casillas de abajo se
+> dejan como estaban (histórico); cada grupo se validó en el spec que lo terminó construyendo:
+>
+> | Grupo | Dónde quedó | Nota |
+> |---|---|---|
+> | 1 — Esquema (follows/likes) | `2026-09-22-user-social-actions` | `brand_follows`, `post_likes` y `garment_likes`. |
+> | 1c + 6 — Cuotas | `2026-09-26-fase0-cierre` | Cambió el modelo: suma del peso de las imágenes, no `storage_bytes_used`. Solo marcas (usuarios en Fase 1). |
+> | 2 — shadcn/ui | `2026-09-21-brand-flow-ui-upgrade` | Instalado y en uso en el panel de marca y `/admin`. |
+> | 3 — Errores en español + 404 | `2026-09-26-fase0-cierre` | |
+> | 4 — Seguir marcas | `2026-09-22-user-social-actions` | El contador de seguidores visible quedó fuera a propósito. |
+> | 5 — Like | `2026-09-22-user-social-actions` | Like en outfits y en prendas (decisión 14). |
+
 ---
 
 ## Group 1 — Schema

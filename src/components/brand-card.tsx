@@ -8,6 +8,7 @@ export function BrandCard({
   isVerified,
   isSustainable,
   garments,
+  styles = [],
 }: {
   slug: string;
   name: string;
@@ -16,6 +17,7 @@ export function BrandCard({
   isVerified: boolean;
   isSustainable: boolean;
   garments: number;
+  styles?: string[];
 }) {
   return (
     <Link
@@ -37,6 +39,15 @@ export function BrandCard({
       </div>
       {cityName && <p className="mt-0.5 text-xs text-ink/50">{cityName}</p>}
       {bio && <p className="mt-2 line-clamp-2 text-sm text-ink/70">{bio}</p>}
+      {styles.length > 0 && (
+        <ul aria-label="Estilos" className="mt-2 flex flex-wrap gap-1">
+          {styles.map((s) => (
+            <li key={s} className="rounded-full bg-white/50 px-2 py-0.5 text-xs text-forest-deep">
+              {s}
+            </li>
+          ))}
+        </ul>
+      )}
       <p className="mt-3 text-xs font-medium text-ink/50">
         {garments} {garments === 1 ? "prenda" : "prendas"}
       </p>

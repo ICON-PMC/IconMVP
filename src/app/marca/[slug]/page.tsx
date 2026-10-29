@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { cityLabel } from "@/lib/cities";
 import { createClient } from "@/lib/supabase/server";
 import { SiteHeader } from "@/components/site-header";
 import { Aurora } from "@/components/aurora";
@@ -9,6 +10,7 @@ import { FollowButton } from "@/components/follow-button";
 import { getMySavedIds } from "@/lib/saves";
 import { getGarmentLikeCounts, getMyFollowedBrandIds, getMyLikedGarmentIds, getMyLikedPostIds } from "@/lib/social";
 import { getCurrentUser } from "@/lib/auth";
+import { instagramUrl, normalizeInstagramHandle, normalizeUrl } from "@/lib/links";
 
 export default async function BrandPage({
   params,
@@ -25,13 +27,29 @@ export default async function BrandPage({
     .eq("is_active", true)
     .maybeSingle();
   if (!brand) notFound();
+  // Normalizados al render: valores viejos pueden venir con "https://" duplicado o como URL de Instagram.
+  const storeUrl = normalizeUrl(brand.store_url);
+  const instagramHandle = normalizeInstagramHandle(brand.instagram);
+  const instagramHref = instagramUrl(brand.instagram);
 
   let cityName: string | null = null;
   if (brand.city_id) {
-    cityName =
-      (await supabase.from("cities").select("name").eq("id", brand.city_id).maybeSingle())
-        .data?.name ?? null;
+    const { data: city } = await supabase
+      .from("cities")
+      .select("name, department")
+      .eq("id", brand.city_id)
+      .maybeSingle();
+    cityName = city ? cityLabel(city.name, city.department) : null;
   }
+
+  const { data: brandTags } = await supabase
+    .from("brand_tags")
+    .select("tag_id")
+    .eq("brand_id", brand.id);
+  const styleIds = (brandTags ?? []).map((t) => t.tag_id);
+  const styles = styleIds.length
+    ? ((await supabase.from("tags").select("name, slug").in("id", styleIds).order("name")).data ?? [])
+    : [];
 
   const { data: posts } = await supabase
     .from("post_feed")
@@ -96,6 +114,18 @@ export default async function BrandPage({
           </div>
           {cityName && <p className="mt-1 text-sm text-ink/50">{cityName}</p>}
           {brand.bio && <p className="mt-3 max-w-xl text-ink/70">{brand.bio}</p>}
+          {styles.length > 0 && (
+            <ul aria-label="Estilos" className="mt-3 flex flex-wrap gap-1.5">
+              {styles.map((s) => (
+                <li
+                  key={s.slug}
+                  className="rounded-full bg-white/50 px-2.5 py-0.5 text-xs text-forest-deep"
+                >
+                  {s.name}
+                </li>
+              ))}
+            </ul>
+          )}
           <div className="mt-4 flex flex-wrap items-center gap-3 text-sm">
             <FollowButton
               brandId={brand.id}
@@ -103,9 +133,9 @@ export default async function BrandPage({
               initialFollowing={isFollowing}
               isLoggedIn={isLoggedIn}
             />
-            {brand.store_url && (
+            {storeUrl && (
               <a
-                href={brand.store_url}
+                href={storeUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="rounded-full bg-forest px-4 py-2 font-medium text-white hover:bg-forest-deep"
@@ -113,14 +143,14 @@ export default async function BrandPage({
                 Visitar tienda ↗
               </a>
             )}
-            {brand.instagram && (
+            {instagramHref && instagramHandle && (
               <a
-                href={`https://instagram.com/${brand.instagram}`}
+                href={instagramHref}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="glass-input rounded-full px-4 py-2 font-medium text-ink/80 hover:bg-white/70"
               >
-                @{brand.instagram}
+                @{instagramHandle}
               </a>
             )}
           </div>

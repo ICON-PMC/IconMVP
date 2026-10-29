@@ -11,12 +11,14 @@ export function SaveButton({
   saved,
   path,
   sourcePostId,
+  compact = false,
 }: {
   kind: "post" | "garment";
   id: string;
   saved: boolean;
   path: string;
   sourcePostId?: string;
+  compact?: boolean;
 }) {
   const action = kind === "post" ? toggleSavedPost : toggleSavedGarment;
 
@@ -31,7 +33,7 @@ export function SaveButton({
         type="submit"
         aria-label={saved ? "Quitar de guardados" : "Guardar"}
         title={saved ? "Quitar de guardados" : "Guardar"}
-        className={`glass flex h-9 w-9 items-center justify-center rounded-full transition hover:scale-105 ${
+        className={`glass flex ${compact ? "h-8 w-8 bg-white/75!" : "h-9 w-9"} items-center justify-center rounded-full transition hover:scale-105 ${
           saved ? "text-coral" : "text-ink/60"
         }`}
       >

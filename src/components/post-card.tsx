@@ -30,10 +30,10 @@ export function PostCard({
 
   return (
     <article className="mb-4 break-inside-avoid">
-      <div className="glass overflow-hidden rounded-2xl">
+      <div className="glass transform-gpu overflow-hidden rounded-2xl">
         <Link
           href={`/post/${post.id}`}
-          className="block transition hover:opacity-95"
+          className="block"
         >
           {img && (
             // eslint-disable-next-line @next/next/no-img-element

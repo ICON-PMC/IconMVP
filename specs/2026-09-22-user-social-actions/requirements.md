@@ -1,7 +1,7 @@
 # Requirements — Fase 0: Flujo de usuario (guardar · seguir · like)
 
 > Subconjunto del "Flujo de usuario" de la Fase 0 (`specs/roadmap.md`): guardar (favoritos),
-> seguir marcas y dar like (a outfits y a prendas), más una página donde la usuaria ve lo suyo.
+> seguir marcas y dar like (a outfits y a prendas), más una página donde el usuario ve lo suyo.
 > Este spec **no** cubre infraestructura (shadcn, cuotas R2, 404, errores en español) —
 > eso vive en `specs/2026-09-19-fase0-social-infra/`.
 
@@ -64,7 +64,7 @@ en este archivo.
   ninguna sobre el mismo post. No hay exclusión mutua ni estado combinado.
 - **Seguir una marca solo guarda la relación en la base de datos.** No debe afectar el feed
   ni el orden todavía — eso es de una fase posterior.
-- **Sí se necesita una página** donde la usuaria vea lo guardado y las marcas que sigue.
+- **Sí se necesita una página** donde el usuario vea lo guardado y las marcas que sigue.
 
 ---
 
@@ -97,7 +97,7 @@ post_likes
 ```
 
 - Índice en `post_id`.
-- **RLS:** igual patrón que `saved_posts` (cada usuaria gestiona lo suyo).
+- **RLS:** igual patrón que `saved_posts` (cada usuario gestiona lo suyo).
 - **GRANT:** `insert, delete on post_likes to authenticated`.
 - **Sin** trigger de `popularity` (decisión 6). El like **no** modifica `posts.popularity`.
 
@@ -118,25 +118,25 @@ post_likes
 
 ### 5.1 Seguir una marca
 
-- Una usuaria logueada ve un botón **"Seguir"** en `/marca/[slug]`.
+- Un usuario logueado ve un botón **"Seguir"** en `/marca/[slug]`.
 - Al hacer clic, el botón cambia a **"Siguiendo"** al instante (optimistic) y se crea la fila
   en `brand_follows`.
 - Al hacer clic en "Siguiendo", se deja de seguir (se borra la fila) y el botón vuelve a
   "Seguir", también al instante.
 - Si la acción falla, el botón revierte al estado anterior.
-- Una usuaria anónima ve el botón como enlace a `/login?next=/marca/[slug]`.
+- Un usuario anónimo ve el botón como enlace a `/login?next=/marca/[slug]`.
 - **No** se muestra contador de seguidores (decisión 7).
 - Seguir **no** cambia el feed ni el orden de nada (decisión de scope).
 
 ### 5.2 Dar like a un post
 
-- Una usuaria logueada ve un corazón en las tarjetas del feed y en `/post/[id]`.
+- Un usuario logueado ve un corazón en las tarjetas del feed y en `/post/[id]`.
 - Al hacer clic, el corazón se rellena al instante (optimistic) y se crea la fila en
   `post_likes`; el contador sube.
 - Al hacer clic de nuevo, se quita el like y el contador baja.
 - Si la acción falla, el corazón y el contador revierten.
 - El **contador de likes es visible sin login**; solo la acción requiere sesión.
-- Una usuaria anónima que hace clic en el corazón va a `/login?next=<ruta actual>`.
+- Un usuario anónimo que hace clic en el corazón va a `/login?next=<ruta actual>`.
 - El like **no** altera `posts.popularity` ni el orden del feed (decisión 6).
 
 ### 5.3 Mis guardados / Siguiendo
@@ -144,7 +144,7 @@ post_likes
 - `/saved` requiere sesión; sin sesión redirige a `/login?next=/saved`.
 - La página tiene **dos tabs**: **Guardados** y **Siguiendo**.
 - **Guardados** muestra los posts guardados y las prendas guardadas (lo que ya existía).
-- **Siguiendo** muestra las marcas que la usuaria sigue, con enlace a `/marca/[slug]`.
+- **Siguiendo** muestra las marcas que el usuario sigue, con enlace a `/marca/[slug]`.
 - Cada tab tiene su estado vacío en español:
   - Guardados: "Aún no has guardado nada. Toca el marcador en un look o una prenda."
   - Siguiendo: "Aún no sigues ninguna marca."
@@ -162,7 +162,7 @@ post_likes
 | Acción sin sesión | Redirige a `/login?next=<ruta>`; nunca 500 |
 | Acción sobre un id inexistente | El server action no revienta; devuelve error y el UI revierte |
 | Post archivado / marca inactiva | No aparece en `/saved` (la vista `post_feed` ya filtra `published`) |
-| Usuaria intenta seguir/likear a nombre de otra | RLS lo bloquea (policy `user_id = current_user_id()`) |
+| Un usuario intenta seguir/likear a nombre de otro | RLS lo bloquea (policy `user_id = current_user_id()`) |
 
 ---
 

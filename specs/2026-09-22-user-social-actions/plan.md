@@ -41,9 +41,9 @@
   - Actualizar en el mismo commit que la migración (constitución §7.4).
 
 - **1e. Helper de lectura** `src/lib/social.ts` (nuevo)
-  - `getMyFollowedBrandIds(): Promise<Set<string>>` — ids de marcas que sigue la usuaria
-    actual (vacío si anónima). Mismo patrón que `getMySavedIds()`.
-  - `getMyLikedPostIds(): Promise<Set<string>>` — ids de posts con like de la usuaria actual.
+  - `getMyFollowedBrandIds(): Promise<Set<string>>` — ids de marcas que sigue el usuario
+    actual (vacío si es anónimo). Mismo patrón que `getMySavedIds()`.
+  - `getMyLikedPostIds(): Promise<Set<string>>` — ids de posts con like de el usuario actual.
   - `getMyFollowedBrands()` — filas de marcas seguidas (id, name, slug, city) para el tab
     "Siguiendo".
 
@@ -63,11 +63,11 @@
     revierte si el action devuelve error.
   - Etiqueta "Seguir" / "Siguiendo"; icono de `lucide-react`.
   - Área táctil ≥ 44px; usa tokens glass/tropical.
-  - Anónima: renderiza un enlace a `/login?next=/marca/[slug]`.
+  - Anónimo: renderiza un enlace a `/login?next=/marca/[slug]`.
   - **Sin** contador de seguidores (decisión 7).
 
 - **2c. Integrar en `/marca/[slug]`**
-  - Cargar si la usuaria actual sigue la marca (`getMyFollowedBrandIds()`).
+  - Cargar si el usuario actual sigue la marca (`getMyFollowedBrandIds()`).
   - Colocar `FollowButton` en la cabecera de marca (`GlassCard`).
 
 ---
@@ -84,12 +84,12 @@
   - Optimistic: rellena el corazón y ajusta el contador al instante; revierte en error.
   - Corazón de `lucide-react`; relleno cuando hay like.
   - Contador **visible sin login** (decisión 8); la acción requiere sesión.
-  - Anónima: enlace a `/login?next=<ruta actual>`.
+  - Anónimo: enlace a `/login?next=<ruta actual>`.
   - Área táctil ≥ 44px; tokens glass/tropical.
 
 - **3c. Integrar en `PostCard` y `/post/[id]`**
   - `post_feed` ya trae `like_count` — sin query extra para el contador.
-  - Cargar los ids con like de la usuaria actual en una sola query
+  - Cargar los ids con like de el usuario actual en una sola query
     (`getMyLikedPostIds()`) y pasarlos a las tarjetas.
   - `PostCard` recibe `liked` y `likeCount`; renderiza `LikeButton`.
   - `/post/[id]` renderiza `LikeButton` junto al `SaveButton` existente.
