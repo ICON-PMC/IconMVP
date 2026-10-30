@@ -83,6 +83,7 @@ export function PendingGarments({ items }: { items: PendingItem[] }) {
         const sub = new FormData();
         sub.set("garment_id", id);
         sub.set("image", file);
+        sub.set("strict_quota", "1"); // respeta los 300 MB de la marca (si no, se podría esquivar la cuota desde aquí)
         const res = await uploadGarmentImageAction(sub);
         return res.ok ? null : (res.error ?? `No se pudo subir ${title}.`);
       } catch (e) {
