@@ -5,9 +5,42 @@ Convierte el catálogo de una tienda **Shopify** en:
 - un **Excel** con las columnas que espera `/admin/bulk`, y
 - una **carpeta de fotos** (la foto principal de cada prenda).
 
-Después subes el Excel y las fotos desde el panel. Nada se publica solo: las prendas entran como `pending` y pasan a `published` cuando les subes la foto.
+Después subes el Excel y las fotos desde el panel. Los datos de cada prenda los revisas tú **en el Excel, antes de importar**; al subir la foto, la prenda se publica sola (una prenda sin foto queda `pending`).
+
+Hay dos formas de generar el paquete: **desde el panel** (recomendada, sin terminal) o con el script `npm run catalog:excel`. Las dos usan la misma lógica (`src/lib/catalog/`) y producen el mismo Excel.
 
 > **Solo con consentimiento.** Úsalo únicamente con marcas que te autorizaron a usar su catálogo **y sus fotos**. El script exige el flag `--consentimiento` y deja un registro en `origen.json`.
+
+---
+
+## Desde el panel de administración (recomendado)
+
+`/admin/bulk` → **Leer el catálogo de una tienda** (solo `curator` y `admin`).
+
+1. **Elige la marca** (ya debe existir y estar activa), **indica la fuente** —la dirección de la tienda Shopify y/o el CSV que exportó la marca— y marca la casilla de **consentimiento**: *«La marca autorizó el uso de su catálogo y de sus fotos»*. Sin ella no se inicia. Icon guarda quién lo confirmó y cuándo.
+   - *Opciones avanzadas*: correo de contacto (lo ve la tienda; por defecto el del equipo, `CATALOG_BOT_CONTACT`), límite de prendas (útil para probar), no descargar fotos, pausa entre peticiones.
+   - Con **CSV** no se lee la tienda ni su `robots.txt`: la dirección solo arma los enlaces de compra.
+   - Si la tienda no permite la lectura automática, el panel lo dice y sugiere usar el CSV de la marca.
+2. **Espera el avance.** Se lee la tienda con pausas para no saturarla y se descargan las fotos por tandas. Puedes **cerrar la página**: la lectura queda guardada y, al volver, el panel ofrece **Continuar** o **Empezar de nuevo**.
+3. **Descarga el paquete** (`.zip` con `catalogo.xlsx`, `fotos/` y `origen.json`). En este punto **no se ha creado nada en Icon**. Verás un resumen con lo que requiere revisión.
+4. **Revisa el Excel.** La categoría, el color, el estilo, la ocasión y el clima son **sugerencias automáticas** y no siempre son acertadas: corrígelas aquí, antes de importar (ver «Paso a paso después de generar»). Borra las filas que no quieras.
+5. **Sube el Excel y la carpeta `fotos/` de una sola vez** (Paso 1). Las fotos se emparejan con las prendas por el nombre de la columna **`foto`**, así que no importa si reordenaste o borraste filas. Una prenda con foto se publica sola; si una foto falta o excede la cuota de la marca (300 MB), la prenda queda pendiente y se avisa.
+   - Si una prenda **ya existe** (misma marca y mismo enlace de compra), no se duplica: se informa como «ya existe». Las filas sin enlace de compra se importan con un aviso, porque no se puede comprobar si ya existían.
+
+Los paquetes y las lecturas sin terminar se conservan **7 días** y luego se borran solos. El **historial** al final de la página muestra, por corrida: responsable, fecha, marca, fuente, consentimiento, conteos y, si se importó, el resultado.
+
+### Detectar lo que la marca ya no vende
+
+Si la lectura fue **en vivo y completa** (sin límite de prendas, sin CSV), el panel compara la tienda con las prendas de esa marca en Icon y muestra cuatro grupos:
+
+| Grupo | Significado |
+|---|---|
+| **Siguen** | Están en la tienda y en Icon. Se anota la fecha en que se vieron por última vez (no cuenta como una edición). |
+| **Nuevas** | Están en la tienda y no en Icon. Ya vienen en el Excel. |
+| **Ya no aparecen** | Están en Icon y la tienda ya no las ofrece. **Tú eliges cuáles archivar**; nada se archiva solo. Archivadas, salen del feed pero se pueden recuperar. |
+| **Reaparecen** | Las archivó una lectura anterior y la tienda las vuelve a ofrecer. Puedes volver a publicarlas. |
+
+Las prendas sin enlace de compra no se pueden comparar. Si **más del 30 %** del catálogo «ya no aparece», puede ser un fallo de lectura: el panel avisa y pide una confirmación adicional antes de archivar. Un CSV, un Excel subido o una lectura con límite **no** disparan la comparación.
 
 ---
 
@@ -127,16 +160,18 @@ Lo que **no** hace el script y debes revisar: `tela`, las categorías vacías, l
 
 Puedes borrar filas que no quieras importar.
 
-### 2. Sube el Excel
+### 2. Sube el Excel y la carpeta de fotos
 
-`/admin/bulk` → **Paso 1**: sube `catalogo.xlsx`. Verás un resultado por fila. Si dice `Marca no encontrada`, el valor de `marca` no coincide con el nombre en Icon.
+`/admin/bulk` → **Paso 1**: elige `catalogo.xlsx` y la carpeta `fotos/` y pulsa **Importar prendas y fotos**. Verás un resultado por fila. Si dice `Marca no encontrada`, el valor de `marca` no coincide con el nombre en Icon. Cada foto se empareja con su prenda por el nombre de la columna `foto`; cada prenda con foto pasa a **publicada** y aparece en el feed.
 
-### 3. Sube las fotos
+El resumen separa: prendas creadas, filas que **ya existían** (no se duplican), fotos subidas, **fotos sin prenda** en el Excel, **prendas sin su foto** en la carpeta y fotos rechazadas por la cuota de almacenamiento de la marca (300 MB) o por pesar más de 10 MB.
+
+### 3. Las prendas que quedaron sin foto
 
 En **Paso 2** aparece cada prenda pendiente sin foto. Para cada una:
 
-1. Pulsa **Elegir foto** y toma el archivo de `fotos/` que corresponde. El nombre trae el título (`003-camiseta-basica.jpg`), así que es fácil de emparejar.
-2. Cuando tengas todas, pulsa **Subir N fotos**. Cada prenda pasa a **publicada** y aparece en el feed.
+1. Pulsa **Elegir foto** y toma el archivo que corresponde.
+2. Cuando tengas todas, pulsa **Subir N fotos**. Cada prenda pasa a **publicada**. También aquí se respeta la cuota de la marca.
 
 La foto que elijas se reduce a máx. 1280 px y se guarda en WebP.
 
