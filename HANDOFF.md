@@ -15,7 +15,7 @@ catálogo (con aprobación del equipo); el staff también puede cargar en su nom
 Español primero. Nicho inicial: Barranquilla, Medellín, Bogotá.
 
 **Estado:** la Fase 0 está cerrada y el piloto ya corrió con marcas reales. `TODO.md` tiene lo que
-falta para dejar el release redondo; `specs/roadmap.md`, lo que sigue (Fase 1).
+falta para dejar el release redondo; `.specify/memory/roadmap.md`, lo que sigue (Fase 1).
 
 ## Arrancar en 10 minutos
 
@@ -108,7 +108,7 @@ pestañas de búsqueda y otras páginas).
 
 ### Registro de marcas y cola de aprobación
 
-Flujo (spec en `specs/2026-09-19-brand-registration/`):
+Flujo (spec en `docs/legacy-specs/2026-09-19-brand-registration/`):
 
 1. `/signup?tipo=marca` → cuenta + rol `brand`.
 2. `/onboarding/marca`: perfil (paso 1) → portada (paso 2) → primera prenda + "Enviar para aprobación" (paso 3).
@@ -144,7 +144,7 @@ imagen nueva desde código, pasa `bytes` al insertar y, si la sube la propia mar
 ## Lenguaje inclusivo
 
 La audiencia de Icon no es solo mujeres: en UI, docs y comentarios se dice "usuario" (no "usuaria") y
-se usan formulaciones neutras. Ver `specs/constitution.md` §1.
+se usan formulaciones neutras. Ver `.specify/memory/constitution.md`, principio VII.
 
 ## UI: shadcn/ui
 
@@ -191,7 +191,7 @@ Row Level Security está activo en todas las tablas. Dos reglas fijas:
 
 `.env.local` (nunca se commitea) necesita las variables de Supabase, R2 e Instagram — `.env.example`
 trae la lista de nombres. Los correos transaccionales (aprobación/rechazo de marcas) aún no existen:
-quedaron para una fase posterior (ver `specs/roadmap.md`); la marca ve el resultado en su panel. Para apuntar un script a la nube en vez de local:
+quedaron para una fase posterior (ver `.specify/memory/roadmap.md`); la marca ve el resultado en su panel. Para apuntar un script a la nube en vez de local:
 
 ```bash
 NEXT_PUBLIC_SUPABASE_URL=<url_nube> SUPABASE_SERVICE_ROLE_KEY=<key_nube> npm run db:import

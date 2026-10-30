@@ -1,5 +1,9 @@
 # Icon — Roadmap por fases
 
+> Contexto de producto; la constitución (`constitution.md`) prevalece. Cada feature nuevo de una fase
+> se especifica con Spec Kit (`/speckit-specify` → `specs/NNN-nombre/`). Los features de la Fase 0
+> están archivados en `docs/legacy-specs/`.
+
 > Cada fase tiene un objetivo de producto y un criterio de salida.
 > No se pasa a la siguiente hasta cumplir el criterio — no por tiempo, sino por señal.
 >
@@ -90,7 +94,7 @@ y tener un perfil público con su contenido (storefront).
 - [ ] Seguir otros usuarios (además de marcas).
 - [ ] Opción de perfil privado (el storefront no es visible sin seguir al usuario).
 - [ ] Cuota de almacenamiento por usuario (50 MB), con el mismo modelo que la de marcas
-      (suma del peso de sus imágenes; ver `specs/2026-09-26-fase0-cierre/`).
+      (suma del peso de sus imágenes; ver `docs/legacy-specs/2026-09-26-fase0-cierre/`).
 
 **Criterio de salida:** al menos 10 usuarios han publicado ≥1 outfit con una marca etiquetada.
 Al menos 3 marcas han recibido tráfico desde un outfit de usuario.

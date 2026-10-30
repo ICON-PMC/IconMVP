@@ -17,8 +17,8 @@ sin tener que escarbar en cientos de cuentas de Instagram.
 
 ## Qué tipo de plataforma somos
 
-Icon es una **red social de descubrimiento con intención de compra**. No somos un catálogo curado
-por un equipo editorial — el contenido lo crean las marcas y los usuarios.
+Icon es una **red social de descubrimiento con intención de compra**. No somos un catálogo cargado
+por un equipo editorial (la curaduría es la aprobación de marcas) — el contenido lo crean las marcas y los usuarios.
 
 - **Las marcas** crean su perfil, suben su catálogo de productos y publican posts de outfits
   ligados a esos productos.
@@ -92,6 +92,7 @@ Estas iniciativas no entran al MVP — se diseñan con datos reales del piloto.
 ## Lo que no somos
 
 - No somos un marketplace — no procesamos pagos, no tenemos inventario, no gestionamos envíos.
-- No somos un catálogo curado por el equipo — el contenido lo crean marcas y usuarios.
+- No somos un catálogo cargado a mano por el equipo — el contenido lo crean marcas y usuarios. La
+  curaduría es una compuerta: toda marca nueva pasa por la cola de aprobación de admin antes de ser visible.
 - No somos globales — Colombia primero, las tres ciudades principales antes de expandir.
 - No competimos con Zara, Nike, ni marcas de cadena — el nicho es lo independiente.

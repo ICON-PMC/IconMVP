@@ -6,7 +6,7 @@ import { Heart } from "lucide-react";
 import { likePost, unlikePost } from "@/app/post/[id]/actions";
 import { likeGarment, unlikeGarment } from "@/app/prenda/[id]/actions";
 
-// Botón de like con UI optimista (Grupo 3 de specs/2026-09-22-user-social-actions).
+// Botón de like con UI optimista (Grupo 3 de docs/legacy-specs/2026-09-22-user-social-actions).
 // Sirve para los dos tipos que muestra el feed (`kind` post | garment), igual que SaveButton.
 //
 // - El contador es visible SIN login (decisión 8); solo la acción exige sesión.
