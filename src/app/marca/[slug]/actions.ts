@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/auth";
 
-// Seguir / dejar de seguir una marca (Grupo 2 de specs/2026-09-22-user-social-actions).
+// Seguir / dejar de seguir una marca (Grupo 2 de docs/legacy-specs/2026-09-22-user-social-actions).
 //
 // Devuelven un resultado en vez de redirigir porque las invoca un client component
 // (FollowButton) que necesita saber si revertir el estado optimista. Sin sesión devuelven

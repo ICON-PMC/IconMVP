@@ -94,7 +94,7 @@ const values = withSlugs
   .join(",\n");
 
 const sql = `-- Todos los municipios de Colombia (DIVIPOLA del DANE) con su departamento.
--- Spec: specs/2026-10-06-etiquetas-ciudades-busqueda/plan.md, 1e.
+-- Spec: docs/legacy-specs/2026-10-06-etiquetas-ciudades-busqueda/plan.md, 1e.
 -- GENERADO por scripts/build-cities-migration.ts desde supabase/data/divipola.csv
 -- (${withSlugs.length} filas). No editar a mano: corregir el script y regenerar.
 --

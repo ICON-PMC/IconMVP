@@ -5,7 +5,7 @@ import Link from "next/link";
 import { UserPlus, UserCheck } from "lucide-react";
 import { followBrand, unfollowBrand } from "@/app/marca/[slug]/actions";
 
-// Botón Seguir / Siguiendo con UI optimista (Grupo 2 de specs/2026-09-22-user-social-actions).
+// Botón Seguir / Siguiendo con UI optimista (Grupo 2 de docs/legacy-specs/2026-09-22-user-social-actions).
 //
 // - Logueada: al clic cambia al instante y llama al server action; si falla, revierte y
 //   muestra un mensaje inline (sin toast: no hay librería y no vale la pena para el piloto).
