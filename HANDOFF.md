@@ -15,15 +15,15 @@ catálogo (con aprobación del equipo); el staff también puede cargar en su nom
 Español primero. Nicho inicial: Barranquilla, Medellín, Bogotá.
 
 **Estado:** la Fase 0 está cerrada y el piloto ya corrió con marcas reales. `TODO.md` tiene lo que
-falta para dejar el release redondo; `specs/roadmap.md`, lo que sigue (Fase 1).
+falta para dejar el release redondo; `.specify/memory/roadmap.md`, lo que sigue (Fase 1).
 
 ## Arrancar en 10 minutos
 
 Requisitos: Node 20+, Docker, [Supabase CLI](https://supabase.com/docs/guides/cli).
 
 ```bash
-git clone https://github.com/awangran/Icon.git
-cd Icon
+git clone https://github.com/ICON-PMC/IconMVP.git
+cd IconMVP
 git checkout dev              # se trabaja en dev, nunca directo en main
 
 supabase start                # levanta Postgres local en Docker
@@ -71,6 +71,12 @@ Reglas:
    Si el código llega primero, la app en producción falla contra un esquema que todavía no existe.
 3. Un release es un merge `dev` → `main`.
 
+**Un solo remoto:** `origin` = `https://github.com/ICON-PMC/IconMVP.git`. No hay forks ni segundos remotos
+(`git remote -v` debe mostrar solo esa URL). Las ramas de trabajo se abren desde `dev`, se mergean por PR
+contra `dev` y se borran después. Si creas una rama con `git switch -c mi-rama origin/dev`, hereda
+`origin/dev` como upstream y «Sync» intentará empujar a `dev`; súbela con
+`git push -u origin mi-rama` para que apunte a su propia rama.
+
 ### Aplicar una migración nueva a la nube
 
 **Orden y re-ejecución:** aplica las migraciones en orden de timestamp y *todas* las anteriores primero. Una migración que solo hace `create or replace` no falla si le falta una dependencia (falla después, en runtime). Si aplicas una migración vieja después de una nueva, puede sobrescribir funciones que la nueva redefinió (`protect_brand_curation_fields`, `protect_user_role_field`): vuelve a correr esas definiciones. Antes de dar por buena una migración en la nube, compara con `select proname from pg_proc` / `pg_policies` / `pg_trigger`.
@@ -108,7 +114,7 @@ pestañas de búsqueda y otras páginas).
 
 ### Registro de marcas y cola de aprobación
 
-Flujo (spec en `specs/2026-09-19-brand-registration/`):
+Flujo (spec en `docs/legacy-specs/2026-09-19-brand-registration/`):
 
 1. `/signup?tipo=marca` → cuenta + rol `brand`.
 2. `/onboarding/marca`: perfil (paso 1) → portada (paso 2) → primera prenda + "Enviar para aprobación" (paso 3).
@@ -139,12 +145,35 @@ Tienda, producto e Instagram pasan siempre por `src/lib/links.ts`: `normalizeUrl
 300 MB de imágenes por marca. Cada imagen guarda su peso (`garment_images.bytes`,
 `post_images.bytes`, `brands.logo_bytes`) y el uso es la suma (`check_storage_quota`). Si subes una
 imagen nueva desde código, pasa `bytes` al insertar y, si la sube la propia marca,
-`{ enforceQuotaFor: brandId }` a `uploadImageField` (`src/lib/upload.ts`). El staff no se bloquea.
+`{ enforceQuotaFor: brandId }` a `uploadImageField` (`src/lib/upload.ts`). El staff no se bloquea,
+salvo en la carga masiva de `/admin/bulk` (carpeta de fotos y cargador de fotos sueltas), que manda
+`strict_quota=1` a `uploadGarmentImageAction` para respetar los 300 MB de la marca.
+
+### Leer el catálogo de una marca desde el panel (`/admin/bulk`)
+
+Spec Kit: `specs/001-catalog-scrape-bulk/` (spec, plan, contratos y quickstart). Guía de uso:
+`docs/importar-catalogo.md`. Resumen técnico:
+
+- La lógica del script `catalog:excel` vive en `src/lib/catalog/` y la comparten el CLI y el panel.
+- Una **corrida** (`catalog_runs`) avanza por tandas de ~40 s que repite el navegador (`maxDuration = 60`
+  en `/admin/bulk`); el estado vive en la base, así que se puede cerrar la pestaña y continuar.
+- Las fotos originales, el Excel y `origen.json` se guardan **7 días** en R2 bajo `catalog-runs/<id>/`
+  (almacén temporal; no cuenta contra la cuota). El paquete se descarga como ZIP en streaming
+  (`/admin/bulk/catalog/[runId]/paquete`). Se purgan solos al abrir `/admin/bulk`; configura además una
+  **regla de ciclo de vida de R2** de 7 días sobre ese prefijo como respaldo.
+- `garments.last_seen_at` (última lectura de la tienda) y `discontinued_at` (archivada desde la
+  comparación) alimentan la detección de prendas que la marca ya no vende. Un trigger evita que
+  `last_seen_at` cuente como edición (`updated_at`).
+- **Plan B del ZIP:** si la descarga en streaming falla en Vercel con paquetes grandes, armar el ZIP en el
+  navegador con `fflate` leyendo cada foto por un endpoint de staff (ver `specs/001-catalog-scrape-bulk/research.md` §3).
+- Seguridad: la URL de la tienda pasa por una guarda contra redes privadas (SSRF, con resolución de DNS y
+  redirecciones revalidadas). `CATALOG_ALLOW_PRIVATE_HOSTS=1` la desactiva **solo** si `NODE_ENV=development`
+  (para probar contra una tienda falsa local); no la pongas en Vercel.
 
 ## Lenguaje inclusivo
 
 La audiencia de Icon no es solo mujeres: en UI, docs y comentarios se dice "usuario" (no "usuaria") y
-se usan formulaciones neutras. Ver `specs/constitution.md` §1.
+se usan formulaciones neutras. Ver `.specify/memory/constitution.md`, principio VII.
 
 ## UI: shadcn/ui
 
@@ -190,8 +219,9 @@ Row Level Security está activo en todas las tablas. Dos reglas fijas:
 ## Variables de entorno
 
 `.env.local` (nunca se commitea) necesita las variables de Supabase, R2 e Instagram — `.env.example`
-trae la lista de nombres. Los correos transaccionales (aprobación/rechazo de marcas) aún no existen:
-quedaron para una fase posterior (ver `specs/roadmap.md`); la marca ve el resultado en su panel. Para apuntar un script a la nube en vez de local:
+trae la lista de nombres. `CATALOG_BOT_CONTACT` es el correo del **equipo** que ven las tiendas cuando Icon lee
+su catálogo desde el panel (no uses un correo personal). Los correos transaccionales (aprobación/rechazo de marcas) aún no existen:
+quedaron para una fase posterior (ver `.specify/memory/roadmap.md`); la marca ve el resultado en su panel. Para apuntar un script a la nube en vez de local:
 
 ```bash
 NEXT_PUBLIC_SUPABASE_URL=<url_nube> SUPABASE_SERVICE_ROLE_KEY=<key_nube> npm run db:import
@@ -208,5 +238,5 @@ NEXT_PUBLIC_SUPABASE_URL=<url_nube> SUPABASE_SERVICE_ROLE_KEY=<key_nube> npm run
 
 ## Contexto de equipo
 
-- Repo: `awangran/Icon` en GitHub.
+- Repo: `ICON-PMC/IconMVP` en GitHub (único remoto, `origin`).
 - Responsable del proyecto: Ashlee (decide prioridades, config de producción, cuentas externas).

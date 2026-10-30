@@ -5,9 +5,42 @@ Convierte el catálogo de una tienda **Shopify** en:
 - un **Excel** con las columnas que espera `/admin/bulk`, y
 - una **carpeta de fotos** (la foto principal de cada prenda).
 
-Después subes el Excel y las fotos desde el panel. Nada se publica solo: las prendas entran como `pending` y pasan a `published` cuando les subes la foto.
+Después subes el Excel y las fotos desde el panel. Los datos de cada prenda los revisas tú **en el Excel, antes de importar**; al subir la foto, la prenda se publica sola (una prenda sin foto queda `pending`).
+
+Hay dos formas de generar el paquete: **desde el panel** (recomendada, sin terminal) o con el script `npm run catalog:excel`. Las dos usan la misma lógica (`src/lib/catalog/`) y producen el mismo Excel.
 
 > **Solo con consentimiento.** Úsalo únicamente con marcas que te autorizaron a usar su catálogo **y sus fotos**. El script exige el flag `--consentimiento` y deja un registro en `origen.json`.
+
+---
+
+## Desde el panel de administración (recomendado)
+
+`/admin/bulk` → **Leer el catálogo de una tienda** (solo `curator` y `admin`).
+
+1. **Elige la marca** (ya debe existir y estar activa), **indica la fuente** —la dirección de la tienda Shopify y/o el CSV que exportó la marca— y marca la casilla de **consentimiento**: *«La marca autorizó el uso de su catálogo y de sus fotos»*. Sin ella no se inicia. Icon guarda quién lo confirmó y cuándo.
+   - *Opciones avanzadas*: correo de contacto (lo ve la tienda; por defecto el del equipo, `CATALOG_BOT_CONTACT`), límite de prendas (útil para probar), no descargar fotos, pausa entre peticiones.
+   - Con **CSV** no se lee la tienda ni su `robots.txt`: la dirección solo arma los enlaces de compra.
+   - Si la tienda no permite la lectura automática, el panel lo dice y sugiere usar el CSV de la marca.
+2. **Espera el avance.** Se lee la tienda con pausas para no saturarla y se descargan las fotos por tandas. Puedes **cerrar la página**: la lectura queda guardada y, al volver, el panel ofrece **Continuar** o **Empezar de nuevo**.
+3. **Descarga el paquete** (`.zip` con `catalogo.xlsx`, `fotos/` y `origen.json`). En este punto **no se ha creado nada en Icon**. Verás un resumen con lo que requiere revisión.
+4. **Revisa el Excel.** La categoría, el color, el estilo, la ocasión y el clima son **sugerencias automáticas** y no siempre son acertadas: corrígelas aquí, antes de importar (ver «Paso a paso después de generar»). Borra las filas que no quieras.
+5. **Sube el Excel y la carpeta `fotos/` de una sola vez** (Paso 1). Las fotos se emparejan con las prendas por el nombre de la columna **`foto`**, así que no importa si reordenaste o borraste filas. Una prenda con foto se publica sola; si una foto falta o excede la cuota de la marca (300 MB), la prenda queda pendiente y se avisa.
+   - Si una prenda **ya existe** (misma marca y mismo enlace de compra), no se duplica: se informa como «ya existe». Las filas sin enlace de compra se importan con un aviso, porque no se puede comprobar si ya existían.
+
+Los paquetes y las lecturas sin terminar se conservan **7 días** y luego se borran solos. El **historial** al final de la página muestra, por corrida: responsable, fecha, marca, fuente, consentimiento, conteos y, si se importó, el resultado.
+
+### Detectar lo que la marca ya no vende
+
+Si la lectura fue **en vivo y completa** (sin límite de prendas, sin CSV), el panel compara la tienda con las prendas de esa marca en Icon y muestra cuatro grupos:
+
+| Grupo | Significado |
+|---|---|
+| **Siguen** | Están en la tienda y en Icon. Se anota la fecha en que se vieron por última vez (no cuenta como una edición). |
+| **Nuevas** | Están en la tienda y no en Icon. Ya vienen en el Excel. |
+| **Ya no aparecen** | Están en Icon y la tienda ya no las ofrece. **Tú eliges cuáles archivar**; nada se archiva solo. Archivadas, salen del feed pero se pueden recuperar. |
+| **Reaparecen** | Las archivó una lectura anterior y la tienda las vuelve a ofrecer. Puedes volver a publicarlas. |
+
+Las prendas sin enlace de compra no se pueden comparar. Si **más del 30 %** del catálogo «ya no aparece», puede ser un fallo de lectura: el panel avisa y pide una confirmación adicional antes de archivar. Un CSV, un Excel subido o una lectura con límite **no** disparan la comparación.
 
 ---
 
@@ -16,7 +49,7 @@ Después subes el Excel y las fotos desde el panel. Nada se publica solo: las pr
 1. **La marca ya debe existir en Icon.** Créala en `/admin` si hace falta. El importador la busca por nombre, así que usa el **nombre exacto** (o el slug) en `--marca`.
 2. **Instala dependencias** una vez: `npm install`.
 3. Necesitas Node 20+ (el proyecto ya lo exige).
-4. **El script lee de tu base las categorías, tallas y marcas válidas** (con la anon key de `.env.local`; son tablas públicas). Así el Excel usa los nombres **exactos** que acepta el importador. Al arrancar te dice de qué base las leyó (`127.0.0.1:54321` = local; si el `.env.local` apunta a la nube, serán las de la nube). Si no hay conexión, usa una lista de respaldo y te avisa.
+4. **El script lee de tu base las categorías, tallas, marcas, estilos, ocasiones y climas válidos** (con la anon key de `.env.local`; son tablas públicas). Así el Excel usa los nombres **exactos** que acepta el importador. Al arrancar te dice de qué base las leyó (`127.0.0.1:54321` = local; si el `.env.local` apunta a la nube, serán las de la nube). Si no hay conexión, usa una lista de respaldo y te avisa.
 5. **Si el catálogo trae tallas numéricas** (jeans 4–14, cintura 28–32…), aplica antes la migración `supabase/migrations/20261029000000_numeric_sizes.sql`. Ver «Tallas numéricas» más abajo.
 
 ---
@@ -96,12 +129,13 @@ catalog-export/under-gold/
 | `tela` | **vacía**: Shopify no la trae; llénala a mano si la quieres |
 | `categoria` | inferida por palabras clave; **vacía si no hay certeza**. Tiene **lista desplegable** con las categorías de la base |
 | `tallas` | opción "Talla"/"Size", traducida a las tallas de Icon. Las que **no existan en Icon** no se escriben y quedan avisadas en `revisar` |
+| `estilo`, `ocasion`, `clima` | hasta **3 por columna**, separados por coma. Se **prellenan solo si un tag de la tienda coincide exactamente** con uno de Icon (ver «Estilo, ocasión y clima»); si no, quedan vacías para que las elijas. Tienen desplegable |
 | `foto` | nombre del archivo en `fotos/` (solo para ti; el importador la ignora) |
 | `revisar` | avisos para ti (el importador la ignora) |
 
-El Excel trae además una hoja **«Referencia (no editar)»** (marcas, categorías y tallas válidas, igual que la plantilla de `/admin/bulk`) y **desplegables estrictos** en `marca` y `categoria`: eliges de la lista y no tienes que adivinar cómo se escribe. En `tallas` no hay desplegable porque Excel no permite elegir varias a la vez; escribe separadas por coma lo que aparece en la hoja de referencia.
+El Excel trae además una hoja **«Referencia (no editar)»** (marcas, categorías, tallas, estilos, ocasiones y climas válidos, igual que la plantilla de `/admin/bulk`) y **desplegables estrictos** en `marca` y `categoria`: eliges de la lista y no tienes que adivinar cómo se escribe. En `tallas` no hay desplegable porque Excel no permite elegir varias a la vez; escribe separadas por coma lo que aparece en la hoja de referencia.
 
-Lo que **no** hace el script y debes revisar: `tela`, las categorías vacías, y las tallas que no existen en Icon.
+Lo que **no** hace el script y debes revisar: `tela`, las categorías vacías, las tallas que no existen en Icon, y elegir `estilo`/`ocasion`/`clima` donde la tienda no traía un tag que coincidiera.
 
 ---
 
@@ -116,6 +150,7 @@ Lo que **no** hace el script y debes revisar: `tela`, las categorías vacías, y
 | `asignar categoría` | Elige una de la lista desplegable de la celda (son las 15 categorías de la base). Si la dejas vacía, la prenda se crea sin categoría. |
 | `talla que no existe en Icon (se omite al importar)` | Esa talla no está en la base. Agrégala (ver «Tallas numéricas») y vuelve a generar, o escríbela a mano en el Excel si ya la agregaste. |
 | `sin talla` | Normal en bolsos y accesorios. |
+| `más de 3 de estilo/ocasión/clima en la tienda: se dejaron 3` | El importador acepta máx. 3 por tipo. El script dejó los 3 primeros; cambia cuál se queda si quieres otros. |
 | `sin precio` | Complétalo; el precio es lo que habilita el filtro por rango. |
 | `precio en USD, no COP` | Convierte `precio_cop` a pesos antes de importar. |
 | `la tienda no trae foto` / `foto no descargada` | Consíguela con la marca. |
@@ -125,16 +160,18 @@ Lo que **no** hace el script y debes revisar: `tela`, las categorías vacías, y
 
 Puedes borrar filas que no quieras importar.
 
-### 2. Sube el Excel
+### 2. Sube el Excel y la carpeta de fotos
 
-`/admin/bulk` → **Paso 1**: sube `catalogo.xlsx`. Verás un resultado por fila. Si dice `Marca no encontrada`, el valor de `marca` no coincide con el nombre en Icon.
+`/admin/bulk` → **Paso 1**: elige `catalogo.xlsx` y la carpeta `fotos/` y pulsa **Importar prendas y fotos**. Verás un resultado por fila. Si dice `Marca no encontrada`, el valor de `marca` no coincide con el nombre en Icon. Cada foto se empareja con su prenda por el nombre de la columna `foto`; cada prenda con foto pasa a **publicada** y aparece en el feed.
 
-### 3. Sube las fotos
+El resumen separa: prendas creadas, filas que **ya existían** (no se duplican), fotos subidas, **fotos sin prenda** en el Excel, **prendas sin su foto** en la carpeta y fotos rechazadas por la cuota de almacenamiento de la marca (300 MB) o por pesar más de 10 MB.
+
+### 3. Las prendas que quedaron sin foto
 
 En **Paso 2** aparece cada prenda pendiente sin foto. Para cada una:
 
-1. Pulsa **Elegir foto** y toma el archivo de `fotos/` que corresponde. El nombre trae el título (`003-camiseta-basica.jpg`), así que es fácil de emparejar.
-2. Cuando tengas todas, pulsa **Subir N fotos**. Cada prenda pasa a **publicada** y aparece en el feed.
+1. Pulsa **Elegir foto** y toma el archivo que corresponde.
+2. Cuando tengas todas, pulsa **Subir N fotos**. Cada prenda pasa a **publicada**. También aquí se respeta la cuota de la marca.
 
 La foto que elijas se reduce a máx. 1280 px y se guarda en WebP.
 
@@ -158,19 +195,22 @@ Cómo aplicarla:
 
 Después de aplicarla, las tallas aparecen en el panel de marca y en `/admin`, y el script las reconoce.
 
-## ¿Y ocasión, estilo y clima?
+## Estilo, ocasión y clima
 
-No están en el Excel **a propósito**: en Icon esas etiquetas pertenecen a los **looks** (`post_tags`), no a las prendas. La prenda solo tiene una categoría. El feed mixto hace que cada prenda **herede** la ocasión y el estilo de los looks publicados donde aparece (`post_items`), tal como lo documenta la migración `20260921000000_feed_mixto.sql`.
+El importador de `/admin/bulk` acepta las columnas `estilo`, `ocasion` y `clima` y las guarda como etiquetas **de la prenda** (`garment_tags`). Máximo **3 por tipo**; lo que sobre se omite con aviso. El script las genera igual que la plantilla web.
 
-En la práctica: para que una prenda aparezca bajo "Casual" o "Verano", hay que **taggearla en un look** que tenga esa ocasión (se hace en el panel de marca → Looks). Una columna `ocasion` en el Excel de prendas no tendría dónde guardarse.
+**Qué prellena el script, y qué no.** Mira los tags que la tienda tiene en cada producto (más su "tipo de producto") y copia **solo los que coinciden exactamente** (sin importar mayúsculas ni acentos) con el nombre o el slug de una etiqueta de Icon. Ejemplo: un producto con los tags `denim, Casual, STREETWEAR, Verano 2026` queda con ocasión `Casual` y estilo `Streetwear`; `denim` y `Verano 2026` se ignoran porque no existen en Icon.
 
-Si quieres que las prendas tengan ocasión/estilo/clima **propios**, es un cambio de diseño (el importador, el formulario de prenda y la vista `feed_items` tendrían que leerlos), no solo de este script.
+**No infiere nada del título ni de la descripción**: sería adivinar, y una prenda mal etiquetada aparece en filtros equivocados. Lo que la tienda no traiga queda **vacío para que lo elijas tú** en el Excel. Es normal que muchas filas queden vacías: las tiendas casi nunca usan el vocabulario de Icon.
+
+**Cómo se llenan a mano.** Cada columna tiene una lista desplegable con los valores válidos. A diferencia de `marca` y `categoria`, el desplegable **no bloquea** lo que escribas, porque Excel solo deja elegir un valor y aquí caben hasta 3: elige uno de la lista, o escribe varios separados por coma (`Casual, Formal`). Un valor que no exista en Icon se omite al importar, con aviso en el resultado.
 
 ## Limitaciones
 
 - **Solo Shopify** por ahora. Para WooCommerce u otras plataformas habría que añadir otra fuente.
 - **Una foto por prenda** (la de posición 1). Las demás se ignoran: `/admin/bulk` solo sube una.
 - La categoría por palabras clave es una **sugerencia**, no una verdad. Revísala.
+- Estilo/ocasión/clima solo se prellenan con coincidencias exactas de los tags de la tienda; el resto lo eliges tú.
 - No inicia sesión en ninguna tienda, no usa credenciales y no toca la base de datos de Icon.
 
 ## Referencia rápida de opciones
