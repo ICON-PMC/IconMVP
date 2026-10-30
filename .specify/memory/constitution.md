@@ -48,13 +48,22 @@ atribución MUST NOT mergearse.
 ### V. Imágenes solo por el pipeline
 - Toda imagen MUST subirse con `uploadToR2` (`src/lib/r2.ts`) tras resize WebP con `sharp`
   (hoy 1280 px, calidad 80 en `src/lib/upload.ts`) y mostrarse con `imageUrl()`. MUST NOT hardcodearse URLs de R2.
+  Única excepción: los *artefactos temporales* de la siguiente viñeta.
 - `sharp` MUST importarse de forma lazy (`await import("sharp")`) dentro de la función que lo usa,
   nunca a nivel de módulo (rompe páginas en Vercel). `outputFileTracingIncludes` y
   `serverActions.bodySizeLimit: "10mb"` en `next.config.ts` MUST NOT eliminarse.
 - `uploadToR2` MUST enviar `Blob` firmado con `AwsV4Signer` (un `Buffer` produce `411 MissingContentLength`).
 - Las subidas MUST respetar la cuota por cuenta (marca 300 MB; usuario 50 MB al habilitarse la subida
   de usuarios) y MUST fallar con mensaje claro en español al alcanzarla. Se guarda la clave R2 y el peso.
-*Razón:* estos fallos no aparecen en local y han causado incidentes reales en producción.
+- **Artefactos temporales.** Las imágenes que son solo piezas intermedias de un paquete de importación
+  (p. ej. las fotos originales bajo `catalog-runs/` en R2) MAY guardarse sin `sharp` si se cumple **todo**:
+  (a) nunca se sirven al público ni se referencian desde `garment_images`, `post_images` ni logos;
+  (b) viven bajo un prefijo temporal propio, con vigencia de 7 días como máximo y purga automática;
+  (c) no cuentan contra la cuota de la cuenta; (d) la imagen que sí se publica sigue pasando por el
+  pipeline completo (`sharp`, cuota, clave R2 en base). Siguen aplicando la subida con `Blob` firmado y
+  toda regla de acceso del principio III.
+*Razón:* estos fallos no aparecen en local y han causado incidentes reales en producción. La excepción
+existe porque recomprimir dos veces una foto degrada su calidad sin aportar nada.
 
 ### VI. Un solo sistema visual
 La estética es **glass/tropical**. Los componentes MUST usar los tokens de `src/app/globals.css`
@@ -97,8 +106,9 @@ inventario, y expansión fuera de Colombia. Cada spec MUST declarar su alcance y
   en `specs/NNN-nombre/` (ruta fija de Spec Kit). El plan MUST listar las migraciones y su orden de
   despliegue. El contexto de producto vive en `.specify/memory/` (`mission`, `roadmap`, `tech-stack`).
   Los 8 features previos a Spec Kit están archivados, solo lectura, en `docs/legacy-specs/`.
-- **Puertas de calidad antes de merge:** `npm run lint` y `npm run build` MUST pasar; los criterios de
-  `validations.md` MUST verificarse en local (Supabase local con `supabase db reset`) y registrarse.
+- **Puertas de calidad antes de merge:** `npm run lint` y `npm run build` MUST pasar; los escenarios de
+  `quickstart.md` y los criterios de `checklists/` de la feature MUST verificarse en local (Supabase
+  local con `supabase db reset`) y registrarse en el PR.
   TODO(TESTS): no hay suite automatizada; añadir una requiere enmienda MINOR.
 - **Smoke test de release:** tras merge a `main`, verificar `/feed`, una ruta 404, login con contraseña
   incorrecta, una subida de imagen y que el clic saliente quede registrado.
@@ -120,4 +130,4 @@ guía. Si discrepan, se corrige el otro documento (las migraciones siguen mandan
 - **Revisión periódica:** al cerrar cada fase del roadmap se revisa esta constitución y se reconcilia
   con el estado del repo.
 
-**Version**: 1.0.0 | **Ratified**: 2026-10-29 | **Last Amended**: 2026-10-29
+**Version**: 1.1.0 | **Ratified**: 2026-10-29 | **Last Amended**: 2026-10-30
