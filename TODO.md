@@ -20,6 +20,14 @@ Marcado `[ ]` pendiente, `[x]` hecho. Cuando termines algo, muévelo a "Hecho" c
       variables de la nube (ver HANDOFF, "Para apuntar un script a la nube"), incluida
       `NEXT_PUBLIC_R2_PUBLIC_BASE`. Al 2026-10-07 siguen en 0 bytes: 24 imágenes de prendas, 3 de
       posts y 9 portadas (por eso la barra de almacenamiento marca ~0 %).
+- [ ] **Lectura de catálogo desde el panel** (`specs/001-catalog-scrape-bulk/`): antes del merge, en este
+      orden: (1) aplicar `supabase/migrations/20261030000000_catalog_runs.sql` a la **nube** (SQL Editor o MCP);
+      (2) agregar `CATALOG_BOT_CONTACT` (correo del equipo) en Vercel, Preview y Production, y redeploy;
+      (3) crear en R2 una regla de ciclo de vida de 7 días sobre el prefijo `catalog-runs/`;
+      (4) en un **Preview de Vercel**, generar una corrida de ≥ 60 prendas con fotos y descargar el paquete
+      (valida el ZIP en streaming; plan B en el HANDOFF); (5) probar el flujo completo con una marca real
+      que haya dado su consentimiento. Pendiente de validar con clic real en el navegador: el formulario de
+      la sección, el reintento tras cerrar la pestaña, la carpeta de fotos y el panel de comparación.
 - [ ] **Instagram solo en dev:** en Vercel, `INSTAGRAM_IMPORT_ENABLED=true` solo en Preview; en
       Production sin la variable (`docs/legacy-specs/2026-10-06-gestion-marcas-admin/`, "Ajustes").
 - [ ] **Release:** merge `dev` → `main` y smoke test en producción: `/marca/<slug>` con Instagram,
@@ -56,6 +64,12 @@ Si alguien propone retomarlo antes de tiempo, esta es la razón para decir "toda
 
 ## Hecho
 
+- 2026-10-30 — **Leer el catálogo de una marca desde `/admin/bulk`** (`specs/001-catalog-scrape-bulk/`): el
+  staff genera el paquete (Excel + fotos) desde la tienda Shopify o el CSV de la marca sin terminal,
+  sube Excel y carpeta de fotos de una sola vez (sin duplicar prendas, con cuota), queda el registro de
+  procedencia y consentimiento, y una lectura en vivo completa detecta qué prendas la marca ya no vende
+  (el staff elige cuáles archivar). Constitución v1.1.0 (cláusula de artefactos temporales).
+  Código listo y validado con tienda y R2 falsos; falta el despliegue (ver "Para cerrar el release").
 - 2026-10-06 — **Gestión completa para marcas y admin** (`docs/legacy-specs/2026-10-06-gestion-marcas-admin/`):
   editar prendas, looks sin Instagram (editar, archivar, eliminar), portada, cerrar marca, borrar
   cuenta, `/admin` con todas las marcas ("Gestionar"), usuarios y roles. Cierra una escalada

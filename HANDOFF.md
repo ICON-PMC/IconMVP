@@ -145,7 +145,30 @@ Tienda, producto e Instagram pasan siempre por `src/lib/links.ts`: `normalizeUrl
 300 MB de imágenes por marca. Cada imagen guarda su peso (`garment_images.bytes`,
 `post_images.bytes`, `brands.logo_bytes`) y el uso es la suma (`check_storage_quota`). Si subes una
 imagen nueva desde código, pasa `bytes` al insertar y, si la sube la propia marca,
-`{ enforceQuotaFor: brandId }` a `uploadImageField` (`src/lib/upload.ts`). El staff no se bloquea.
+`{ enforceQuotaFor: brandId }` a `uploadImageField` (`src/lib/upload.ts`). El staff no se bloquea,
+salvo en la carga masiva de `/admin/bulk` (carpeta de fotos y cargador de fotos sueltas), que manda
+`strict_quota=1` a `uploadGarmentImageAction` para respetar los 300 MB de la marca.
+
+### Leer el catálogo de una marca desde el panel (`/admin/bulk`)
+
+Spec Kit: `specs/001-catalog-scrape-bulk/` (spec, plan, contratos y quickstart). Guía de uso:
+`docs/importar-catalogo.md`. Resumen técnico:
+
+- La lógica del script `catalog:excel` vive en `src/lib/catalog/` y la comparten el CLI y el panel.
+- Una **corrida** (`catalog_runs`) avanza por tandas de ~40 s que repite el navegador (`maxDuration = 60`
+  en `/admin/bulk`); el estado vive en la base, así que se puede cerrar la pestaña y continuar.
+- Las fotos originales, el Excel y `origen.json` se guardan **7 días** en R2 bajo `catalog-runs/<id>/`
+  (almacén temporal; no cuenta contra la cuota). El paquete se descarga como ZIP en streaming
+  (`/admin/bulk/catalog/[runId]/paquete`). Se purgan solos al abrir `/admin/bulk`; configura además una
+  **regla de ciclo de vida de R2** de 7 días sobre ese prefijo como respaldo.
+- `garments.last_seen_at` (última lectura de la tienda) y `discontinued_at` (archivada desde la
+  comparación) alimentan la detección de prendas que la marca ya no vende. Un trigger evita que
+  `last_seen_at` cuente como edición (`updated_at`).
+- **Plan B del ZIP:** si la descarga en streaming falla en Vercel con paquetes grandes, armar el ZIP en el
+  navegador con `fflate` leyendo cada foto por un endpoint de staff (ver `specs/001-catalog-scrape-bulk/research.md` §3).
+- Seguridad: la URL de la tienda pasa por una guarda contra redes privadas (SSRF, con resolución de DNS y
+  redirecciones revalidadas). `CATALOG_ALLOW_PRIVATE_HOSTS=1` la desactiva **solo** si `NODE_ENV=development`
+  (para probar contra una tienda falsa local); no la pongas en Vercel.
 
 ## Lenguaje inclusivo
 
@@ -196,7 +219,8 @@ Row Level Security está activo en todas las tablas. Dos reglas fijas:
 ## Variables de entorno
 
 `.env.local` (nunca se commitea) necesita las variables de Supabase, R2 e Instagram — `.env.example`
-trae la lista de nombres. Los correos transaccionales (aprobación/rechazo de marcas) aún no existen:
+trae la lista de nombres. `CATALOG_BOT_CONTACT` es el correo del **equipo** que ven las tiendas cuando Icon lee
+su catálogo desde el panel (no uses un correo personal). Los correos transaccionales (aprobación/rechazo de marcas) aún no existen:
 quedaron para una fase posterior (ver `.specify/memory/roadmap.md`); la marca ve el resultado en su panel. Para apuntar un script a la nube en vez de local:
 
 ```bash
