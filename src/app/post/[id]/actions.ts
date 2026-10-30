@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/auth";
 
-// Dar like / quitar like a un post (Grupo 3 de specs/2026-09-22-user-social-actions).
+// Dar like / quitar like a un post (Grupo 3 de docs/legacy-specs/2026-09-22-user-social-actions).
 //
 // Devuelven un resultado en vez de redirigir porque las invoca un client component
 // (LikeButton) que necesita saber si revertir el estado optimista. Sin sesión devuelven

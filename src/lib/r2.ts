@@ -107,3 +107,32 @@ export async function deleteFromR2(keys: (string | null | undefined)[]): Promise
   );
   return results.filter((k): k is string => k !== null);
 }
+
+/**
+ * Lee un objeto de R2 con un GET firmado (no depende de que el bucket sea público). Devuelve la
+ * `Response` para poder leer el cuerpo en streaming, o `null` si la clave no existe. Lanza ante
+ * cualquier otro error. Solo servidor.
+ */
+export async function getFromR2(key: string): Promise<Response | null> {
+  const { endpoint, bucket, accessKeyId, secretAccessKey } = r2Config();
+  const cleanKey = key.replace(/^\//, "");
+  const signer = new AwsV4Signer({
+    url: `${endpoint.replace(/\/$/, "")}/${bucket}/${cleanKey}`,
+    method: "GET",
+    accessKeyId,
+    secretAccessKey,
+    region: "auto",
+    service: "s3",
+  });
+  const signed = await signer.sign();
+  const res = await fetch(signed.url.toString(), { method: "GET", headers: signed.headers });
+  if (res.status === 404) {
+    await res.body?.cancel();
+    return null;
+  }
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`R2 GET ${cleanKey} falló: ${res.status} ${text.slice(0, 200)}`);
+  }
+  return res;
+}
