@@ -1,5 +1,8 @@
 # Icon — Stack técnico
 
+> Contexto de apoyo. Si algo aquí contradice `constitution.md`, gana la constitución; si contradice
+> `supabase/migrations/` o el código, gana el repo. Última reconciliación: 2026-10-29 contra `origin/dev`.
+
 ## Capas y tecnologías
 
 | Capa | Tecnología | Por qué |
@@ -7,10 +10,11 @@
 | **App** | Next.js 16 (App Router, TypeScript) | SSR para SEO de marcas/prendas; server actions eliminan una capa de API; App Router da layouts anidados y loading states nativos |
 | **Estilos** | Tailwind v4 + shadcn/ui | Tailwind para utilidades y tokens de diseño; shadcn para componentes accesibles sin overhead de librería completa |
 | **Datos** | Supabase / Postgres | RLS por fila nativa, auth integrada, CLI para desarrollo local con Docker, vistas y RPCs sin necesidad de ORM |
-| **Auth** | Supabase Auth | Email+password activo; Google OAuth cableado pero pendiente de credenciales |
+| **Auth** | Supabase Auth | Email+password activo; Google OAuth cableado pero pendiente de credenciales. Sesión refrescada en `src/proxy.ts` (convención Next 16, no `middleware.ts`). Roles: `user`, `brand`, `curator`, `admin` |
 | **Imágenes** | Cloudflare R2 + `sharp` | Egress gratis (vs S3); resize + conversión a WebP en el server action antes de subir; compatible con S3 API |
 | **Deploy app** | Vercel | Auto-deploy desde GitHub; preview deployments por rama; `dev` = preview, `main` = producción |
 | **Deploy DB** | Supabase cloud | Proyecto `oyzvuckkxzbufncvzcvw`; migraciones via SQL Editor o MCP |
+| **Integraciones** | Instagram Graph API | Importación de catálogo de marcas, tras `INSTAGRAM_IMPORT_ENABLED` (solo Preview hasta la aprobación de Meta); tokens solo server-side |
 | **Búsqueda** | Postgres (`pg_trgm` + `unaccent`) | Trigram + unaccent resuelve acentos, plurales y subcadenas sin infra extra; RPCs `search_garments`, `search_posts`, `search_brands` |
 
 ## Lo que deliberadamente no usamos
@@ -32,8 +36,8 @@ hasta que entre monetización.
 
 | Tipo de cuenta | Cuota total (acumulada) |
 |---|---|
-| Usuario | **50 MB** |
-| Marca | **300 MB** |
+| Usuario | **50 MB** (pendiente: hoy los usuarios no suben imágenes; entra con la Fase 1) |
+| Marca | **300 MB** (implementado: función SQL `check_storage_quota`, `src/lib/storage-quota.ts`) |
 
 - La cuota aplica al espacio total usado en R2 por esa cuenta, no al tamaño de un archivo individual.
 - Al acercarse al límite, la UI debe avisar. Al alcanzarlo, el upload falla con mensaje claro.
@@ -48,8 +52,8 @@ es una métrica de producto, no solo de infraestructura.
 
 **Pipeline de subida:**
 1. El server action recibe el archivo del cliente.
-2. `sharp` (lazy import) redimensiona a máximo 1200px en el lado más largo y convierte a WebP con
-   calidad 85. Esto reduce el tamaño típico de una foto de teléfono de ~4 MB a ~150-400 KB.
+2. `sharp` (lazy import) redimensiona a máximo 1280px de ancho (`withoutEnlargement`) y convierte a WebP con
+   calidad 80 (`src/lib/upload.ts`). Esto reduce el tamaño típico de una foto de teléfono de ~4 MB a ~150-400 KB.
 3. El WebP resultante se sube a R2. Solo se guarda la clave R2 en la base de datos.
 
 **Pipeline de entrega:**
@@ -113,18 +117,34 @@ Plantilla en `supabase/migrations/20260614120000_init.sql`.
 
 ---
 
-## Variables de entorno requeridas
+## Variables de entorno
 
-`.env.local` (nunca se commitea). Los nombres están en `.env.example`.
+`.env.local` nunca se commitea. **La lista vigente de nombres vive en `.env.example`** (no se duplica
+aquí: esta tabla ya había derivado de él). Resumen por grupo:
 
-| Variable | Para qué |
-|---|---|
-| `NEXT_PUBLIC_SUPABASE_URL` | URL del proyecto Supabase (local o cloud) |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Clave pública de Supabase |
-| `SUPABASE_SERVICE_ROLE_KEY` | Clave de servicio (solo server-side, scripts de carga) |
-| `R2_ACCOUNT_ID` | ID de cuenta Cloudflare |
-| `R2_ACCESS_KEY_ID` | Clave de acceso R2 |
-| `R2_SECRET_ACCESS_KEY` | Secreto R2 |
-| `R2_BUCKET_NAME` | Nombre del bucket |
-| `R2_PUBLIC_URL` | URL pública del bucket (`pub-*.r2.dev`) |
-| `NEXT_PUBLIC_R2_PUBLIC_URL` | Mismo valor, expuesto al cliente para construir URLs de imagen |
+- Supabase: URL pública, anon key y `SUPABASE_SERVICE_ROLE_KEY` (solo servidor y scripts).
+- Cloudflare R2: base pública (`NEXT_PUBLIC_*`) y credenciales de subida (solo servidor).
+- Instagram: `INSTAGRAM_IMPORT_ENABLED` y credenciales de la app de Meta (ver `.env.example`).
+
+---
+
+## Rutas
+
+| Ruta | Audiencia | Propósito |
+|---|---|---|
+| `/` | Pública | Landing |
+| `/feed` | Pública | Feed mixto (masonry) + filtros + búsqueda con pestañas Prendas · Outfits · Marcas |
+| `/post/[id]`, `/prenda/[id]`, `/marca/[slug]` | Pública | Detalle; 404 propio ante ID inválido |
+| `/out/[garmentId]` | Pública | Registra `outbound_clicks` y redirige a la tienda |
+| `/saved`, `/settings`, `/onboarding` | Auth | Favoritos, perfil, preferencias iniciales |
+| `/login`, `/signup`, `/auth/callback` | Auth / sistema | Autenticación |
+| `/marca/panel` | Rol `brand` (o staff gestionando una marca) | Catálogo, looks, perfil, importación de Instagram, cierre de cuenta |
+| `/admin` | Staff | Métricas, cola de aprobación de marcas, marcas, usuarios y roles, etiquetas |
+| `/admin/bulk` | Staff | Carga masiva de prendas `.xlsx` |
+
+## Modelo de contenido (resumen; manda `supabase/migrations/`)
+
+`brand` → `garment` (prenda, unidad de compra) → `post` (outfit, unidad de inspiración, etiqueta ≥1
+prenda del catálogo de la marca). Taxonomía en `tags` (`category` → prendas; `occasion`, `style`,
+`temperature` → posts). Ciclo de vida: `draft → pending → published` (o `archived`). Popularidad vía
+triggers (guardar, like, clic saliente) y `score` = popularidad + recencia en las vistas del feed.

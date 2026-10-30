@@ -173,7 +173,7 @@ export type ReviewResult = { ok: true } | { ok: false; error: string };
 // A diferencia de requireStaff() (que redirige), estas acciones devuelven un error para que
 // la UI lo muestre; nunca lanzan 500 si las llama alguien sin permiso. La marca se entera del
 // resultado al ingresar a su panel (banner de estado); las notificaciones por correo quedan
-// para una fase posterior (ver specs/roadmap.md).
+// para una fase posterior (ver .specify/memory/roadmap.md).
 async function reviewBrand(
   fn: "approve_brand" | "reject_brand",
   brandId: string,
