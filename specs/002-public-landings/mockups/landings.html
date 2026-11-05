@@ -1,0 +1,829 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Landings Icon</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap">
+<style>
+/* Maqueta de specs/002-public-landings. Sigue el boceto "Note 4_11_2026.pdf".
+   Tokens = src/app/globals.css (cream, ink, forest, forest-deep, leaf, leaf-soft, coral, coral-soft, blush, sky, honey, honey-soft).
+   Nuevo token propuesto: --font-display = Instrument Serif (solo wordmark y títulos grandes). */
+:root{
+  --cream:#faf7ef; --ink:#16271d; --forest:#1f5638; --forest-deep:#143b27;
+  --leaf:#9fd08a; --leaf-soft:#e6f1d9; --coral:#ee5a2d; --coral-soft:#f6b59b; --blush:#f3caba;
+  --sky:#9cc3c9; --honey:#f2c94c; --honey-soft:#fbeeb8;
+  --muted:color-mix(in srgb,var(--ink) 66%,transparent); --line:color-mix(in srgb,var(--ink) 14%,transparent);
+  --display:"Instrument Serif",Georgia,serif; --body:"Geist",system-ui,-apple-system,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:#ece6d6;color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;padding:16px 16px 48px}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2.5px solid var(--coral);outline-offset:2px}
+p{margin:0}
+h1,h2,h3{margin:0;font-weight:400;font-family:var(--display);line-height:1.02;letter-spacing:-.01em;text-wrap:balance}
+[hidden]{display:none!important}
+
+/* ── barra de control de la maqueta ── */
+.bar{max-width:1180px;margin:0 auto 12px;display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center}
+.seg{display:inline-flex;flex-wrap:wrap;background:var(--cream);border:1px solid var(--line);border-radius:999px;padding:3px}
+.seg button{border:0;background:none;padding:7px 14px;border-radius:999px;cursor:pointer;color:var(--muted);font-weight:500;font-size:14px}
+.seg button[aria-pressed="true"]{background:var(--forest);color:#fff}
+.note{max-width:1180px;margin:0 auto 12px;font-size:12.5px;color:var(--muted)}
+.note b{color:var(--ink)}
+
+/* ── marco: se comporta como la página real ── */
+.frame{container-type:inline-size;position:relative;max-width:1180px;margin:0 auto;background:var(--cream);border-radius:20px;border:1px solid var(--line);overflow:hidden;isolation:isolate;transition:max-width .25s}
+.frame.mobile{max-width:375px}
+/* Aurora (fondo de blobs, como el componente real) */
+.aurora{position:absolute;inset:0;z-index:-1;overflow:hidden;pointer-events:none}
+.aurora i{position:absolute;border-radius:50%;filter:blur(70px)}
+.wrap{padding-inline:clamp(16px,5cqw,64px)}
+.sec{padding-block:clamp(44px,8cqw,96px)}
+.eyebrow{font-size:12px;letter-spacing:.16em;text-transform:uppercase;font-weight:600;color:var(--forest)}
+.lead{font-size:clamp(16px,1.9cqw,19px);color:var(--muted);max-width:54ch}
+.h2{font-size:clamp(34px,5.4cqw,58px)}
+.h2 em,.h1 em{font-style:italic;color:var(--coral)}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:999px;padding:14px 24px;font-weight:600;font-size:15px;cursor:pointer;text-decoration:none;white-space:nowrap;min-height:48px;transition:transform .15s}
+.btn:hover{transform:translateY(-1px)}
+.btn-p{background:var(--coral);color:#fff;box-shadow:0 8px 22px color-mix(in srgb,var(--coral) 35%,transparent)}
+.btn-f{background:var(--forest);color:#fff}
+.btn-g{background:rgba(255,255,255,.45);color:var(--forest);border:1px solid rgba(255,255,255,.7);backdrop-filter:blur(12px)}
+.btn-big{font-size:18px;padding:18px 34px;min-height:58px}
+.glass{background:linear-gradient(135deg,rgba(255,255,255,.42),rgba(255,255,255,.16));backdrop-filter:blur(22px) saturate(180%);-webkit-backdrop-filter:blur(22px) saturate(180%);border:1px solid rgba(255,255,255,.6);box-shadow:0 10px 36px rgba(20,40,30,.14),inset 0 1px 0 rgba(255,255,255,.6)}
+.soon{align-self:flex-start;display:inline-flex;align-items:center;gap:6px;background:var(--honey);color:var(--ink);border-radius:999px;font-size:12px;font-weight:600;padding:4px 11px;letter-spacing:.02em}
+.soon::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--coral)}
+.annot{display:block;font-size:12px;background:var(--honey-soft);color:var(--ink);border:1px dashed color-mix(in srgb,var(--honey) 80%,var(--ink));border-radius:10px;padding:7px 11px;margin-top:14px;max-width:70ch}
+
+/* foto pendiente (la pone el equipo) */
+.photo{position:relative;border-radius:18px;overflow:hidden;background:repeating-linear-gradient(135deg,var(--c,var(--blush)) 0 14px,color-mix(in srgb,var(--c,var(--blush)) 70%,#fff) 14px 28px);display:flex;align-items:flex-end;min-height:120px}
+.photo span{margin:10px;background:rgba(255,255,255,.85);border-radius:8px;padding:4px 8px;font-size:11px;font-weight:600;letter-spacing:.04em;color:var(--ink)}
+
+/* ── header ── */
+.head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:14px;border-radius:999px;padding:8px 8px 8px 20px}
+.brandmark{font-family:var(--display);font-size:26px;line-height:1;color:var(--forest);letter-spacing:.04em}
+.aud{display:inline-flex;background:rgba(255,255,255,.5);border-radius:999px;padding:3px;font-size:13px}
+.aud a{padding:7px 12px;border-radius:999px;text-decoration:none;color:var(--muted);font-weight:500;cursor:pointer;white-space:nowrap}
+.aud a[aria-current="page"]{background:var(--forest);color:#fff}
+.head .in{font-size:14px;font-weight:500;color:var(--forest);text-decoration:none;padding:8px 12px}
+@container (max-width:520px){.head{padding-left:14px}.head .in{display:none}.aud a{padding:7px 10px}}
+
+/* ── hero del boceto: ICON + arco + 3 pasos + líneas al horizonte ── */
+.hero{position:relative;padding-top:clamp(18px,3cqw,36px)}
+.arcbox{position:relative;text-align:center}
+.arcbox svg.arc{position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible;z-index:0}
+.wordmark{position:relative;z-index:1;display:inline-block;font-family:var(--display);font-size:clamp(84px,17cqw,200px);line-height:.86;letter-spacing:.06em;color:var(--forest);padding:0 .12em;margin-bottom:clamp(10px,2cqw,22px)}
+.wordmark{-webkit-text-stroke:.022em currentColor;paint-order:stroke fill}
+.wordmark .o{color:var(--coral)}
+.steps{position:relative;z-index:1;display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(10px,3cqw,40px)}
+.step{position:relative;border-radius:20px;padding:clamp(14px,2.4cqw,24px);padding-top:clamp(22px,3cqw,30px);min-width:0;border:1.5px solid var(--ink)}
+.step:nth-child(1){background:var(--coral-soft)}
+.step:nth-child(2){background:var(--honey-soft)}
+.step:nth-child(3){background:var(--leaf-soft)}
+.step .n{position:absolute;left:.12em;top:-.55em;font-family:var(--display);font-size:clamp(46px,6.4cqw,78px);line-height:1;color:var(--ink)}
+.step h3{font-family:var(--body);font-weight:600;text-transform:uppercase;letter-spacing:.12em;font-size:clamp(13px,1.7cqw,17px)}
+.step p{font-size:14px;color:var(--muted);margin-top:6px}
+@container (max-width:640px){.step p{display:none}.step{padding:20px 8px 12px;text-align:center}.step h3{letter-spacing:.06em}}
+svg.rays{display:block;width:100%;height:clamp(60px,10cqw,130px);overflow:visible}
+.horizon-copy{text-align:center;display:flex;flex-direction:column;align-items:center;gap:16px;padding:clamp(18px,3cqw,30px) 0 clamp(36px,6cqw,70px)}
+.h1{font-size:clamp(30px,4.6cqw,54px);max-width:20ch}
+.cta-row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+
+/* ── escena de diálogo ("Necesito un…" / "Quiero algo para…") ── */
+.scene{position:relative;border-radius:28px;overflow:hidden;background:var(--forest-deep);color:var(--cream);padding:clamp(22px,4cqw,48px);display:grid;grid-template-columns:auto 1fr 1fr auto;gap:clamp(10px,2.4cqw,28px);align-items:end}
+.scene .person{width:clamp(70px,11cqw,130px)}
+.bubble{position:relative;background:var(--cream);color:var(--ink);border-radius:26px;padding:clamp(16px,2.4cqw,26px);align-self:start}
+.bubble.l::after,.bubble.r::after{content:"";position:absolute;bottom:-12px;width:26px;height:26px;background:inherit;transform:rotate(45deg);border-radius:4px}
+.bubble.l::after{left:22px}.bubble.r::after{right:22px}
+.bubble .q{font-family:var(--display);font-size:clamp(24px,3.2cqw,38px);line-height:1.08}
+.bubble .q em{color:var(--coral);font-style:italic}
+.bubble .q .caret{display:inline-block;width:2px;height:.9em;background:var(--coral);vertical-align:-.1em;margin-left:2px;animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+.answer{display:flex;gap:12px;align-items:stretch}
+.answer .photo{flex:0 0 46%;min-height:150px;--c:var(--sky)}
+.answer .meta{display:flex;flex-direction:column;gap:6px;justify-content:center;font-size:14px}
+.chip{display:inline-flex;border-radius:999px;padding:4px 10px;font-size:12px;font-weight:500;background:var(--leaf-soft);color:var(--forest)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.dots{display:flex;gap:7px;padding:6px 4px}
+.dots i{width:10px;height:10px;border-radius:50%;background:var(--forest);animation:dot 1.2s infinite}
+.dots i:nth-child(2){animation-delay:.15s}.dots i:nth-child(3){animation-delay:.3s}.dots i:nth-child(4){animation-delay:.45s}
+@keyframes dot{0%,60%,100%{opacity:.25}30%{opacity:1}}
+.scene-cap{margin-top:16px;text-align:center;color:var(--muted)}
+@container (max-width:700px){
+  .scene{grid-template-columns:1fr 1fr;align-items:end}
+  .scene .bubble.l{grid-column:1/-1;grid-row:1}
+  .scene .p-left{grid-column:1;grid-row:3}
+  .scene .bubble.r{grid-column:1/-1;grid-row:2;margin-top:10px}
+  .scene .p-right{grid-column:2;grid-row:3;justify-self:end}
+}
+
+/* ── secciones "feature" (texto + ilustración) ── */
+.feat{display:grid;grid-template-columns:1fr 1fr;gap:clamp(22px,5cqw,64px);align-items:center}
+.feat.rev .art{order:2}
+.feat .copy{display:flex;flex-direction:column;gap:16px;min-width:0}
+.feat .art{min-width:0}
+.panel{border-radius:28px;padding:clamp(20px,3.5cqw,40px)}
+.bg-blush{background:var(--blush)}.bg-sky{background:color-mix(in srgb,var(--sky) 55%,var(--cream))}.bg-honey{background:var(--honey-soft)}.bg-leaf{background:var(--leaf-soft)}.bg-coral{background:var(--coral-soft)}
+.list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:10px}
+.list li{display:flex;gap:10px;align-items:flex-start}
+.list li::before{content:"";flex:0 0 22px;height:22px;border-radius:50%;background:var(--forest) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 12l4 4 8-8'/%3E%3C/svg%3E") center/14px no-repeat;margin-top:1px}
+.list.dash li::before{background:transparent;border:1.5px dashed var(--ink);background-image:none}
+.filters{display:flex;flex-direction:column;gap:12px}
+.frow{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.frow b{font-size:12px;letter-spacing:.12em;text-transform:uppercase;width:84px;color:var(--muted);font-weight:600}
+.fchip{border-radius:999px;padding:7px 13px;font-size:14px;border:1.5px solid var(--ink);background:transparent;cursor:pointer}
+.fchip[aria-pressed="true"]{background:var(--ink);color:var(--cream)}
+@container (max-width:700px){.feat{grid-template-columns:1fr}.feat.rev .art{order:0}}
+
+/* teléfono "Comparte tu estilo" */
+.phone{width:min(260px,100%);margin-inline:auto;border:2px solid var(--ink);border-radius:34px;padding:12px;background:var(--cream);box-shadow:12px 14px 0 var(--coral)}
+.phone .url{font-size:12px;text-align:center;background:var(--leaf-soft);border-radius:999px;padding:5px;margin-bottom:12px;color:var(--forest);font-weight:600}
+.phone .who{display:flex;gap:10px;align-items:center;margin-bottom:12px}
+.phone .av{width:44px;height:44px;border-radius:50%;background:var(--honey)}
+.phone .grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.phone .grid .photo{min-height:96px;border-radius:12px}
+.phone .grid .photo span{font-size:9px;margin:5px;padding:2px 5px}
+/* reseñas */
+.reviews{display:grid;grid-template-columns:1.3fr .7fr;gap:14px;align-items:center}
+.rv{background:var(--cream);border:1.5px solid var(--ink);border-radius:16px;padding:12px 14px;display:flex;flex-direction:column;gap:4px}
+.rv+.rv{margin-top:10px}
+.stars{color:var(--coral);letter-spacing:2px;font-size:16px}
+.stars s{color:color-mix(in srgb,var(--ink) 25%,transparent);text-decoration:none}
+.line{height:8px;border-radius:4px;background:color-mix(in srgb,var(--ink) 14%,transparent)}
+/* guardados */
+.saved{display:grid;grid-template-columns:1fr 1.2fr;gap:14px;align-items:end}
+.board{position:relative;border:1.5px solid var(--ink);border-radius:18px;padding:12px;background:var(--cream);display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.board .photo{min-height:110px;border-radius:12px}
+.board .photo span{font-size:9px;margin:5px;padding:2px 5px}
+.board .bm{position:absolute;right:16px;top:-26px;width:30px}
+/* postula */
+.postula{max-width:640px;margin-inline:auto}
+.form{display:flex;flex-direction:column;gap:12px}
+.form label{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:600}
+.form label small{font-weight:400;color:var(--muted)}
+.form input,.form select,.form textarea{background:rgba(255,255,255,.6);border:1.5px solid color-mix(in srgb,var(--ink) 25%,transparent);border-radius:14px;padding:12px 14px;width:100%;font-size:16px;font-weight:400}
+.form input:focus,.form select:focus,.form textarea:focus{outline:none;border-color:var(--forest);background:#fff}
+.form .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@container (max-width:520px){.form .two{grid-template-columns:1fr}}
+.form .check{flex-direction:row;align-items:flex-start;gap:10px;font-weight:400;font-size:13px;color:var(--muted)}
+.form .check input{width:18px;height:18px;margin-top:1px;accent-color:var(--forest);flex:0 0 auto}
+.form .check a{color:var(--forest);font-weight:600}
+.err{color:#b8381a;font-size:12.5px;font-weight:500}
+.ok{display:none;flex-direction:column;gap:8px;background:var(--leaf-soft);border:1.5px solid var(--forest);border-radius:20px;padding:20px}
+.ok.on{display:flex}
+.ok b{font-family:var(--display);font-weight:400;font-size:28px;line-height:1.1;color:var(--forest)}
+.notice{font-size:13px;background:var(--honey-soft);border-radius:12px;padding:10px 12px}
+.notice a{color:var(--forest);font-weight:600}
+/* ciudad */
+.city{text-align:center;display:flex;flex-direction:column;align-items:center;gap:22px}
+.city .h2{max-width:16ch}
+.city u{text-decoration:none;background:linear-gradient(transparent 62%,var(--honey) 62%,var(--honey) 92%,transparent 92%);font-style:italic;color:var(--forest)}
+
+/* ── marcas: ¿Cómo subo? ── */
+.how{display:grid;grid-template-columns:1fr 1fr;gap:clamp(14px,3cqw,32px);margin-top:32px}
+.opt{position:relative;border:1.5px solid var(--ink);border-radius:26px;padding:clamp(20px,3cqw,32px);display:flex;flex-direction:column;gap:16px;min-width:0}
+.opt.a{background:var(--leaf-soft)}
+.opt.b{background:var(--blush)}
+.opt .tag{font-family:var(--display);font-size:clamp(30px,4cqw,42px);line-height:1}
+.opt .sub{font-size:12px;letter-spacing:.12em;text-transform:uppercase;font-weight:600;color:var(--muted)}
+.opt .grow{flex:1;display:flex;flex-direction:column;gap:16px}
+.stamp{position:absolute;right:18px;top:-16px;transform:rotate(6deg);background:var(--honey);border:1.5px solid var(--ink);border-radius:12px;padding:6px 12px;font-weight:700;letter-spacing:.14em;font-size:14px}
+.stamp small{display:block;font-weight:500;letter-spacing:0;font-size:11px;text-align:center}
+.opt .rev-note{font-size:13px;color:var(--muted);border-top:1px dashed color-mix(in srgb,var(--ink) 30%,transparent);padding-top:12px}
+@container (max-width:700px){.how{grid-template-columns:1fr}}
+.drawer{margin-top:22px;border:1.5px solid var(--ink);border-radius:26px;background:var(--cream);padding:clamp(20px,3cqw,32px);box-shadow:10px 12px 0 var(--coral-soft)}
+/* panel de marca */
+.dashb{display:grid;grid-template-columns:1.25fr .75fr;gap:clamp(14px,3cqw,32px);align-items:stretch}
+.mock{border:1.5px solid var(--ink);border-radius:24px;background:var(--cream);padding:18px;display:grid;grid-template-columns:auto 1fr;gap:16px 20px;align-items:center}
+.donut{width:clamp(84px,11cqw,120px);aspect-ratio:1;border-radius:50%;background:conic-gradient(var(--coral) 0 34%,var(--honey) 0 58%,var(--leaf) 0 86%,var(--sky) 0);position:relative}
+.donut::after{content:"";position:absolute;inset:26%;border-radius:50%;background:var(--cream)}
+.mock .rows{display:flex;flex-direction:column;gap:8px}
+.mock .rows div{display:flex;justify-content:space-between;font-size:13px;gap:8px}
+.mock .rows .k{display:flex;gap:6px;align-items:center}
+.mock .rows .k::before{content:"";width:9px;height:9px;border-radius:3px;background:var(--c)}
+.tiles{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.tile{border-radius:14px;padding:10px 12px;border:1.5px solid var(--ink)}
+.tile b{display:block;font-family:var(--display);font-weight:400;font-size:30px;line-height:1}
+.tile span{font-size:12px;color:var(--muted)}
+.store{grid-column:1/-1;font-size:12px}
+.store .bar2{height:8px;border-radius:4px;background:color-mix(in srgb,var(--ink) 12%,transparent);overflow:hidden;margin-top:4px}
+.store .bar2 i{display:block;height:100%;width:22%;background:var(--forest)}
+.desc{border:1.5px solid var(--ink);border-radius:24px;padding:20px;display:flex;flex-direction:column;gap:12px;background:var(--honey-soft)}
+.desc .muted{color:var(--muted);font-size:14px}
+@container (max-width:700px){.dashb{grid-template-columns:1fr}}
+/* flujo post → página / WhatsApp */
+.flow{display:grid;grid-template-columns:1fr auto 1fr auto 1.1fr;gap:clamp(8px,2cqw,20px);align-items:center;margin-top:30px}
+.fcol{display:flex;flex-direction:column;gap:8px;align-items:center;min-width:0}
+.fcol .lbl{font-size:12px;letter-spacing:.12em;text-transform:uppercase;font-weight:600;color:var(--muted)}
+.ffeed{width:100%;max-width:220px;border:1.5px solid var(--ink);border-radius:20px;padding:10px;background:var(--cream);display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.ffeed .photo{min-height:80px;border-radius:10px}
+.ffeed .photo span{font-size:9px;margin:4px;padding:2px 4px}
+.ffeed .me{outline:3px solid var(--coral);outline-offset:2px}
+.fpost{width:100%;max-width:200px;border:1.5px solid var(--ink);border-radius:20px;padding:10px;background:var(--cream)}
+.fpost .photo{min-height:170px;border-radius:12px;--c:var(--honey)}
+.pin{position:absolute;left:52%;top:38%;background:var(--cream);border:1.5px solid var(--ink);border-radius:999px;padding:3px 8px;font-size:11px;font-weight:600}
+.pin::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--coral);margin-right:5px}
+.dest{display:flex;flex-direction:column;gap:14px;width:100%}
+.win{border:1.5px solid var(--ink);border-radius:16px;background:var(--cream);overflow:hidden}
+.win .top{display:flex;gap:5px;padding:7px 10px;border-bottom:1.5px solid var(--ink);background:var(--sky)}
+.win .top i{width:8px;height:8px;border-radius:50%;background:var(--cream);border:1px solid var(--ink)}
+.win .body{padding:10px;display:flex;flex-direction:column;gap:6px}
+.wa{border:1.5px solid var(--ink);border-radius:16px;background:var(--leaf-soft);padding:10px;display:flex;flex-direction:column;gap:6px;font-size:13px}
+.wa .msg{align-self:flex-end;background:var(--leaf);border-radius:12px 12px 2px 12px;padding:6px 10px;max-width:90%}
+.arrow{width:clamp(28px,5cqw,60px);color:var(--coral)}
+@container (max-width:700px){.flow{grid-template-columns:1fr}.arrow{transform:rotate(90deg);justify-self:center}}
+/* cifras */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(10px,2.5cqw,26px)}
+.stat{border:1.5px solid var(--ink);border-radius:22px;padding:clamp(14px,2.4cqw,26px);text-align:center}
+.stat:nth-child(1){background:var(--coral-soft)}.stat:nth-child(2){background:var(--honey-soft)}.stat:nth-child(3){background:color-mix(in srgb,var(--sky) 50%,var(--cream))}
+.stat b{display:block;font-family:var(--display);font-weight:400;font-size:clamp(38px,6cqw,68px);line-height:1}
+.stat span{font-size:14px;color:var(--muted)}
+.logos{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:24px}
+.logos i{width:54px;height:54px;border-radius:50%;border:1.5px solid var(--ink);background:var(--cream);display:grid;place-items:center;font-style:normal;font-size:10px;font-weight:600;color:var(--muted)}
+
+/* ── footer con borde ondulado (boceto) ── */
+.foot{position:relative;background:var(--forest-deep);color:var(--cream);margin-top:clamp(30px,5cqw,60px)}
+.foot svg.wave{position:absolute;left:0;top:-28px;width:100%;height:30px}
+.foot .in2{display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap;padding-block:clamp(34px,5cqw,56px)}
+.foot .brandmark{color:var(--cream);font-size:40px}
+.foot a{color:var(--cream);opacity:.85;text-decoration:none;display:block;padding:4px 0}
+.foot a:hover{opacity:1;text-decoration:underline}
+.foot .cols{display:flex;gap:40px;flex-wrap:wrap}
+.foot h4{margin:0 0 6px;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--leaf)}
+
+/* ── vista "al compartir" ── */
+.og-wrap{padding:clamp(20px,4cqw,48px);display:flex;flex-direction:column;gap:28px}
+.og{aspect-ratio:1200/630;border-radius:16px;overflow:hidden;position:relative;border:1px solid var(--line);display:grid;grid-template-columns:1.1fr .9fr;container-type:inline-size}
+.og .l{padding:6cqw;display:flex;flex-direction:column;justify-content:space-between}
+.og .wm{-webkit-text-stroke:.022em currentColor;font-family:var(--display);font-size:16cqw;line-height:.85;letter-spacing:.06em}
+.og .t{font-family:var(--display);font-size:5.2cqw;line-height:1.05}
+.og .u{font-size:2cqw;font-weight:600;letter-spacing:.1em;text-transform:uppercase}
+.og .r{display:grid;grid-template-columns:1fr 1fr;gap:1.6cqw;padding:3cqw}
+.og .r .photo{min-height:0;border-radius:2cqw}
+.og .r .photo span{font-size:1.4cqw}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <!-- persona de perfil mirando a la derecha -->
+    <symbol id="person-r" viewBox="0 0 130 170">
+      <path d="M8 170 C8 122 34 100 66 100 C98 100 122 122 122 170 Z" fill="var(--pfill,#f6b59b)" stroke="#16271d" stroke-width="3"/>
+      <path d="M54 82 L54 102 L78 102 L76 82 Z" fill="#e9b28f" stroke="#16271d" stroke-width="3" stroke-linejoin="round"/>
+      <ellipse cx="66" cy="54" rx="30" ry="34" fill="#e9b28f" stroke="#16271d" stroke-width="3"/>
+      <path d="M36 56 C30 22 60 8 82 16 C98 22 102 36 96 44 C84 38 66 40 58 30 C54 44 46 52 36 56 Z" fill="var(--hair,#16271d)"/>
+      <circle cx="84" cy="56" r="2.6" fill="#16271d"/>
+      <path d="M90 72 Q86 76 80 75" fill="none" stroke="#16271d" stroke-width="2.5" stroke-linecap="round"/>
+    </symbol>
+    <!-- persona de perfil mirando a la izquierda (marca) -->
+    <symbol id="person-l" viewBox="0 0 130 170">
+      <g transform="translate(130 0) scale(-1 1)">
+        <path d="M8 170 C8 122 34 100 66 100 C98 100 122 122 122 170 Z" fill="var(--pfill,#9cc3c9)" stroke="#16271d" stroke-width="3"/>
+        <path d="M54 82 L54 102 L78 102 L76 82 Z" fill="#c98b62" stroke="#16271d" stroke-width="3" stroke-linejoin="round"/>
+        <ellipse cx="66" cy="54" rx="30" ry="34" fill="#c98b62" stroke="#16271d" stroke-width="3"/>
+        <path d="M34 50 C34 18 62 10 80 14 C100 18 104 34 98 42 C92 30 70 30 60 34 C48 38 40 44 34 50 Z" fill="var(--hair,#16271d)"/>
+        <circle cx="34" cy="52" r="7" fill="var(--hair,#16271d)"/>
+        <circle cx="84" cy="56" r="2.6" fill="#16271d"/>
+        <path d="M90 72 Q86 76 80 75" fill="none" stroke="#16271d" stroke-width="2.5" stroke-linecap="round"/>
+      </g>
+    </symbol>
+    <symbol id="tee" viewBox="0 0 100 100">
+      <path d="M30 18 L42 12 Q50 22 58 12 L70 18 L88 34 L76 46 L68 38 L68 90 L32 90 L32 38 L24 46 L12 34 Z" fill="var(--tfill,#ee5a2d)" stroke="#16271d" stroke-width="3" stroke-linejoin="round"/>
+    </symbol>
+    <!-- persona que muestra una camiseta (Busca todo lo que necesites) -->
+    <symbol id="holder" viewBox="0 0 240 220">
+      <path d="M40 220 C40 170 62 150 92 150 C122 150 144 170 144 220 Z" fill="#9fd08a" stroke="#16271d" stroke-width="3"/>
+      <ellipse cx="92" cy="104" rx="30" ry="33" fill="#e9b28f" stroke="#16271d" stroke-width="3"/>
+      <path d="M62 100 C58 66 90 58 108 66 C122 72 124 88 118 94 C104 84 84 92 74 82 C72 92 68 98 62 100 Z" fill="#16271d"/>
+      <path d="M130 166 C150 150 160 120 170 92" fill="none" stroke="#16271d" stroke-width="3" stroke-linecap="round"/>
+      <path d="M52 168 C36 150 34 124 40 96" fill="none" stroke="#16271d" stroke-width="3" stroke-linecap="round"/>
+      <g transform="translate(118 18) rotate(10)"><use href="#tee" width="104" height="104" style="--tfill:#f2c94c"/></g>
+      <circle cx="40" cy="92" r="7" fill="#e9b28f" stroke="#16271d" stroke-width="3"/>
+    </symbol>
+    <!-- caja con ropa + marcador (Guarda tus gustos) -->
+    <symbol id="box" viewBox="0 0 220 190">
+      <g transform="translate(36 6) rotate(-14)"><use href="#tee" width="70" height="70" style="--tfill:#9cc3c9"/></g>
+      <g transform="translate(96 4) rotate(12)"><use href="#tee" width="66" height="66" style="--tfill:#ee5a2d"/></g>
+      <path d="M128 50 C128 36 150 30 160 40 C166 46 166 56 160 60 L132 64 Z" fill="#f2c94c" stroke="#16271d" stroke-width="3"/>
+      <path d="M20 86 L110 64 L200 86 L110 110 Z" fill="#fbeeb8" stroke="#16271d" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M20 86 L20 160 L110 186 L110 110 Z" fill="#f6b59b" stroke="#16271d" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M200 86 L200 160 L110 186 L110 110 Z" fill="#f3caba" stroke="#16271d" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M20 86 L4 112 L94 136 L110 110 Z" fill="#fbeeb8" stroke="#16271d" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M200 86 L216 112 L126 136 L110 110 Z" fill="#fbeeb8" stroke="#16271d" stroke-width="3" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="bookmark" viewBox="0 0 30 40">
+      <path d="M3 3 H27 V37 L15 27 L3 37 Z" fill="#ee5a2d" stroke="#16271d" stroke-width="2.5" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="arrow" viewBox="0 0 60 24">
+      <path d="M2 12 C20 4 38 20 54 12" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+      <path d="M46 5 L56 12 L46 19" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+  </defs>
+</svg>
+
+<div class="bar">
+  <div class="seg" role="group" aria-label="Vista">
+    <button type="button" data-view="users" aria-pressed="true">Personas · iconcolombia.com</button>
+    <button type="button" data-view="brands" aria-pressed="false">Marcas · /marcas</button>
+    <button type="button" data-view="og" aria-pressed="false">Al compartir</button>
+  </div>
+  <div class="seg" role="group" aria-label="Dispositivo">
+    <button type="button" id="d-desk" aria-pressed="true">Escritorio</button>
+    <button type="button" id="d-mob" aria-pressed="false">Móvil</button>
+  </div>
+</div>
+<p class="note">Maqueta de <b>specs/002-public-landings</b> siguiendo el boceto <b>Note 4_11_2026.pdf</b>. Las ilustraciones son finales (SVG con la paleta). Las fotos son prendas ya publicadas en Icon (R2 de producción); el equipo puede cambiarlas. Las cifras son de ejemplo. Las notas amarillas punteadas no van en la página real.</p>
+
+<div class="frame" id="frame">
+  <div class="aurora" aria-hidden="true">
+    <i style="left:-90px;top:30px;width:340px;height:340px;background:color-mix(in srgb,var(--coral) 45%,transparent)"></i>
+    <i style="right:-70px;top:-40px;width:300px;height:300px;background:color-mix(in srgb,var(--blush) 80%,transparent)"></i>
+    <i style="right:10%;top:520px;width:360px;height:360px;background:color-mix(in srgb,var(--honey) 40%,transparent)"></i>
+    <i style="left:15%;top:1100px;width:360px;height:360px;background:color-mix(in srgb,var(--leaf) 50%,transparent)"></i>
+    <i style="right:5%;top:1800px;width:320px;height:320px;background:color-mix(in srgb,var(--sky) 55%,transparent)"></i>
+    <i style="left:-60px;top:2600px;width:340px;height:340px;background:color-mix(in srgb,var(--coral-soft) 70%,transparent)"></i>
+  </div>
+
+<!-- ═════════════════════ PERSONAS  (iconcolombia.com/) ═════════════════════ -->
+<div id="v-users">
+  <div class="wrap">
+    <header class="head glass">
+      <span class="brandmark">ICON</span>
+      <nav class="aud" aria-label="Audiencia"><a aria-current="page">Soy persona</a><a data-go="brands">Tengo una marca</a></nav>
+      <a class="in" href="#">Entrar</a>
+    </header>
+
+    <section class="hero" aria-labelledby="u-h1">
+      <div class="arcbox">
+        <div class="wordmark" aria-label="ICON">IC<span class="o">O</span>N</div>
+        <ol class="steps" style="list-style:none;padding:0;margin:0">
+          <li class="step"><span class="n">1</span><h3>Busca</h3><p>Por ocasión, ciudad, precio y estilo.</p></li>
+          <li class="step"><span class="n">2</span><h3>Muestra</h3><p>Ves qué marcas colombianas lo tienen.</p></li>
+          <li class="step"><span class="n">3</span><h3>Compra</h3><p>Directo a la marca, en su tienda o su WhatsApp.</p></li>
+        </ol>
+      </div>
+      <svg class="rays" viewBox="0 0 1000 120" preserveAspectRatio="none" aria-hidden="true">
+        <g fill="none" stroke-width="2.5" vector-effect="non-scaling-stroke" stroke-linecap="round">
+          <path d="M110 0 C120 70 400 80 490 116" stroke="#ee5a2d" vector-effect="non-scaling-stroke"/>
+          <path d="M170 0 C180 60 420 76 494 116" stroke="#16271d" vector-effect="non-scaling-stroke"/>
+          <path d="M230 0 C240 50 440 70 498 116" stroke="#ee5a2d" vector-effect="non-scaling-stroke"/>
+          <path d="M470 0 C474 60 492 90 496 116" stroke="#f2c94c" vector-effect="non-scaling-stroke"/>
+          <path d="M500 0 L500 116" stroke="#16271d" vector-effect="non-scaling-stroke"/>
+          <path d="M530 0 C526 60 508 90 504 116" stroke="#f2c94c" vector-effect="non-scaling-stroke"/>
+          <path d="M770 0 C760 50 560 70 502 116" stroke="#1f5638" vector-effect="non-scaling-stroke"/>
+          <path d="M830 0 C820 60 580 76 506 116" stroke="#16271d" vector-effect="non-scaling-stroke"/>
+          <path d="M890 0 C880 70 600 80 510 116" stroke="#1f5638" vector-effect="non-scaling-stroke"/>
+          <path d="M-20 117 C200 112 420 119 500 117 C640 115 820 112 1020 116" stroke="#16271d" vector-effect="non-scaling-stroke"/>
+        </g>
+      </svg>
+      <div class="horizon-copy">
+        <h1 class="h1" id="u-h1">Encuentra lo que necesitas, <em>hecho en Colombia</em>.</h1>
+        <p class="lead">Moda independiente de Barranquilla, Medellín y Bogotá. Busca por lo que vas a hacer, no por marca.</p>
+        <div class="cta-row">
+          <a class="btn btn-p" href="#">Crea tu cuenta</a>
+          <a class="btn btn-g" href="#">Explorar el feed</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Escena "Necesito un…" -->
+    <section aria-label="Busca por necesidad">
+      <div class="scene">
+        <svg class="person p-left" style="--pfill:#f6b59b" viewBox="0 0 130 170" aria-hidden="true"><use href="#person-r"/></svg>
+        <div class="bubble l"><p class="q" id="need">Necesito un <em>vestido fresco</em> para <em>un matrimonio en la playa</em><span class="caret"></span></p></div>
+        <div class="bubble r">
+          <div class="answer">
+            <div class="photo"><span>FOTO · prenda</span></div>
+            <div class="meta">
+              <b style="font-size:16px">Vestido midi dama</b>
+              <span style="color:var(--muted)">pinkculture · Sincelejo</span>
+              <span style="font-weight:600">$210.000</span>
+              <div class="chips"><span class="chip">Matrimonio</span><span class="chip" style="background:var(--honey-soft);color:var(--ink)">Cálido</span></div>
+            </div>
+          </div>
+        </div>
+        <svg class="person p-right" style="--pfill:#9fd08a;--hair:#1f5638" viewBox="0 0 130 170" aria-hidden="true"><use href="#person-l"/></svg>
+      </div>
+      <p class="scene-cap">Dinos qué vas a hacer. Te mostramos qué prendas de marcas colombianas te sirven.</p>
+      <span class="annot">El texto del globo rota entre 3–4 frases de ejemplo (respeta “reducir movimiento”). La prenda de respuesta es una prenda real del catálogo.</span>
+    </section>
+
+    <!-- Busca todo lo que necesites -->
+    <section class="sec">
+      <div class="feat panel bg-sky">
+        <div class="art"><svg viewBox="0 0 240 220" style="width:100%;max-width:320px;display:block;margin-inline:auto" aria-hidden="true"><use href="#holder"/></svg></div>
+        <div class="copy">
+          <span class="eyebrow">Busca</span>
+          <h2 class="h2">Busca todo lo que <em>necesites</em>.</h2>
+          <div class="filters" role="group" aria-label="Ejemplo de filtros">
+            <div class="frow"><b>Ocasión</b><button class="fchip" aria-pressed="true">Matrimonio</button><button class="fchip" aria-pressed="false">Oficina</button><button class="fchip" aria-pressed="false">Playa</button></div>
+            <div class="frow"><b>Ciudad</b><button class="fchip" aria-pressed="false">Barranquilla</button><button class="fchip" aria-pressed="true">Medellín</button><button class="fchip" aria-pressed="false">Bogotá</button></div>
+            <div class="frow"><b>Precio</b><button class="fchip" aria-pressed="false">$</button><button class="fchip" aria-pressed="true">$$</button><button class="fchip" aria-pressed="false">$$$</button></div>
+            <div class="frow"><b>Estilo</b><button class="fchip" aria-pressed="true">Tropical</button><button class="fchip" aria-pressed="false">Minimal</button></div>
+          </div>
+          <div><a class="btn btn-f" href="#">Buscar en el feed →</a></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Comparte tu estilo — Próximamente -->
+    <section class="sec" style="padding-top:0">
+      <div class="feat rev">
+        <div class="art">
+          <div class="phone" aria-hidden="true">
+            <div class="url">iconcolombia.com/me</div>
+            <div class="who"><div class="av"></div><div><b>Tu nombre</b><br><span style="font-size:12px;color:var(--muted)">Medellín · 12 outfits</span></div></div>
+            <div class="grid"><div class="photo" style="--c:var(--coral-soft)"><span>FOTO</span></div><div class="photo" style="--c:var(--leaf-soft)"><span>FOTO</span></div><div class="photo" style="--c:var(--honey-soft)"><span>FOTO</span></div><div class="photo" style="--c:var(--sky)"><span>FOTO</span></div></div>
+          </div>
+        </div>
+        <div class="copy">
+          <span class="soon">Próximamente</span>
+          <h2 class="h2">Comparte tu <em>estilo</em>.</h2>
+          <p class="lead">Tu perfil público en iconcolombia.com/me, con tus outfits y las marcas colombianas que usas.</p>
+          <div><a class="btn btn-p" href="#">Crea tu cuenta</a></div>
+          <span class="annot">FR-017: rotulado “Próximamente”. El botón lleva al registro, que sí existe; nada enlaza a /me todavía.</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Escribe reseñas — Próximamente -->
+    <section class="sec" style="padding-top:0">
+      <div class="panel bg-honey">
+        <div class="feat">
+          <div class="copy">
+            <span class="soon">Próximamente</span>
+            <h2 class="h2">Escribe <em>reseñas</em>.</h2>
+            <p class="lead">Cuenta cómo te quedó y cómo fue comprarle a la marca. Ayudas a otras personas a elegir.</p>
+          </div>
+          <div class="art reviews" aria-hidden="true">
+            <div>
+              <div class="rv"><span class="stars">★★★★★</span><div class="line" style="width:90%"></div><div class="line" style="width:70%"></div></div>
+              <div class="rv"><span class="stars">★★★★<s>★</s></span><div class="line" style="width:80%"></div></div>
+              <div class="rv"><span class="stars">★★★<s>★★</s></span><div class="line" style="width:60%"></div></div>
+            </div>
+            <div class="photo" style="--c:var(--coral-soft);min-height:200px"><span>FOTO · prenda</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Guarda todos tus gustos -->
+    <section class="sec" style="padding-top:0">
+      <div class="feat rev">
+        <div class="art saved" aria-hidden="true">
+          <svg viewBox="0 0 220 190" style="width:100%;display:block"><use href="#box"/></svg>
+          <div class="board">
+            <svg class="bm" viewBox="0 0 30 40"><use href="#bookmark"/></svg>
+            <div class="photo" style="--c:var(--blush)"><span>FOTO</span></div>
+            <div class="photo" style="--c:var(--leaf-soft)"><span>FOTO</span></div>
+            <div class="photo" style="--c:var(--sky)"><span>FOTO</span></div>
+          </div>
+        </div>
+        <div class="copy">
+          <span class="eyebrow">Guarda</span>
+          <h2 class="h2">Guarda todos tus gustos <em>para después</em>.</h2>
+          <ul class="list"><li>Guarda prendas y outfits en tu lista.</li><li>Dale like a lo que te gusta.</li><li>Sigue a las marcas que te representan.</li></ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Postula una marca -->
+    <section class="sec" style="padding-top:0" id="postula">
+      <div class="panel bg-leaf">
+        <div class="postula">
+          <div style="text-align:center;display:flex;flex-direction:column;gap:12px;margin-bottom:22px">
+            <span class="eyebrow">Postula una marca</span>
+            <h2 class="h2">¿Qué marca quieres ver en <em>Icon</em>?</h2>
+            <p class="lead" style="margin-inline:auto">Si conoces una marca colombiana independiente que no está aquí, cuéntanos y la invitamos.</p>
+          </div>
+          <form class="form" id="f-post" novalidate>
+            <div class="two">
+              <label>Nombre de la marca<input name="name" type="text" autocomplete="off" required></label>
+              <label>Instagram o enlace<input name="link" type="text" placeholder="@marca o https://…" required></label>
+            </div>
+            <div class="two">
+              <label>Ciudad <small>(opcional)</small><select name="city"><option value="">—</option><option>Barranquilla</option><option>Medellín</option><option>Bogotá</option><option>Otra</option></select></label>
+              <label>Tu WhatsApp o correo <small>(opcional, para avisarte)</small><input name="contact" type="text"></label>
+            </div>
+            <label class="check" id="post-consent" hidden><input type="checkbox" name="consent"><span>Acepto el <a href="#">tratamiento de mis datos</a> para que me avisen sobre esta marca.</span></label>
+            <p class="err" role="alert"></p>
+            <div><button class="btn btn-p" type="submit">Postular</button></div>
+          </form>
+          <div class="notice" id="post-dup" hidden><b>Esa marca ya está en Icon.</b> <a href="#">Ver su perfil →</a></div>
+          <div class="ok" id="post-ok" role="status"><b>¡Gracias por postularla!</b><span>El equipo revisa cada postulación y contacta a la marca. Si nos dejaste tu contacto, te avisamos cuando entre.</span></div>
+          <span class="annot">Prueba: escribe “Bruma” para ver el aviso de marca repetida. El consentimiento solo aparece si dejas tu contacto (FR-023).</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Mejora tu estilo con ropa de tu ciudad -->
+    <section class="sec city">
+      <h2 class="h2">Mejora tu estilo con ropa de <u id="cityword">tu ciudad</u>.</h2>
+      <a class="btn btn-p btn-big" href="#">Crea tu cuenta</a>
+      <p style="color:var(--muted);font-size:14px">Gratis. Barranquilla · Medellín · Bogotá.</p>
+    </section>
+  </div>
+
+  <footer class="foot">
+    <svg class="wave" viewBox="0 0 1000 30" preserveAspectRatio="none" aria-hidden="true"><path d="M0 30 C120 6 260 4 420 14 C600 26 780 0 1000 10 L1000 30 Z" fill="#143b27"/></svg>
+    <div class="wrap in2">
+      <div><span class="brandmark">ICON</span><p style="opacity:.75;margin-top:8px">Moda colombiana independiente.</p></div>
+      <div class="cols">
+        <div><h4>Icon</h4><a href="#">Explorar el feed</a><a href="#">Crear cuenta</a><a href="#">Entrar</a></div>
+        <div><h4>Marcas</h4><a data-go="brands" href="#">Icon para marcas</a><a href="#postula">Postula una marca</a></div>
+        <div><h4>Contacto</h4><a href="#">WhatsApp +57 315 242 9478</a><a href="#">Privacidad</a></div>
+      </div>
+    </div>
+  </footer>
+</div>
+
+<!-- ═════════════════════ MARCAS  (iconcolombia.com/marcas) ═════════════════════ -->
+<div id="v-brands" hidden>
+  <div class="wrap">
+    <header class="head glass">
+      <span class="brandmark">ICON <span class="eyebrow" style="font-family:var(--body);font-size:10px;vertical-align:middle">marcas</span></span>
+      <nav class="aud" aria-label="Audiencia"><a data-go="users">Soy persona</a><a aria-current="page">Tengo una marca</a></nav>
+      <a class="in" href="#">Entrar</a>
+    </header>
+
+    <section class="hero" aria-labelledby="b-h1">
+      <div class="arcbox">
+        <div class="wordmark" aria-label="ICON">IC<span class="o">O</span>N</div>
+        <ol class="steps" style="list-style:none;padding:0;margin:0">
+          <li class="step"><span class="n">1</span><h3>Crea</h3><p>Tu perfil de marca: ciudad, estilos y portada.</p></li>
+          <li class="step"><span class="n">2</span><h3>Etiqueta</h3><p>Cada prenda con ocasión, estilo, clima y precio.</p></li>
+          <li class="step"><span class="n">3</span><h3>Vende</h3><p>En tu canal: tu tienda o tu WhatsApp. La venta es tuya.</p></li>
+        </ol>
+      </div>
+      <svg class="rays" viewBox="0 0 1000 120" preserveAspectRatio="none" aria-hidden="true">
+        <g fill="none" stroke-width="2.5" stroke-linecap="round">
+          <path d="M110 0 C120 70 400 80 490 116" stroke="#ee5a2d" vector-effect="non-scaling-stroke"/>
+          <path d="M170 0 C180 60 420 76 494 116" stroke="#16271d" vector-effect="non-scaling-stroke"/>
+          <path d="M230 0 C240 50 440 70 498 116" stroke="#ee5a2d" vector-effect="non-scaling-stroke"/>
+          <path d="M470 0 C474 60 492 90 496 116" stroke="#f2c94c" vector-effect="non-scaling-stroke"/>
+          <path d="M500 0 L500 116" stroke="#16271d" vector-effect="non-scaling-stroke"/>
+          <path d="M530 0 C526 60 508 90 504 116" stroke="#f2c94c" vector-effect="non-scaling-stroke"/>
+          <path d="M770 0 C760 50 560 70 502 116" stroke="#1f5638" vector-effect="non-scaling-stroke"/>
+          <path d="M830 0 C820 60 580 76 506 116" stroke="#16271d" vector-effect="non-scaling-stroke"/>
+          <path d="M890 0 C880 70 600 80 510 116" stroke="#1f5638" vector-effect="non-scaling-stroke"/>
+          <path d="M-20 117 C200 112 420 119 500 117 C640 115 820 112 1020 116" stroke="#16271d" vector-effect="non-scaling-stroke"/>
+        </g>
+      </svg>
+      <div class="horizon-copy">
+        <h1 class="h1" id="b-h1">Tu marca frente a quien busca <em>justo lo que haces</em>.</h1>
+        <p class="lead">Crea tu perfil, etiqueta tus prendas y recibe a la gente en tu tienda o tu WhatsApp. Sin comisiones.</p>
+        <div class="cta-row">
+          <a class="btn btn-p" href="#como" data-scroll="como">Únete ya</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ¿Cómo subo? -->
+    <section class="sec" style="padding-top:clamp(10px,2cqw,24px)" id="como">
+      <div style="text-align:center"><h2 class="h2">¿Cómo <em>subo</em> mi catálogo?</h2></div>
+      <div class="how">
+        <article class="opt a">
+          <div><span class="sub">Opción A</span><div class="tag">Tú</div></div>
+          <div class="grow">
+            <ul class="list">
+              <li>Creas tu cuenta y armas tu perfil.</li>
+              <li>Subes tus prendas una por una o todas con un Excel.</li>
+              <li>Etiquetas ocasión, estilo y clima, y armas looks.</li>
+              <li>Importar desde Instagram <span class="soon" style="margin-left:4px">Próximamente</span></li>
+            </ul>
+            <div><p class="sub" style="margin-bottom:8px">Tú pones</p>
+            <ul class="list dash"><li>Fotos, precios y tallas.</li><li>El enlace a tu tienda o tu WhatsApp.</li></ul></div>
+          </div>
+          <p class="rev-note">Revisamos cada perfil antes de publicarlo.</p>
+          <div><a class="btn btn-f" href="#">Crea tu cuenta</a></div>
+        </article>
+        <article class="opt b">
+          <span class="stamp">GRATIS<small>por ahora</small></span>
+          <div><span class="sub">Opción B</span><div class="tag">Nosotros</div></div>
+          <div class="grow">
+            <ul class="list">
+              <li>Leemos tu catálogo desde tu tienda online o tu Excel.</li>
+              <li>Subimos fotos, precios, tallas y etiquetas por ti.</li>
+              <li>Te mostramos todo antes de publicarlo.</li>
+            </ul>
+            <div><p class="sub" style="margin-bottom:8px">Tú pones</p>
+            <ul class="list dash"><li>El enlace a tu tienda o tu Excel.</li><li>Un WhatsApp o correo para coordinar.</li></ul></div>
+          </div>
+          <p class="rev-note">Revisamos cada perfil antes de publicarlo.</p>
+          <div><button class="btn btn-p" type="button" id="open-asist" aria-expanded="false" aria-controls="asist">Solicitar</button></div>
+        </article>
+      </div>
+      <span class="annot">“Importar desde Instagram” va como Próximamente porque en producción está apagado hasta que Meta apruebe la app (TODO.md). Si Meta lo aprueba antes del lanzamiento, se quita la etiqueta.</span>
+
+      <div class="drawer" id="asist" hidden>
+        <h3 style="font-size:clamp(28px,3.4cqw,36px)">Solicita la subida asistida</h3>
+        <p style="color:var(--muted);margin:6px 0 18px">Te escribimos el mismo día hábil para coordinar.</p>
+        <form class="form" id="f-asist" novalidate>
+          <div class="two">
+            <label>Nombre de la marca<input name="brand" type="text" required></label>
+            <label>Tu nombre<input name="person" type="text" autocomplete="name" required></label>
+          </div>
+          <div class="two">
+            <label>WhatsApp o correo<input name="contact" type="text" placeholder="300 123 4567 o tu@correo.com" required></label>
+            <label>Tienda online o Instagram<input name="link" type="text" placeholder="https://… o @tumarca" required></label>
+          </div>
+          <div class="two">
+            <label>Ciudad<select name="city" required><option value="">Elige…</option><option>Barranquilla</option><option>Medellín</option><option>Bogotá</option><option>Otra</option></select></label>
+            <label>Mensaje <small>(opcional)</small><input name="msg" type="text" placeholder="Ej.: tengo 40 prendas en Shopify"></label>
+          </div>
+          <label class="check"><input type="checkbox" name="consent" required><span>Acepto el <a href="#">tratamiento de mis datos</a> para que Icon me contacte sobre mi catálogo.</span></label>
+          <p class="err" role="alert"></p>
+          <div><button class="btn btn-p" type="submit">Solicitar</button></div>
+        </form>
+        <div class="ok" id="asist-ok" role="status">
+          <b>Recibimos tu solicitud.</b>
+          <span>Te escribimos <strong>hoy mismo</strong> por WhatsApp o correo (el que nos dejaste). Si nos escribes fuera de horario o en fin de semana, te respondemos el siguiente día hábil.</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Escena "Quiero algo para…" -->
+    <section aria-label="La gente busca por necesidad">
+      <div class="scene" style="background:var(--coral)">
+        <svg class="person p-left" style="--pfill:#fbeeb8" viewBox="0 0 130 170" aria-hidden="true"><use href="#person-r"/></svg>
+        <div class="bubble l"><p class="q">Quiero algo para <em>una cena en Bogotá</em>…</p></div>
+        <div class="bubble r" style="justify-self:end;align-self:end;margin-bottom:30px"><div class="dots" aria-label="La marca responde"><i></i><i></i><i></i><i></i></div></div>
+        <svg class="person p-right" style="--pfill:#9cc3c9;--hair:#143b27" viewBox="0 0 130 170" aria-hidden="true"><use href="#person-l"/></svg>
+      </div>
+      <p class="scene-cap">En Icon la gente busca por lo que va a hacer, no por marca. Si etiquetas bien, te encuentran.</p>
+    </section>
+
+    <!-- Tu panel -->
+    <section class="sec">
+      <div style="text-align:center;margin-bottom:28px"><h2 class="h2">Tu <em>panel</em></h2></div>
+      <div class="dashb">
+        <div class="mock" aria-hidden="true">
+          <div class="donut"></div>
+          <div class="rows">
+            <div><span class="k" style="--c:var(--coral)">Prendas publicadas</span><b>34</b></div>
+            <div><span class="k" style="--c:var(--honey)">Looks</span><b>8</b></div>
+            <div><span class="k" style="--c:var(--leaf)">Borradores</span><b>5</b></div>
+            <div><span class="k" style="--c:var(--sky)">Estado del perfil</span><span class="chip">Aprobado</span></div>
+          </div>
+          <div class="tiles">
+            <div class="tile" style="background:var(--coral-soft)"><b>34</b><span>prendas</span></div>
+            <div class="tile" style="background:var(--honey-soft)"><b>8</b><span>looks</span></div>
+            <div class="tile" style="background:var(--leaf-soft)"><b>IG</b><span>conectado</span></div>
+          </div>
+          <div class="store">Espacio usado · 22 %<div class="bar2"><i></i></div></div>
+        </div>
+        <div class="desc">
+          <h3 style="font-size:28px">Todo tu catálogo en un lugar</h3>
+          <ul class="list" style="font-size:14px">
+            <li>Resumen de prendas, looks y borradores.</li>
+            <li>Estado de revisión de tu perfil.</li>
+            <li>Conexión con Instagram.</li>
+            <li>Espacio usado por tus fotos.</li>
+          </ul>
+          <p class="muted"><span class="soon">Próximamente</span><br>Cuántas personas fueron a tu tienda o tu WhatsApp desde Icon.</p>
+        </div>
+      </div>
+      <span class="annot">FR-011: solo lo que el panel tiene hoy. Las cifras del panel son ilustrativas (dibujo, no datos).</span>
+    </section>
+
+    <!-- tu post → post → tu página / tu WhatsApp -->
+    <section class="sec" style="padding-top:0">
+      <div style="text-align:center;display:flex;flex-direction:column;gap:12px;align-items:center">
+        <h2 class="h2">De tu publicación <em>a tu tienda</em>.</h2>
+        <p class="lead">Cada prenda etiquetada lleva directo a tu página o tu WhatsApp. Icon registra cada clic.</p>
+      </div>
+      <div class="flow">
+        <div class="fcol"><span class="lbl">Tu post en el feed</span>
+          <div class="ffeed" aria-hidden="true"><div class="photo" style="--c:var(--leaf-soft)"><span>FOTO</span></div><div class="photo me" data-keep style="--c:var(--honey)"><span>TU POST</span></div><div class="photo" style="--c:var(--sky)"><span>FOTO</span></div><div class="photo" style="--c:var(--blush)"><span>FOTO</span></div></div>
+        </div>
+        <svg class="arrow" viewBox="0 0 60 24" aria-hidden="true"><use href="#arrow"/></svg>
+        <div class="fcol"><span class="lbl">La prenda</span>
+          <div class="fpost" style="position:relative" aria-hidden="true"><div class="photo"><span>FOTO · look</span></div><span class="pin">Pantalón Velero</span><div style="display:flex;justify-content:space-between;margin-top:8px;font-size:13px"><b>Pantalón Velero</b><span>$54.950</span></div></div>
+        </div>
+        <svg class="arrow" viewBox="0 0 60 24" aria-hidden="true"><use href="#arrow"/></svg>
+        <div class="dest" aria-hidden="true">
+          <div><span class="lbl fcol" style="align-items:flex-start">Tu página</span>
+            <div class="win"><div class="top"><i></i><i></i><i></i></div><div class="body"><div class="line" style="width:60%"></div><div class="line" style="width:85%"></div><div class="btn btn-f" style="min-height:0;padding:6px 12px;font-size:12px;align-self:flex-start">Comprar</div></div></div>
+          </div>
+          <div><span class="lbl fcol" style="align-items:flex-start">Tu WhatsApp</span>
+            <div class="wa"><div class="msg">Hola, vi el Pantalón Velero en Icon. ¿Hay talla M?</div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="city" style="padding-bottom:clamp(30px,5cqw,56px)">
+      <a class="btn btn-p btn-big" href="#como" data-scroll="como">Únete ya</a>
+    </section>
+
+    <!-- cifras -->
+    <section class="sec" style="padding-top:clamp(20px,3cqw,30px)">
+      <div class="stats">
+        <div class="stat"><b>12</b><span>marcas</span></div>
+        <div class="stat"><b>40+</b><span>publicaciones</span></div>
+        <div class="stat"><b>100+</b><span>personas</span></div>
+      </div>
+      <div class="logos" aria-label="Marcas en Icon"><i>LOGO</i><i>LOGO</i><i>LOGO</i><i>LOGO</i><i>LOGO</i><i>LOGO</i></div>
+      <span class="annot" style="margin-inline:auto">Cifras reales; cada contador se oculta si no llega a 10 marcas · 50 publicaciones · 100 personas. Los logos salen de las marcas activas (si no hay, la franja desaparece).</span>
+    </section>
+  </div>
+
+  <footer class="foot">
+    <svg class="wave" viewBox="0 0 1000 30" preserveAspectRatio="none" aria-hidden="true"><path d="M0 30 C120 6 260 4 420 14 C600 26 780 0 1000 10 L1000 30 Z" fill="#143b27"/></svg>
+    <div class="wrap in2">
+      <div><span class="brandmark">ICON</span><p style="opacity:.75;margin-top:8px">¿Dudas? Escríbenos por WhatsApp.</p><a class="btn btn-p" style="margin-top:14px;display:inline-flex;opacity:1" href="#">WhatsApp +57 315 242 9478</a></div>
+      <div class="cols">
+        <div><h4>Marcas</h4><a href="#">Crear cuenta de marca</a><a href="#como" data-scroll="como">Subida asistida</a><a href="#">Entrar a mi panel</a></div>
+        <div><h4>Icon</h4><a data-go="users" href="#">Para personas</a><a href="#">Privacidad</a></div>
+      </div>
+    </div>
+  </footer>
+</div>
+
+<!-- ═════════════════════ AL COMPARTIR (imágenes OG) ═════════════════════ -->
+<div id="v-og" hidden>
+  <div class="og-wrap">
+    <p class="lead">Imagen que se ve al compartir cada enlace por WhatsApp o Instagram (1200×630), con prendas reales del catálogo.</p>
+    <div>
+      <p class="eyebrow" style="margin-bottom:8px">iconcolombia.com</p>
+      <div class="og" style="background:var(--cream)">
+        <div class="l"><div class="wm" style="color:var(--forest)">IC<span style="color:var(--coral)">O</span>N</div><div class="t">Encuentra lo que necesitas, <em style="color:var(--coral)">hecho en Colombia</em>.</div><div class="u" style="color:var(--forest)">Barranquilla · Medellín · Bogotá</div></div>
+        <div class="r" style="background:var(--coral-soft)"><div class="photo" style="--c:var(--blush)"><span>FOTO</span></div><div class="photo" style="--c:var(--leaf-soft)"><span>FOTO</span></div><div class="photo" style="--c:var(--honey-soft)"><span>FOTO</span></div><div class="photo" style="--c:var(--sky)"><span>FOTO</span></div></div>
+      </div>
+    </div>
+    <div>
+      <p class="eyebrow" style="margin-bottom:8px">iconcolombia.com/marcas</p>
+      <div class="og" style="background:var(--forest-deep);color:var(--cream)">
+        <div class="l"><div class="wm">IC<span style="color:var(--coral)">O</span>N</div><div class="t">Tu marca frente a quien busca <em style="color:var(--honey)">justo lo que haces</em>.</div><div class="u" style="color:var(--leaf)">Gratis por ahora · Sin comisiones</div></div>
+        <div class="r" style="background:var(--forest)"><div class="photo" style="--c:var(--coral-soft)"><span>FOTO</span></div><div class="photo" style="--c:var(--honey-soft)"><span>FOTO</span></div><div class="photo" style="--c:var(--leaf-soft)"><span>FOTO</span></div><div class="photo" style="--c:var(--blush)"><span>FOTO</span></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
+function show(v){
+  ["users","brands","og"].forEach(k=>{$("#v-"+k).hidden=k!==v});
+  $$("[data-view]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.view===v));
+  $(".aurora").hidden=v==="og";
+  try{history.replaceState(null,"","#"+v)}catch(e){}
+}
+function dev(m){$("#frame").classList.toggle("mobile",m);$("#d-mob").setAttribute("aria-pressed",m);$("#d-desk").setAttribute("aria-pressed",!m)}
+$$("[data-view]").forEach(b=>b.onclick=()=>show(b.dataset.view));
+$("#d-desk").onclick=()=>dev(false); $("#d-mob").onclick=()=>dev(true);
+$$("[data-go]").forEach(a=>a.addEventListener("click",e=>{e.preventDefault();show(a.dataset.go);$("#frame").scrollIntoView()}));
+$$("[data-scroll]").forEach(a=>a.addEventListener("click",e=>{e.preventDefault();document.getElementById(a.dataset.scroll).scrollIntoView({behavior:reduce?"auto":"smooth",block:"start"})}));
+$$(".fchip").forEach(c=>c.addEventListener("click",()=>c.setAttribute("aria-pressed",c.getAttribute("aria-pressed")!=="true")));
+
+// globo "Necesito un…" rotando
+const needs=[
+  'Necesito un <em>vestido fresco</em> para <em>un matrimonio en la playa</em>',
+  'Necesito una <em>camisa de lino</em> para <em>la oficina en Barranquilla</em>',
+  'Necesito algo <em>cómodo</em> para <em>un concierto en Medellín</em>',
+  'Necesito un <em>abrigo</em> para <em>una cena en Bogotá</em>'];
+let ni=0; if(!reduce) setInterval(()=>{ni=(ni+1)%needs.length;$("#need").innerHTML=needs[ni]+'<span class="caret"></span>'},3800);
+const cities=["tu ciudad","Barranquilla","Medellín","Bogotá"]; let ci=0;
+if(!reduce) setInterval(()=>{ci=(ci+1)%cities.length;$("#cityword").textContent=cities[ci]},2200);
+
+// Postula: consentimiento solo si deja contacto; aviso si la marca ya está
+const fp=$("#f-post");
+fp.contact.addEventListener("input",()=>{$("#post-consent").hidden=!fp.contact.value.trim()});
+fp.addEventListener("submit",e=>{
+  e.preventDefault(); const err=fp.querySelector(".err"); $("#post-dup").hidden=true;
+  if(!fp.name.value.trim()||!fp.link.value.trim()){err.textContent="Escribe el nombre de la marca y su Instagram o enlace.";return}
+  if(fp.contact.value.trim()&&!fp.consent.checked){err.textContent="Para guardar tu contacto, acepta el tratamiento de datos.";return}
+  err.textContent="";
+  if(fp.name.value.trim().toLowerCase()==="bruma"){$("#post-dup").hidden=false;return}
+  fp.hidden=true; $("#post-ok").classList.add("on");
+});
+// Subida asistida
+$("#open-asist").addEventListener("click",function(){const d=$("#asist");d.hidden=false;this.setAttribute("aria-expanded","true");d.scrollIntoView({behavior:reduce?"auto":"smooth",block:"start"});setTimeout(()=>$("#f-asist").brand.focus({preventScroll:true}),reduce?0:400)});
+const fa=$("#f-asist");
+fa.addEventListener("submit",e=>{
+  e.preventDefault(); const err=fa.querySelector(".err");
+  const miss=["brand","person","contact","link","city"].filter(n=>!fa[n].value.trim());
+  if(miss.length){err.textContent="Completa los campos marcados para poder contactarte.";fa[miss[0]].focus();return}
+  if(!fa.consent.checked){err.textContent="Acepta el tratamiento de datos para enviar la solicitud.";return}
+  err.textContent=""; fa.hidden=true; $("#asist-ok").classList.add("on");
+});
+
+// fotos reales: prendas publicadas en Icon (R2 de producción)
+const R2="https://pub-95b62697150245e98c03cf34b7d1d054.r2.dev/garments/";
+const IMGS=["93a420d8-0d37-4131-9e5f-23dbc3b4466e","a7ac4bbf-ed76-4f72-9e64-6e8418af53b5","22214c94-7d9c-4d20-b87f-0fbbd0a0d35b","aa9af84d-9375-49b8-811f-5707316311d1","9f2b24a1-2d3c-41d3-a4aa-fb9a9c6f0cd1","5fc53b94-8693-450f-9e1b-fc38759ade2c","edd4987a-9bb9-4e61-afcb-34cfd2eae6fe","ea1971df-25b6-4e15-b3c1-91fe0a5176fb"].map(k=>R2+k+"/0.webp");
+$$(".photo").forEach((p,i)=>{
+  const src=p.closest(".fpost")?IMGS[2]:IMGS[i%IMGS.length];
+  p.style.background=`url(${src}) center/cover no-repeat, var(--c,var(--blush))`;
+  const lbl=p.querySelector("span"); if(lbl&&!p.hasAttribute("data-keep")) lbl.hidden=true;
+});
+const h=location.hash.slice(1); if(["users","brands","og"].includes(h)) show(h);
+</script>
+</body>
+</html>

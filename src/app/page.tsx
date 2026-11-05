@@ -1,149 +1,89 @@
-import Link from "next/link";
+import type { Metadata } from "next";
 import { Aurora } from "@/components/aurora";
-import { SiteHeader } from "@/components/site-header";
-import { CONTACT_PHONE, SiteFooter } from "@/components/site-footer";
+import { getCurrentUser } from "@/lib/auth";
+import { getLandingPhotos } from "@/lib/landing";
+import { Hero } from "@/components/landing/hero";
+import { LandingHeader } from "@/components/landing/landing-header";
+import { LandingFooter } from "@/components/landing/landing-footer";
+import { DialogueScene } from "@/components/landing/dialogue-scene";
+import { RotatingText } from "@/components/landing/rotating-text";
+import { SearchSection } from "@/components/landing/search-section";
+import { NominationSection } from "@/components/landing/nomination";
+import {
+  CityCta,
+  ComingSoonSections,
+  GarmentAnswer,
+  SavedSection,
+} from "@/components/landing/people-sections";
 
-const FOR_USERS = [
-  { title: "Explora", text: "Outfits y prendas de marcas colombianas, con filtros por ocasión, ciudad, precio y estilo." },
-  { title: "Guarda y sigue", text: "Guarda lo que te gusta y sigue a las marcas que te representan." },
-  { title: "Compra directo", text: "Cada prenda te lleva a la tienda de la marca. Sin intermediarios." },
-];
-
-const FOR_BRANDS = [
-  { title: "Crea tu perfil", text: "Nombre, ciudad, estilo y una portada que te represente." },
-  { title: "Sube tu catálogo", text: "Prendas con precio, tallas y link a tu tienda. Y looks con esas prendas etiquetadas." },
-  { title: "Te encuentran", text: "Tu marca aparece cuando alguien busca justo lo que haces. Revisamos cada perfil antes de publicarlo." },
-];
-
-const FAQ = [
-  {
-    q: "¿Cuánto cuesta?",
-    a: "Nada. Icon es gratis para usuarios y, por ahora, también para las marcas.",
+export const metadata: Metadata = {
+  title: "Icon — encuentra lo que necesitas, hecho en Colombia",
+  description:
+    "Moda colombiana independiente de Barranquilla, Medellín y Bogotá. Busca por ocasión, ciudad, precio y estilo, y compra directo a la marca.",
+  alternates: { canonical: "/" },
+  openGraph: {
+    title: "Icon — moda colombiana independiente",
+    description: "Encuentra lo que necesitas, hecho en Colombia. Busca por lo que vas a hacer, no por marca.",
+    url: "/",
+    siteName: "Icon",
+    locale: "es_CO",
+    type: "website",
   },
-  {
-    q: "¿Icon vende la ropa?",
-    a: "No. Te conectamos con la marca y compras en su tienda o su canal de siempre.",
-  },
-  {
-    q: "¿Qué marcas pueden entrar?",
-    a: "Marcas colombianas independientes con diseño propio. Revisamos cada perfil antes de publicarlo.",
-  },
-];
+};
 
-function Steps({ label, items }: { label: string; items: { title: string; text: string }[] }) {
-  return (
-    <div className="glass rounded-3xl p-6 sm:p-8">
-      <p className="text-[11px] uppercase tracking-wide text-ink/50">{label}</p>
-      <ol className="mt-5 space-y-5">
-        {items.map((it, i) => (
-          <li key={it.title} className="flex gap-4">
-            <span className="font-mono text-sm text-coral">{String(i + 1).padStart(2, "0")}</span>
-            <div>
-              <h3 className="font-medium text-forest">{it.title}</h3>
-              <p className="mt-0.5 text-sm text-ink/70">{it.text}</p>
-            </div>
-          </li>
-        ))}
-      </ol>
-    </div>
-  );
-}
+export default async function Home() {
+  const [session, photos] = await Promise.all([getCurrentUser(), getLandingPhotos(12)]);
+  const primary = session ? { href: "/feed", label: "Ir al feed" } : { href: "/signup", label: "Crea tu cuenta" };
 
-export default function Home() {
   return (
     <>
       <Aurora />
-      <div className="mx-auto w-full max-w-3xl px-4 py-8 sm:px-6">
-        <SiteHeader />
+      <div className="mx-auto w-full max-w-6xl px-4 sm:px-8">
+        <LandingHeader audience="personas" />
 
-        <section className="flex min-h-[70dvh] flex-col justify-center py-16">
-          <p className="text-[11px] uppercase tracking-[0.2em] text-ink/50">Hecho en Colombia</p>
-          <h1 className="mt-4 text-5xl font-medium leading-tight tracking-tight text-forest sm:text-6xl">
-            Moda colombiana
-            <br />
-            independiente.
-          </h1>
-          <p className="mt-4 max-w-md text-lg text-ink/70">
-            Descubre tu próximo outfit con intención: por ocasión, ciudad, precio y estilo.
-          </p>
+        <Hero
+          steps={[
+            { title: "Busca", text: "Por ocasión, ciudad, precio y estilo." },
+            { title: "Muestra", text: "Ves qué marcas colombianas lo tienen." },
+            { title: "Compra", text: "Directo a la marca, en su tienda o su WhatsApp." },
+          ]}
+          title={
+            <>
+              Encuentra lo que necesitas, <em>hecho en Colombia</em>.
+            </>
+          }
+          lead="Moda independiente de Barranquilla, Medellín y Bogotá. Busca por lo que vas a hacer, no por marca."
+          actions={
+            session
+              ? [primary]
+              : [primary, { href: "/feed", label: "Explorar el feed", variant: "glass" }]
+          }
+        />
 
-          <div className="mt-8 flex flex-wrap gap-3">
-            <Link
-              href="/feed"
-              className="rounded-full bg-forest px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-forest-deep"
-            >
-              Explorar el feed
-            </Link>
-            <Link
-              href="/signup"
-              className="glass rounded-full px-6 py-3 text-sm font-medium text-forest hover:bg-white/40"
-            >
-              Crear cuenta
-            </Link>
-          </div>
-        </section>
+        <DialogueScene
+          tone="forest"
+          label="Busca por necesidad"
+          question={
+            <RotatingText
+              items={[
+                <>Necesito un <em>vestido fresco</em> para <em>un matrimonio en la playa</em></>,
+                <>Necesito una <em>camisa de lino</em> para <em>la oficina en Barranquilla</em></>,
+                <>Necesito algo <em>cómodo</em> para <em>un concierto en Medellín</em></>,
+                <>Necesito un <em>abrigo</em> para <em>una cena en Bogotá</em></>,
+              ]}
+            />
+          }
+          answer={<GarmentAnswer photo={photos[0]} />}
+          caption="Dinos qué vas a hacer. Te mostramos qué prendas de marcas colombianas te sirven."
+        />
 
-        <section aria-labelledby="como-funciona">
-          <h2 id="como-funciona" className="text-2xl font-medium tracking-tight text-forest">
-            Cómo funciona
-          </h2>
-          <p className="mt-1 max-w-lg text-ink/60">
-            Las marcas muestran lo que hacen. Tú encuentras lo que buscas, sin escarbar en cientos de
-            cuentas.
-          </p>
-          <div className="mt-6 grid gap-4 md:grid-cols-2">
-            <Steps label="Para ti" items={FOR_USERS} />
-            <Steps label="Para marcas" items={FOR_BRANDS} />
-          </div>
-        </section>
-
-        <section aria-labelledby="unete" className="mt-24">
-          <h2 id="unete" className="text-2xl font-medium tracking-tight text-forest">
-            Únete
-          </h2>
-          <div className="mt-6 grid gap-4 sm:grid-cols-2">
-            <Link
-              href="/signup"
-              className="group glass rounded-3xl p-6 transition-colors hover:bg-white/40"
-            >
-              <p className="font-medium text-forest">Soy usuario →</p>
-              <p className="mt-1 text-sm text-ink/70">
-                Crea tu cuenta con tu correo o Google en menos de un minuto.
-              </p>
-            </Link>
-            <Link
-              href="/signup?tipo=marca"
-              className="group rounded-3xl bg-forest p-6 text-white transition-colors hover:bg-forest-deep"
-            >
-              <p className="font-medium">Tengo una marca →</p>
-              <p className="mt-1 text-sm text-white/75">
-                Crea tu cuenta, arma tu perfil, sube al menos una prenda y envíalo a revisión.
-              </p>
-            </Link>
-          </div>
-
-          <dl className="mt-10 divide-y divide-ink/10 border-y border-ink/10">
-            {FAQ.map((f) => (
-              <div key={f.q} className="grid gap-1 py-4 sm:grid-cols-[14rem_1fr] sm:gap-6">
-                <dt className="font-medium text-forest">{f.q}</dt>
-                <dd className="text-sm text-ink/70">{f.a}</dd>
-              </div>
-            ))}
-            <div className="grid gap-1 py-4 sm:grid-cols-[14rem_1fr] sm:gap-6">
-              <dt className="font-medium text-forest">¿Otra pregunta?</dt>
-              <dd className="text-sm text-ink/70">
-                Escríbenos por WhatsApp al{" "}
-                <a href="https://wa.me/573152429478" className="font-medium text-forest underline-offset-2 hover:underline">
-                  {CONTACT_PHONE}
-                </a>
-                . También nos sirve cualquier idea o comentario.
-              </dd>
-            </div>
-          </dl>
-        </section>
-
-        <SiteFooter />
+        <SearchSection />
+        <ComingSoonSections photos={photos} />
+        <SavedSection photos={photos} />
+        <NominationSection />
+        <CityCta href={primary.href} label={primary.label} />
       </div>
+      <LandingFooter audience="personas" />
     </>
   );
 }
