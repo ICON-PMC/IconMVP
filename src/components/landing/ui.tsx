@@ -47,9 +47,9 @@ export function DisplayTitle({
 
 const BTN = {
   primary:
-    "bg-coral text-white shadow-[0_8px_22px_color-mix(in_srgb,var(--color-coral)_35%,transparent)] hover:-translate-y-px",
-  forest: "bg-forest text-white hover:bg-forest-deep",
-  glass: "glass text-forest hover:bg-white/50",
+    "bg-coral text-white shadow-[0_8px_22px_color-mix(in_srgb,var(--color-coral)_35%,transparent)] hover:-translate-y-0.5 hover:shadow-[0_12px_28px_color-mix(in_srgb,var(--color-coral)_45%,transparent)] active:translate-y-0 active:scale-[.98]",
+  forest: "bg-forest text-white hover:-translate-y-0.5 hover:bg-forest-deep active:scale-[.98]",
+  glass: "glass text-forest hover:-translate-y-0.5 hover:bg-white/50 active:scale-[.98]",
 } as const;
 
 export function CtaLink({
@@ -67,7 +67,7 @@ export function CtaLink({
   className?: string;
   external?: boolean;
 }) {
-  const cls = `inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full font-semibold transition ${
+  const cls = `group/cta inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full font-semibold transition duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-coral motion-reduce:transition-none ${
     big ? "min-h-14 px-8 text-lg" : "min-h-12 px-6 text-[15px]"
   } ${BTN[variant]} ${className}`;
   if (external)
@@ -126,7 +126,7 @@ export function Photo({
   eager?: boolean;
 }) {
   return (
-    <div className={`relative overflow-hidden ${PLACEHOLDER_BG[i % PLACEHOLDER_BG.length]} ${className}`}>
+    <div className={`group/photo relative overflow-hidden ${PLACEHOLDER_BG[i % PLACEHOLDER_BG.length]} ${className}`}>
       {photo && (
         // eslint-disable-next-line @next/next/no-img-element
         <img
@@ -134,9 +134,13 @@ export function Photo({
           alt={`${photo.title} · ${photo.brand}`}
           loading={eager ? "eager" : "lazy"}
           decoding="async"
-          className="absolute inset-0 size-full object-cover"
+          className="absolute inset-0 size-full object-cover transition-transform duration-500 group-hover/photo:scale-105 motion-reduce:transition-none"
         />
       )}
     </div>
   );
 }
+
+// Borde duro de tinta al pasar el mouse (tarjetas del boceto).
+export const HOVER_CARD =
+  "transition duration-300 hover:-translate-y-1 hover:shadow-[6px_7px_0_var(--color-ink)] motion-reduce:transition-none";

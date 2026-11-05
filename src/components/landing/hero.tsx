@@ -37,9 +37,9 @@ export function Hero({
       <div className="text-center">
         <p
           aria-label="ICON"
-          className="wordmark inline-block px-[0.12em] pb-7 text-[clamp(5.25rem,17vw,12.5rem)] text-forest sm:pb-6"
+          className="wordmark inline-block px-[0.12em] pb-10 text-[clamp(5.25rem,17vw,12.5rem)] text-forest transition-transform duration-500 hover:scale-[1.03] sm:pb-14 lg:pb-16"
         >
-          IC<span className="text-coral">O</span>N
+          ICON
         </p>
       </div>
 
@@ -47,11 +47,11 @@ export function Hero({
         {steps.map((s, i) => (
           <li
             key={s.title}
-            className={`relative min-w-0 rounded-[20px] border-[1.5px] border-ink px-2 pt-5 pb-3 text-center sm:px-6 sm:pt-7 sm:pb-6 ${STEP_BG[i]}`}
+            className={`group relative min-w-0 rounded-[20px] border-[1.5px] border-ink px-2 pt-5 pb-3 text-center transition duration-300 hover:-translate-y-1 hover:shadow-[5px_6px_0_var(--color-ink)] motion-reduce:transition-none sm:px-6 sm:pt-7 sm:pb-6 ${STEP_BG[i]} ${i === 1 ? "hover:rotate-1" : "hover:-rotate-1"}`}
           >
             <span
               aria-hidden
-              className="font-display absolute top-[-0.55em] left-[0.12em] text-[clamp(2.4rem,6.4vw,4.9rem)] leading-none text-ink"
+              className="font-display absolute top-[-0.55em] left-[0.12em] text-[clamp(2.4rem,6.4vw,4.9rem)] leading-none text-ink transition-colors duration-300 group-hover:text-coral"
             >
               {i + 1}
             </span>
@@ -71,8 +71,16 @@ export function Hero({
         className="block h-[clamp(3.75rem,10vw,8rem)] w-full overflow-visible"
       >
         <g fill="none" strokeWidth="2.5" strokeLinecap="round">
-          {RAYS.map((r) => (
-            <path key={r.d} d={r.d} stroke={r.color} vectorEffect="non-scaling-stroke" />
+          {RAYS.map((r, i) => (
+            <path
+              key={r.d}
+              d={r.d}
+              stroke={r.color}
+              vectorEffect="non-scaling-stroke"
+              pathLength={1}
+              className="draw-line"
+              style={{ animationDelay: `${i * 70}ms` }}
+            />
           ))}
         </g>
       </svg>
