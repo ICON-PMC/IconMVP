@@ -9,6 +9,7 @@ import { DialogueScene } from "@/components/landing/dialogue-scene";
 import { RotatingText } from "@/components/landing/rotating-text";
 import { SearchSection } from "@/components/landing/search-section";
 import { NominationSection } from "@/components/landing/nomination";
+import { Reveal } from "@/components/landing/reveal";
 import {
   CityCta,
   ComingSoonSections,
@@ -19,7 +20,7 @@ import {
 export const metadata: Metadata = {
   title: "Icon — encuentra lo que necesitas, hecho en Colombia",
   description:
-    "Moda colombiana independiente de Barranquilla, Medellín y Bogotá. Busca por ocasión, ciudad, precio y estilo, y compra directo a la marca.",
+    "Moda colombiana independiente. Busca por ciudad, precio y estilo, y compra directo a la marca.",
   alternates: { canonical: "/" },
   openGraph: {
     title: "Icon — moda colombiana independiente",
@@ -43,7 +44,7 @@ export default async function Home() {
 
         <Hero
           steps={[
-            { title: "Busca", text: "Por ocasión, ciudad, precio y estilo." },
+            { title: "Busca", text: "Por ciudad, precio y estilo." },
             { title: "Muestra", text: "Ves qué marcas colombianas lo tienen." },
             { title: "Compra", text: "Directo a la marca, en su tienda o su WhatsApp." },
           ]}
@@ -52,7 +53,7 @@ export default async function Home() {
               Encuentra lo que necesitas, <em>hecho en Colombia</em>.
             </>
           }
-          lead="Moda independiente de Barranquilla, Medellín y Bogotá. Busca por lo que vas a hacer, no por marca."
+          lead="Moda colombiana independiente. Busca por lo que vas a hacer, no por marca."
           actions={
             session
               ? [primary]
@@ -66,10 +67,10 @@ export default async function Home() {
           question={
             <RotatingText
               items={[
-                <>Necesito un <em>vestido fresco</em> para <em>un matrimonio en la playa</em></>,
-                <>Necesito una <em>camisa de lino</em> para <em>la oficina en Barranquilla</em></>,
-                <>Necesito algo <em>cómodo</em> para <em>un concierto en Medellín</em></>,
-                <>Necesito un <em>abrigo</em> para <em>una cena en Bogotá</em></>,
+                <span key="f1">Necesito un <em>vestido fresco</em> para <em>un matrimonio en la playa</em></span>,
+                <span key="f2">Necesito una <em>camisa de lino</em> para <em>la oficina en Barranquilla</em></span>,
+                <span key="f3">Necesito algo <em>cómodo</em> para <em>un concierto en Medellín</em></span>,
+                <span key="f4">Necesito un <em>abrigo</em> para <em>una cena en Bogotá</em></span>,
               ]}
             />
           }
@@ -77,11 +78,21 @@ export default async function Home() {
           caption="Dinos qué vas a hacer. Te mostramos qué prendas de marcas colombianas te sirven."
         />
 
-        <SearchSection />
-        <ComingSoonSections photos={photos} />
-        <SavedSection photos={photos} />
-        <NominationSection />
-        <CityCta href={primary.href} label={primary.label} />
+        <Reveal>
+          <SearchSection />
+        </Reveal>
+        <Reveal>
+          <ComingSoonSections photos={photos} />
+        </Reveal>
+        <Reveal>
+          <SavedSection />
+        </Reveal>
+        <Reveal>
+          <NominationSection />
+        </Reveal>
+        <Reveal>
+          <CityCta href={primary.href} label={primary.label} />
+        </Reveal>
       </div>
       <LandingFooter audience="personas" />
     </>

@@ -9,6 +9,7 @@ import { DialogueScene, TypingDots } from "@/components/landing/dialogue-scene";
 import { RotatingText } from "@/components/landing/rotating-text";
 import { BrandPanelPreview, HowToUpload, PostToStoreFlow } from "@/components/landing/brand-sections";
 import { CtaLink } from "@/components/landing/ui";
+import { Reveal } from "@/components/landing/reveal";
 
 export const metadata: Metadata = {
   title: "Icon para marcas — tu catálogo frente a quien busca lo tuyo",
@@ -51,28 +52,34 @@ export default async function MarcasPage() {
           actions={[join]}
         />
 
-        <HowToUpload instagramLive={process.env.INSTAGRAM_IMPORT_ENABLED === "true"} />
+        <Reveal>
+          <HowToUpload />
+        </Reveal>
 
-        <div className="pt-8 sm:pt-12">
+        <Reveal className="pt-8 sm:pt-12">
           <DialogueScene
             tone="coral"
             label="La gente busca por necesidad"
             question={
               <RotatingText
                 items={[
-                  <>Quiero algo para <em>una cena en Bogotá</em>…</>,
-                  <>Quiero algo para <em>un matrimonio en la playa</em>…</>,
-                  <>Quiero algo para <em>la oficina</em>…</>,
+                  <span key="f1">Quiero algo para <em>una cena en Bogotá</em>…</span>,
+                  <span key="f2">Quiero algo para <em>un matrimonio en la playa</em>…</span>,
+                  <span key="f3">Quiero algo para <em>la oficina</em>…</span>,
                 ]}
               />
             }
             answer={<TypingDots />}
             caption="En Icon la gente busca por lo que va a hacer, no por marca. Si etiquetas bien, te encuentran."
           />
-        </div>
+        </Reveal>
 
-        <BrandPanelPreview />
-        <PostToStoreFlow photos={photos} />
+        <Reveal>
+          <BrandPanelPreview />
+        </Reveal>
+        <Reveal>
+          <PostToStoreFlow photos={photos} />
+        </Reveal>
 
         <div className="flex justify-center pb-6">
           <CtaLink href={join.href} big>
