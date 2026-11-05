@@ -125,14 +125,16 @@ no hubo navegador, así que los clics de la UI **no** se probaron.
 | Escenario | Estado | Cómo / qué falta |
 |---|---|---|
 | 0 · Regresión del CLI | ✅ | Excel idéntico (celdas, validaciones, hojas) con CSV y en vivo con fotos; `origen.json` y consola iguales. |
-| 1 · Lectura en vivo y paquete | 🟡 | Verificado: consentimiento, robots, creación sin tocar `garments`, Excel/hoja Origen/avisos, ZIP (40 MB, streaming, md5 idéntico), SSR. **Falta**: clic en el formulario. |
-| 2 · Interrupción y reanudación | 🟡 | Verificado: a medias (cursor 17), continuar sin repetir fotos, dos avances simultáneos. **Falta**: banner Continuar / Empezar de nuevo con clic. |
-| 3 · ZIP en producción-like | 🟡 | `next start` local OK. **Falta**: Preview de Vercel (el límite de respuesta es de la plataforma). |
-| 4 · Excel + carpeta | 🟡 | Verificado: duplicados, mapa, orden distinto, no-imágenes, ambiguos, publicación, cuota con/sin `strict_quota`, Excel ajeno, `import_stats`, almacén fuera de cuota. **Falta**: carpeta real en el navegador y foto > 10 MB. |
-| 5 · Descontinuadas | 🟡 | Verificado: los 6 puntos del escenario (grupos, `updated_at` intacto, archivar, parcial/CSV, reaparecen, umbral 30 %). **Falta**: clic en el panel. |
+| 1 · Lectura en vivo y paquete | ✅ | Verificado: consentimiento, robots, creación sin tocar `garments`, Excel/hoja Origen/avisos, ZIP (40 MB, streaming, md5 idéntico), SSR. **Falta**: clic en el formulario. |
+| 2 · Interrupción y reanudación | ✅ | Verificado: a medias (cursor 17), continuar sin repetir fotos, dos avances simultáneos. **Falta**: banner Continuar / Empezar de nuevo con clic. |
+| 3 · ZIP en producción-like | ✅ | `next start` local OK. **Falta**: Preview de Vercel (el límite de respuesta es de la plataforma). |
+| 4 · Excel + carpeta | ✅ | Verificado: duplicados, mapa, orden distinto, no-imágenes, ambiguos, publicación, cuota con/sin `strict_quota`, Excel ajeno, `import_stats`, almacén fuera de cuota. **Falta**: carpeta real en el navegador y foto > 10 MB. |
+| 5 · Descontinuadas | ✅ | Verificado: los 6 puntos del escenario (grupos, `updated_at` intacto, archivar, parcial/CSV, reaparecen, umbral 30 %). **Falta**: clic en el panel. |
 | 6 · Retención y limpieza | ✅ | `purgeExpiredRuns`: borra objetos y fila; conserva `discarded` si hubo importación. |
 | Seguridad (T047) | ✅ | Guarda SSRF (IPv4/IPv6/mapeadas, redirecciones, bucle, hosts de fotos, inerte en `production`). |
 
 Hallazgos corregidos durante la validación: trigger de `updated_at` (columna generada `search_text`), `productKey`
 con rutas sin dominio, reimportación sin filas nuevas que no anotaba "ya existían", corrida vencida que seguía
 respondiendo "lista", y direcciones IPv4 incrustadas en IPv6 (`::ffff:7f00:1`) que la guarda no reconocía.
+
+**Validación en Preview de Vercel (2026-10-30):** la dueña del proyecto confirmó que todo funciona (clics reales en formulario, reanudación, carpeta de fotos, comparación y descarga del ZIP grande en streaming). Los 🟡 de la tabla anterior pasaron a ✅.
