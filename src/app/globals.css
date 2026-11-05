@@ -7,6 +7,8 @@
 @theme {
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  /* Exhibición: wordmark ICON y títulos grandes de las landings. */
+  --font-display: var(--font-instrument-serif), Georgia, serif;
 
   /* Paleta Icon — tropical: verdes profundos, rojo/naranja, verde claro y crema */
   --color-cream: #faf7ef;
@@ -120,6 +122,34 @@ body {
 @layer base {
   * {
     @apply border-border outline-ring/50;
+  }
+}
+
+/* ── Wordmark ICON ──────────────────────────────────────────────
+   Instrument Serif con un trazo extra para que las letras se vean más gruesas. */
+@utility wordmark {
+  font-family: var(--font-display);
+  letter-spacing: 0.06em;
+  line-height: 0.86;
+  -webkit-text-stroke: 0.022em currentColor;
+  paint-order: stroke fill;
+}
+
+/* Líneas del hero que se dibujan al cargar (paths con pathLength=1). */
+@keyframes draw-line {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+.draw-line {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: draw-line 1.3s cubic-bezier(0.65, 0, 0.35, 1) forwards;
+}
+@media (prefers-reduced-motion: reduce) {
+  .draw-line {
+    stroke-dashoffset: 0;
+    animation: none;
   }
 }
 
