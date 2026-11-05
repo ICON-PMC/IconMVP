@@ -1,15 +1,14 @@
 import type { LandingPhoto } from "@/lib/landing";
 import { formatCop } from "@/lib/landing";
 import Link from "next/link";
-import { Bookmark, ClothesBox } from "./illustrations";
-import { RotatingText } from "./rotating-text";
-import { CheckList, CtaLink, DisplayTitle, Eyebrow, Photo, SoonBadge } from "./ui";
+import { BagIcon, Bookmark, ClothesBox, DressIcon, PantsIcon } from "./illustrations";
+import { CheckList, CtaLink, DisplayTitle, Eyebrow, HOVER_CARD, Photo, SoonBadge } from "./ui";
 
 // Respuesta del globo: una prenda real del catálogo.
 export function GarmentAnswer({ photo }: { photo?: LandingPhoto }) {
   if (!photo) return <p className="text-sm text-ink/70">Prendas de marcas colombianas para tu plan.</p>;
   return (
-    <Link href={photo.href} className="flex items-stretch gap-3">
+    <Link href={photo.href} className="group flex items-stretch gap-3">
       <Photo photo={photo} i={3} eager className="min-h-36 w-[46%] shrink-0 rounded-[18px]" />
       <div className="flex min-w-0 flex-col justify-center gap-1.5 text-sm">
         <b className="text-base leading-tight">{photo.title}</b>
@@ -18,7 +17,9 @@ export function GarmentAnswer({ photo }: { photo?: LandingPhoto }) {
           {photo.city ? ` · ${photo.city}` : ""}
         </span>
         {photo.price != null && <span className="font-semibold">{formatCop(photo.price)}</span>}
-        <span className="text-xs font-semibold text-forest underline-offset-2 hover:underline">Ver prenda →</span>
+        <span className="text-xs font-semibold text-forest underline-offset-2 group-hover:underline">
+          Ver prenda <span className="inline-block transition-transform group-hover:translate-x-1">→</span>
+        </span>
       </div>
     </Link>
   );
@@ -44,7 +45,7 @@ export function ComingSoonSections({ photos }: { photos: LandingPhoto[] }) {
           </div>
           <div
             aria-hidden
-            className="mx-auto w-full max-w-[260px] rounded-[34px] border-2 border-ink bg-cream p-3 shadow-[12px_14px_0_var(--color-coral)] md:order-first"
+            className="mx-auto w-full max-w-[260px] rounded-[34px] border-2 border-ink bg-cream p-3 shadow-[12px_14px_0_var(--color-coral)] transition duration-300 hover:-rotate-2 hover:shadow-[16px_18px_0_var(--color-coral)] motion-reduce:transition-none md:order-first"
           >
             <p className="mb-3 rounded-full bg-leaf-soft py-1.5 text-center text-xs font-semibold text-forest">
               iconcolombia.com/me
@@ -76,10 +77,10 @@ export function ComingSoonSections({ photos }: { photos: LandingPhoto[] }) {
               Cuenta cómo te quedó y cómo fue comprarle a la marca. Ayudas a otras personas a elegir.
             </p>
           </div>
-          <div aria-hidden className="grid grid-cols-[1.3fr_.7fr] items-center gap-3.5">
+          <div className="grid grid-cols-[1.3fr_.7fr] items-center gap-3.5" aria-hidden>
             <div className="flex flex-col gap-2.5">
               {[5, 4, 3].map((stars, k) => (
-                <div key={k} className="flex flex-col gap-1 rounded-2xl border-[1.5px] border-ink bg-cream px-3.5 py-3">
+                <div key={k} className={`flex flex-col gap-1 rounded-2xl border-[1.5px] border-ink bg-cream px-3.5 py-3 ${HOVER_CARD}`}>
                   <span className="tracking-[2px] text-coral">
                     {"★".repeat(stars)}
                     <span className="text-ink/25">{"★".repeat(5 - stars)}</span>
@@ -88,7 +89,7 @@ export function ComingSoonSections({ photos }: { photos: LandingPhoto[] }) {
                 </div>
               ))}
             </div>
-            <Photo photo={photos[8]} i={4} className="h-52 rounded-[18px]" />
+            <Photo photo={photos[9] ?? photos[1]} i={4} className="h-52 rounded-[18px]" />
           </div>
         </div>
       </section>
@@ -97,7 +98,7 @@ export function ComingSoonSections({ photos }: { photos: LandingPhoto[] }) {
 }
 
 // ── Guarda todos tus gustos ──────────────────────────────────────────────────
-export function SavedSection({ photos }: { photos: LandingPhoto[] }) {
+export function SavedSection() {
   return (
     <section aria-labelledby="guarda-title" className="pb-12 sm:pb-20">
       <div className="grid items-center gap-8 md:grid-cols-2 md:gap-14">
@@ -116,10 +117,19 @@ export function SavedSection({ photos }: { photos: LandingPhoto[] }) {
         </div>
         <div aria-hidden className="grid grid-cols-[1fr_1.2fr] items-end gap-3.5 md:order-first">
           <ClothesBox className="block w-full" />
-          <div className="relative grid grid-cols-3 gap-2 rounded-[18px] border-[1.5px] border-ink bg-cream p-3">
-            <Bookmark className="absolute -top-6 right-4 w-7" />
-            {[9, 10, 11].map((n, k) => (
-              <Photo key={k} photo={photos[n]} i={k} className="h-28 rounded-xl" />
+          <div className="group relative grid grid-cols-3 gap-2 rounded-[18px] border-[1.5px] border-ink bg-cream p-3">
+            <Bookmark className="absolute -top-6 right-4 w-7 transition-transform duration-300 group-hover:-translate-y-1.5" />
+            {[
+              { Icon: DressIcon, fill: "var(--color-coral)", bg: "bg-blush" },
+              { Icon: PantsIcon, fill: "var(--color-sky)", bg: "bg-leaf-soft" },
+              { Icon: BagIcon, fill: "var(--color-honey)", bg: "bg-honey-soft" },
+            ].map(({ Icon, fill, bg }, k) => (
+              <div
+                key={k}
+                className={`grid h-28 place-items-center rounded-xl border-[1.5px] border-ink/15 ${bg} transition duration-300 hover:-translate-y-1 hover:rotate-2 motion-reduce:transition-none`}
+              >
+                <Icon fill={fill} className="w-10" />
+              </div>
             ))}
           </div>
         </div>
@@ -135,14 +145,13 @@ export function CityCta({ href, label }: { href: string; label: string }) {
       <h2 id="ciudad-title" className="font-display max-w-[16ch] text-[clamp(2.1rem,5.2vw,3.6rem)] leading-[1.05] text-balance">
         Mejora tu estilo con ropa de{" "}
         <span className="text-forest italic [background:linear-gradient(transparent_62%,var(--color-honey)_62%,var(--color-honey)_92%,transparent_92%)]">
-          <RotatingText items={["tu ciudad", "Barranquilla", "Medellín", "Bogotá"]} every={2200} />
+          tu ciudad
         </span>
         .
       </h2>
       <CtaLink href={href} big>
         {label}
       </CtaLink>
-      <p className="text-sm text-ink/60">Gratis. Barranquilla · Medellín · Bogotá.</p>
     </section>
   );
 }
