@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
@@ -12,7 +13,9 @@ export type SessionUser = {
 };
 
 // Usuario autenticado actual + su perfil (con rol) desde public.users.
-export async function getCurrentUser(): Promise<SessionUser | null> {
+// `cache` lo calcula una sola vez por petición: header, feed, guardados, likes y sugerencias lo
+// llaman a la vez y cada llamada era una ida a Supabase Auth + otra consulta de perfil.
+export const getCurrentUser = cache(async (): Promise<SessionUser | null> => {
   const supabase = await createClient();
   const {
     data: { user },
@@ -26,7 +29,7 @@ export async function getCurrentUser(): Promise<SessionUser | null> {
     .maybeSingle();
 
   return { authUserId: user.id, email: user.email ?? null, profile };
-}
+});
 
 // ¿El usuario es del equipo (carga contenido)?
 export function isStaff(
