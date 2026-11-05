@@ -4,18 +4,8 @@ import Link from "next/link";
 import { useState } from "react";
 import { ShirtHolder } from "./illustrations";
 
-// Chips de ejemplo con slugs reales del feed (`/feed?occasion=…&city=…&style=…`).
+// Chips de ejemplo con slugs reales del feed (`/feed?city=…&price=…&style=…`).
 const GROUPS = [
-  {
-    key: "occasion",
-    label: "Ocasión",
-    chips: [
-      ["matrimonio", "Matrimonio"],
-      ["trabajo", "Trabajo"],
-      ["beachwear", "Playa"],
-      ["noche", "Noche"],
-    ],
-  },
   {
     key: "city",
     label: "Ciudad",
@@ -45,7 +35,7 @@ const GROUPS = [
   },
 ] as const;
 
-const INITIAL: Record<string, string[]> = { occasion: ["matrimonio"], city: ["medellin"], price: [], style: ["tropical"] };
+const INITIAL: Record<string, string[]> = { city: ["medellin"], price: [], style: ["tropical"] };
 
 // "Busca todo lo que necesites": filtros de ejemplo que llevan al feed ya filtrado.
 export function SearchSection() {
@@ -59,7 +49,7 @@ export function SearchSection() {
   return (
     <section aria-labelledby="busca-title" className="py-12 sm:py-20">
       <div className="grid items-center gap-6 rounded-[28px] bg-[color-mix(in_srgb,var(--color-sky)_55%,var(--color-cream))] p-5 sm:p-10 md:grid-cols-2 md:gap-14">
-        <ShirtHolder className="mx-auto block w-full max-w-[320px]" />
+        <ShirtHolder className="mx-auto block w-full max-w-[320px] transition-transform duration-500 hover:-rotate-3 hover:scale-105 motion-reduce:transition-none" />
         <div className="flex min-w-0 flex-col gap-4">
           <span className="text-xs font-semibold tracking-[0.16em] text-forest uppercase">Busca</span>
           <h2
@@ -80,8 +70,8 @@ export function SearchSection() {
                       type="button"
                       aria-pressed={on}
                       onClick={() => toggle(g.key, v)}
-                      className={`min-h-9 rounded-full border-[1.5px] border-ink px-3 text-sm transition-colors ${
-                        on ? "bg-ink text-cream" : "hover:bg-white/50"
+                      className={`min-h-9 rounded-full border-[1.5px] border-ink px-3 text-sm transition duration-200 active:scale-95 ${
+                        on ? "bg-ink text-cream" : "hover:-translate-y-0.5 hover:bg-white/60"
                       }`}
                     >
                       {l}
@@ -94,9 +84,9 @@ export function SearchSection() {
           <div>
             <Link
               href={qs ? `/feed?${qs}` : "/feed"}
-              className="inline-flex min-h-12 items-center rounded-full bg-forest px-6 font-semibold text-white hover:bg-forest-deep"
+              className="group inline-flex min-h-12 items-center rounded-full bg-forest px-6 font-semibold text-white transition hover:-translate-y-0.5 hover:bg-forest-deep"
             >
-              Buscar en el feed →
+              Buscar en el feed <span className="ml-1 inline-block transition-transform group-hover:translate-x-1">→</span>
             </Link>
           </div>
         </div>

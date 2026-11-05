@@ -96,3 +96,44 @@ export function CurvedArrow({ className }: { className?: string }) {
     </svg>
   );
 }
+
+// Íconos de prendas (tablero de guardados): mismo trazo de tinta y paleta.
+export function DressIcon({ fill = "var(--color-coral)", className }: { fill?: string; className?: string }) {
+  return (
+    <svg viewBox="0 0 60 80" className={className} aria-hidden="true">
+      <path
+        d="M22 4 L26 14 Q30 18 34 14 L38 4 L44 8 L40 26 L54 74 Q30 80 6 74 L20 26 L16 8 Z"
+        fill={fill}
+        stroke={INK}
+        strokeWidth="2.5"
+        strokeLinejoin="round"
+      />
+      <path d="M20 26 Q30 31 40 26" fill="none" stroke={INK} strokeWidth="2.5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+export function PantsIcon({ fill = "var(--color-sky)", className }: { fill?: string; className?: string }) {
+  return (
+    <svg viewBox="0 0 60 80" className={className} aria-hidden="true">
+      <path
+        d="M14 4 H46 L52 76 H36 L30 30 L24 76 H8 Z"
+        fill={fill}
+        stroke={INK}
+        strokeWidth="2.5"
+        strokeLinejoin="round"
+      />
+      <path d="M14 12 H46" stroke={INK} strokeWidth="2.5" />
+    </svg>
+  );
+}
+
+export function BagIcon({ fill = "var(--color-honey)", className }: { fill?: string; className?: string }) {
+  return (
+    <svg viewBox="0 0 60 80" className={className} aria-hidden="true">
+      <path d="M20 30 C20 12 40 12 40 30" fill="none" stroke={INK} strokeWidth="2.5" strokeLinecap="round" />
+      <path d="M8 30 H52 L48 72 H12 Z" fill={fill} stroke={INK} strokeWidth="2.5" strokeLinejoin="round" />
+      <circle cx="30" cy="46" r="3.5" fill={INK} />
+    </svg>
+  );
+}

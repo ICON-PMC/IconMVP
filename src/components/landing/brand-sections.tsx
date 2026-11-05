@@ -1,12 +1,12 @@
 import type { LandingPhoto } from "@/lib/landing";
 import { formatCop } from "@/lib/landing";
 import { CurvedArrow } from "./illustrations";
-import { CheckList, CtaLink, DisplayTitle, Photo, SoonBadge } from "./ui";
+import { CheckList, CtaLink, DisplayTitle, HOVER_CARD, Photo, SoonBadge } from "./ui";
 import { AssistedRequest } from "./assisted-request";
 
 // ── ¿Cómo subo? ──────────────────────────────────────────────────────────────
-export function HowToUpload({ instagramLive }: { instagramLive: boolean }) {
-  const card = "relative flex min-w-0 flex-col gap-4 rounded-[26px] border-[1.5px] border-ink p-5 sm:p-8";
+export function HowToUpload() {
+  const card = `relative flex min-w-0 flex-col gap-4 rounded-[26px] border-[1.5px] border-ink p-5 sm:p-8 ${HOVER_CARD}`;
   const sub = "text-xs font-semibold tracking-[0.12em] text-ink/60 uppercase";
   return (
     <section id="como" aria-labelledby="como-title" className="scroll-mt-6 py-6 sm:py-10">
@@ -26,13 +26,6 @@ export function HowToUpload({ instagramLive }: { instagramLive: boolean }) {
                 "Creas tu cuenta y armas tu perfil.",
                 "Subes tus prendas una por una o todas con un Excel.",
                 "Etiquetas ocasión, estilo y clima, y armas looks.",
-                instagramLive ? (
-                  "Importas tus fotos desde Instagram."
-                ) : (
-                  <>
-                    Importar desde Instagram <SoonBadge className="ml-1 align-middle" />
-                  </>
-                ),
               ]}
             />
             <div>
@@ -51,7 +44,7 @@ export function HowToUpload({ instagramLive }: { instagramLive: boolean }) {
         </article>
 
         <article className={`${card} bg-blush`}>
-          <span className="absolute -top-4 right-5 rotate-6 rounded-xl border-[1.5px] border-ink bg-honey px-3 py-1.5 text-center text-sm font-bold tracking-[0.14em]">
+          <span className="absolute -top-4 right-5 rotate-6 rounded-xl border-[1.5px] border-ink bg-honey px-3 py-1.5 text-center text-sm font-bold tracking-[0.14em] transition-transform duration-300 hover:rotate-12 hover:scale-110">
             GRATIS
             <span className="block text-[11px] font-medium tracking-normal">por ahora</span>
           </span>
@@ -97,10 +90,10 @@ export function BrandPanelPreview() {
       <div className="grid gap-4 md:grid-cols-[1.25fr_.75fr] md:gap-8">
         <div
           aria-hidden
-          className="grid grid-cols-[auto_1fr] items-center gap-x-5 gap-y-4 rounded-3xl border-[1.5px] border-ink bg-cream p-4 sm:p-5"
+          className={`grid grid-cols-[auto_1fr] items-center gap-x-5 gap-y-4 rounded-3xl border-[1.5px] border-ink bg-cream p-4 sm:p-5 ${HOVER_CARD}`}
         >
           <div
-            className="relative aspect-square w-[clamp(5.25rem,11vw,7.5rem)] rounded-full after:absolute after:inset-[26%] after:rounded-full after:bg-cream"
+            className="relative aspect-square w-[clamp(5.25rem,11vw,7.5rem)] rounded-full transition-transform duration-700 after:absolute after:inset-[26%] after:rounded-full after:bg-cream hover:rotate-45 motion-reduce:transition-none"
             style={{
               background:
                 "conic-gradient(var(--color-coral) 0 34%, var(--color-honey) 0 58%, var(--color-leaf) 0 86%, var(--color-sky) 0)",
@@ -128,7 +121,7 @@ export function BrandPanelPreview() {
             {[
               ["34", "prendas", "bg-coral-soft"],
               ["8", "looks", "bg-honey-soft"],
-              ["IG", "conectado", "bg-leaf-soft"],
+              ["5", "borradores", "bg-leaf-soft"],
             ].map(([n, l, bg]) => (
               <div key={l} className={`rounded-[14px] border-[1.5px] border-ink px-3 py-2.5 ${bg}`}>
                 <b className="font-display block text-3xl leading-none font-normal">{n}</b>
@@ -144,14 +137,13 @@ export function BrandPanelPreview() {
           </div>
         </div>
 
-        <div className="flex flex-col gap-3 rounded-3xl border-[1.5px] border-ink bg-honey-soft p-5">
+        <div className={`flex flex-col gap-3 rounded-3xl border-[1.5px] border-ink bg-honey-soft p-5 ${HOVER_CARD}`}>
           <h3 className="font-display text-[28px] leading-tight">Todo tu catálogo en un lugar</h3>
           <div className="text-sm">
             <CheckList
               items={[
                 "Resumen de prendas, looks y borradores.",
                 "Estado de revisión de tu perfil.",
-                "Conexión con Instagram.",
                 "Espacio usado por tus fotos.",
               ]}
             />
@@ -184,7 +176,7 @@ export function PostToStoreFlow({ photos }: { photos: LandingPhoto[] }) {
       <div aria-hidden className="mt-8 grid items-center gap-3 md:grid-cols-[1fr_auto_1fr_auto_1.1fr] md:gap-5">
         <div className="flex flex-col items-center gap-2">
           <span className={lbl}>Tu post en el feed</span>
-          <div className="grid w-full max-w-[220px] grid-cols-2 gap-1.5 rounded-[20px] border-[1.5px] border-ink bg-cream p-2.5">
+          <div className={`grid w-full max-w-[220px] grid-cols-2 gap-1.5 rounded-[20px] border-[1.5px] border-ink bg-cream p-2.5 ${HOVER_CARD}`}>
             {[1, 0, 2, 3].map((idx, k) => (
               <Photo
                 key={k}
@@ -198,7 +190,7 @@ export function PostToStoreFlow({ photos }: { photos: LandingPhoto[] }) {
         <CurvedArrow className={arrow} />
         <div className="flex flex-col items-center gap-2">
           <span className={lbl}>La prenda</span>
-          <div className="relative w-full max-w-[200px] rounded-[20px] border-[1.5px] border-ink bg-cream p-2.5">
+          <div className={`relative w-full max-w-[200px] rounded-[20px] border-[1.5px] border-ink bg-cream p-2.5 ${HOVER_CARD}`}>
             <Photo photo={main} i={2} className="h-44 rounded-xl" />
             {main && (
               <span className="absolute top-[38%] left-[46%] max-w-[50%] truncate rounded-full border-[1.5px] border-ink bg-cream px-2 py-0.5 text-[11px] font-semibold">
@@ -216,7 +208,7 @@ export function PostToStoreFlow({ photos }: { photos: LandingPhoto[] }) {
         <div className="flex w-full flex-col gap-3.5">
           <div>
             <span className={lbl}>Tu página</span>
-            <div className="mt-1 overflow-hidden rounded-2xl border-[1.5px] border-ink bg-cream">
+            <div className={`mt-1 overflow-hidden rounded-2xl border-[1.5px] border-ink bg-cream ${HOVER_CARD}`}>
               <div className="flex gap-1.5 border-b-[1.5px] border-ink bg-sky px-2.5 py-2">
                 {[0, 1, 2].map((d) => (
                   <i key={d} className="size-2 rounded-full border border-ink bg-cream" />
@@ -231,7 +223,7 @@ export function PostToStoreFlow({ photos }: { photos: LandingPhoto[] }) {
           </div>
           <div>
             <span className={lbl}>Tu WhatsApp</span>
-            <div className="mt-1 flex flex-col rounded-2xl border-[1.5px] border-ink bg-leaf-soft p-2.5 text-[13px]">
+            <div className={`mt-1 flex flex-col rounded-2xl border-[1.5px] border-ink bg-leaf-soft p-2.5 text-[13px] ${HOVER_CARD}`}>
               <span className="max-w-[90%] self-end rounded-[12px_12px_2px_12px] bg-leaf px-2.5 py-1.5">
                 Hola, vi {main ? `“${main.title}”` : "tu prenda"} en Icon. ¿Hay talla M?
               </span>

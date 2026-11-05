@@ -24,20 +24,20 @@ export function DialogueScene({
       >
         <PersonRight
           fill={tone === "forest" ? "var(--color-coral-soft)" : "var(--color-honey-soft)"}
-          className="order-3 w-[clamp(4.5rem,11vw,8rem)] md:order-none"
+          className="order-3 w-[clamp(4.5rem,11vw,8rem)] origin-bottom transition-transform duration-300 hover:-rotate-6 motion-reduce:transition-none md:order-none"
         />
         <div className="relative order-1 col-span-2 self-start rounded-[26px] bg-cream p-5 text-ink after:absolute after:-bottom-3 after:left-6 after:size-6 after:rotate-45 after:rounded-[4px] after:bg-cream sm:p-6 md:order-none md:col-span-1">
           <p className="font-display text-[clamp(1.5rem,3.2vw,2.4rem)] leading-[1.08] [&_em]:text-coral">
             {question}
           </p>
         </div>
-        <div className="relative order-2 col-span-2 mt-2 rounded-[26px] bg-cream p-4 text-ink after:absolute after:right-6 after:-bottom-3 after:size-6 after:rotate-45 after:rounded-[4px] after:bg-cream sm:p-5 md:order-none md:col-span-1 md:mt-0">
+        <div className="relative order-2 col-span-2 mt-2 rounded-[26px] bg-cream p-4 text-ink after:absolute after:right-6 after:-bottom-3 after:size-6 after:rotate-45 after:rounded-[4px] after:bg-cream transition-transform duration-300 hover:-translate-y-1 sm:p-5 md:order-none md:col-span-1 md:mt-0">
           {answer}
         </div>
         <PersonLeft
           fill={tone === "forest" ? "var(--color-leaf)" : "var(--color-sky)"}
           hair={tone === "forest" ? "var(--color-forest)" : "var(--color-forest-deep)"}
-          className="order-4 w-[clamp(4.5rem,11vw,8rem)] justify-self-end md:order-none"
+          className="order-4 w-[clamp(4.5rem,11vw,8rem)] origin-bottom justify-self-end transition-transform duration-300 hover:rotate-6 motion-reduce:transition-none md:order-none"
         />
       </div>
       <p className="mt-4 text-center text-ink/70">{caption}</p>
