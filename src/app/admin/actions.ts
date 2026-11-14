@@ -8,7 +8,7 @@ import { getCurrentUser, isStaff, MANAGED_BRAND_COOKIE, requireStaff } from "@/l
 import { brandNameMatches, deleteBrandWithImages } from "@/lib/brand-delete";
 import { uploadImageField } from "@/lib/upload";
 import { normalizeInstagramHandle, normalizeUrl } from "@/lib/links";
-import { replaceBrandStyles, tagIdsFromForm, type TagType } from "@/lib/tags";
+import { colorIdsFromForm, replaceBrandStyles, replaceGarmentColors, tagIdsFromForm, type TagType } from "@/lib/tags";
 import { slugify } from "@/lib/brand-registration";
 
 function str(formData: FormData, key: string): string | null {
@@ -76,7 +76,6 @@ export async function createGarment(formData: FormData) {
       description: str(formData, "description"),
       price_cop: priceRaw ? Number(priceRaw) : null,
       product_url,
-      color: str(formData, "color"),
       fabric: str(formData, "fabric"),
       status,
       source: "team",
@@ -97,6 +96,7 @@ export async function createGarment(formData: FormData) {
       .from("garment_tags")
       .insert(tagIds.map((tag_id) => ({ garment_id: garment.id, tag_id })));
   }
+  await replaceGarmentColors(supabase, garment.id, colorIdsFromForm(formData));
   const sizeIds = formData.getAll("sizes").map(String);
   if (sizeIds.length) {
     await supabase

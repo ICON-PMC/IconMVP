@@ -140,7 +140,7 @@ async function loadUploadData(): Promise<UploadData> {
   const supabase = await createClient();
   const tags = (type: "category" | "occasion" | "style" | "temperature") =>
     supabase.from("tags").select("id, name").eq("type", type).order("name");
-  const [cities, categories, occasions, styles, temperatures, sizes, brands, garments] =
+  const [cities, categories, occasions, styles, temperatures, sizes, brands, garments, colors] =
     await Promise.all([
       getCityOptions(supabase),
       tags("category"),
@@ -150,6 +150,7 @@ async function loadUploadData(): Promise<UploadData> {
       supabase.from("sizes").select("id, label").order("sort_order"),
       supabase.from("brands").select("id, name").order("name"),
       supabase.from("garments").select("id, title").order("created_at", { ascending: false }),
+      supabase.from("colors").select("id, name").eq("is_hidden", false).order("position"),
     ]);
   return {
     cities,
@@ -157,6 +158,7 @@ async function loadUploadData(): Promise<UploadData> {
     occasions: occasions.data ?? [],
     styles: styles.data ?? [],
     temperatures: temperatures.data ?? [],
+    colors: colors.data ?? [],
     sizes: sizes.data ?? [],
     brands: brands.data ?? [],
     garments: garments.data ?? [],

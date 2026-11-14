@@ -16,10 +16,28 @@ import { CityMultiCombobox } from "@/components/city-combobox";
 export type FilterGroup = {
   param: string;
   label: string;
-  options: { value: string; label: string }[];
+  /** `swatch`: color de muestra (hex) para el grupo Color; `null` = multicolor/estampado. */
+  options: { value: string; label: string; swatch?: string | null }[];
   /** Muchas opciones (ciudades): buscador con selección múltiple en vez de chips. */
   searchable?: boolean;
+  /** Con `searchable`: estas opciones (las más usadas) se muestran además como chips. */
+  featured?: string[];
 };
+
+// Muestra de color de un chip del grupo Color (sin `swatch` no se dibuja nada).
+function Swatch({ color }: { color: string | null | undefined }) {
+  if (color === undefined) return null;
+  return (
+    <span
+      aria-hidden
+      className="inline-block size-3 shrink-0 rounded-full border border-black/15"
+      style={{
+        background:
+          color ?? "conic-gradient(#e8782a, #f2cf3a, #3e8e4e, #2f5da8, #6b3fa0, #d6247a, #e8782a)",
+      }}
+    />
+  );
+}
 
 // Botón "Filtros (n)" + panel plegable (shadcn Sheet, cajón) con los 5 grupos.
 // El panel trabaja sobre un borrador local; "Aplicar" lo escribe todo junto en la URL
@@ -74,7 +92,7 @@ export function FeedFilterPanel({ groups }: { groups: FilterGroup[] }) {
         <SheetHeader>
           <SheetTitle>Filtros</SheetTitle>
           <SheetDescription>
-            Ocasión, ciudad, precio, categoría y estilo.
+            Ocasión, ciudad, precio, categoría, estilo y color.
           </SheetDescription>
         </SheetHeader>
         <div className="flex flex-1 flex-col gap-5 overflow-y-auto px-4 pb-4">
@@ -90,10 +108,35 @@ export function FeedFilterPanel({ groups }: { groups: FilterGroup[] }) {
                     </span>
                   )}
                 </p>
+                {g.searchable && g.featured?.length ? (
+                  <div className="mb-2 flex flex-wrap gap-1.5">
+                    {g.options
+                      .filter((o) => g.featured!.includes(o.value))
+                      .map((o) => {
+                        const active = values.includes(o.value);
+                        return (
+                          <button
+                            key={o.value}
+                            type="button"
+                            onClick={() => toggleDraft(g.param, o.value)}
+                            className={
+                              active
+                                ? "rounded-full bg-forest px-3 py-1 text-xs font-medium text-white"
+                                : "glass-input rounded-full px-3 py-1 text-xs text-ink/80 hover:bg-white/70"
+                            }
+                          >
+                            {o.label}
+                          </button>
+                        );
+                      })}
+                  </div>
+                ) : null}
                 {g.searchable ? (
                   <CityMultiCombobox
                     label={g.label}
                     options={g.options}
+                    placeholder={g.param === "city" ? undefined : `Busca un ${g.label.toLowerCase()}`}
+                    emptyText={g.param === "city" ? undefined : "No hay prendas con ese filtro todavía."}
                     value={values}
                     onValueChange={(next) =>
                       setDraft((prev) => ({ ...prev, [g.param]: next }))
@@ -110,10 +153,11 @@ export function FeedFilterPanel({ groups }: { groups: FilterGroup[] }) {
                           onClick={() => toggleDraft(g.param, o.value)}
                           className={
                             active
-                              ? "rounded-full bg-forest px-3 py-1 text-xs font-medium text-white"
-                              : "glass-input rounded-full px-3 py-1 text-xs text-ink/80 hover:bg-white/70"
+                              ? "flex items-center gap-1.5 rounded-full bg-forest px-3 py-1 text-xs font-medium text-white"
+                              : "glass-input flex items-center gap-1.5 rounded-full px-3 py-1 text-xs text-ink/80 hover:bg-white/70"
                           }
                         >
+                          <Swatch color={o.swatch} />
                           {o.label}
                         </button>
                       );

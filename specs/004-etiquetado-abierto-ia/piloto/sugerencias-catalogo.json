@@ -1,0 +1,4466 @@
+[
+ {
+  "n": 1,
+  "category": "tops",
+  "style": [
+   "vintage",
+   "urbano"
+  ],
+  "occasion": [
+   "casual",
+   "dia-a-dia"
+  ],
+  "color": [
+   "blanco",
+   "estampado"
+  ],
+  "fabric": null,
+  "nuevos_estilos": [
+   "Futbolero retro"
+  ],
+  "confianza": "alta",
+  "nota": "Camiseta blanca oversize con gráfico retro de tickets de la final en la espalda; la prenda es la camiseta, no el hombre ni el balón."
+ },
+ {
+  "n": 2,
+  "category": "tops",
+  "style": [
+   "urbano",
+   "streetwear"
+  ],
+  "occasion": [
+   "casual",
+   "dia-a-dia"
+  ],
+  "color": [
+   "blanco",
+   "estampado"
+  ],
+  "fabric": null,
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Camiseta blanca oversize con estampado de cuadro surrealista en la espalda y logo pequeño en el cuello."
+ },
+ {
+  "n": 3,
+  "category": "accesorios",
+  "style": [
+   "artesanal",
+   "romantico"
+  ],
+  "occasion": [
+   "casual",
+   "fiesta"
+  ],
+  "color": [
+   "rosado",
+   "dorado"
+  ],
+  "fabric": null,
+  "nuevos_estilos": [],
+  "confianza": "media",
+  "nota": "Pulsera de cuentas rosas y colgantes de cuentas en forma de pez y caballito de mar con detalles dorados; el título no dice si es pulsera o collar."
+ },
+ {
+  "n": 4,
+  "category": "faldas",
+  "style": [
+   "elegante",
+   "minimalista"
+  ],
+  "occasion": [
+   "evento",
+   "noche"
+  ],
+  "color": [
+   "beige"
+  ],
+  "fabric": "seda",
+  "nuevos_estilos": [
+   "Quiet luxury"
+  ],
+  "confianza": "alta",
+  "nota": "Falda midi de satén en corte al bies y tono champagne; el brillo y la caída sugieren seda, como indica el título."
+ },
+ {
+  "n": 5,
+  "category": "chaquetas",
+  "style": [
+   "clasico",
+   "urbano"
+  ],
+  "occasion": [
+   "casual",
+   "dia-a-dia"
+  ],
+  "color": [
+   "estampado",
+   "cafe"
+  ],
+  "fabric": null,
+  "nuevos_estilos": [],
+  "confianza": "media",
+  "nota": "Puffer corto de cuello alto y cierre frontal en cuadros tipo pepita café y crudo; el tejido exterior no se identifica con certeza."
+ },
+ {
+  "n": 6,
+  "category": "abrigos-y-tejidos",
+  "style": [
+   "minimalista",
+   "neutro"
+  ],
+  "occasion": [
+   "casual",
+   "dia-a-dia"
+  ],
+  "color": [
+   "gris"
+  ],
+  "fabric": "acrílico",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Suéter de punto de cuello redondo con degradé gris de textura salpicada; cuello, puños y cintura en rib."
+ },
+ {
+  "n": 7,
+  "category": "tops",
+  "style": [
+   "urbano",
+   "streetwear"
+  ],
+  "occasion": [
+   "casual",
+   "dia-a-dia"
+  ],
+  "color": [
+   "cafe"
+  ],
+  "fabric": "algodón",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Camiseta oversize café con serigrafía en la espalda; la descripción indica algodón de 250 gsm."
+ },
+ {
+  "n": 8,
+  "category": "jeans",
+  "style": [
+   "urbano",
+   "vintage"
+  ],
+  "occasion": [
+   "casual",
+   "dia-a-dia"
+  ],
+  "color": [
+   "azul"
+  ],
+  "fabric": "denim",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Jean de tiro alto con lavado azul verdoso desgastado; en la foto la pierna se ve recta y ancha más que flare, revisar el corte."
+ },
+ {
+  "n": 9,
+  "category": "jeans",
+  "style": [
+   "vintage",
+   "urbano"
+  ],
+  "occasion": [
+   "casual",
+   "dia-a-dia"
+  ],
+  "color": [
+   "azul"
+  ],
+  "fabric": "denim",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Jean de tiro alto azul medio con efecto stone wash y pierna ancha; el flare se aprecia poco en la foto."
+ },
+ {
+  "n": 10,
+  "category": "blusas",
+  "style": [
+   "clasico",
+   "elegante"
+  ],
+  "occasion": [
+   "evento",
+   "brunch"
+  ],
+  "color": [
+   "estampado",
+   "negro"
+  ],
+  "fabric": null,
+  "nuevos_estilos": [],
+  "confianza": "media",
+  "nota": "Top corto sin mangas con estampado geométrico de rombos en negro y crudo; la falda larga de la foto no pertenece a esta prenda."
+ },
+ {
+  "n": 11,
+  "category": "chaquetas",
+  "style": [
+   "urbano",
+   "streetwear"
+  ],
+  "occasion": [
+   "casual",
+   "dia-a-dia"
+  ],
+  "color": [
+   "gris"
+  ],
+  "fabric": "denim",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Sobrecamisa oversize de denim acid wash gris con cuello camisero, dos bolsillos de pecho y puños con botón."
+ },
+ {
+  "n": 12,
+  "category": "jeans",
+  "style": [
+   "urbano",
+   "streetwear"
+  ],
+  "occasion": [
+   "casual",
+   "dia-a-dia"
+  ],
+  "color": [
+   "negro"
+  ],
+  "fabric": "algodón",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Jean baggy de tiro alto en denim negro carbón con lavado desgastado y silueta amplia desde la cadera."
+ },
+ {
+  "n": 13,
+  "category": "jeans",
+  "style": [
+   "urbano",
+   "y2k"
+  ],
+  "occasion": [
+   "casual",
+   "dia-a-dia"
+  ],
+  "color": [
+   "azul"
+  ],
+  "fabric": "algodón",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Jean super baggy azul medio con bolsillos cargo laterales de gran formato y tiras utilitarias."
+ },
+ {
+  "n": 14,
+  "category": "accesorios",
+  "style": [
+   "artesanal",
+   "boho"
+  ],
+  "occasion": [
+   "evento",
+   "fiesta"
+  ],
+  "color": [
+   "verde-oliva"
+  ],
+  "fabric": null,
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Accesorio de pelo tejido con cuentas tipo Murano en verde oliva; en la foto se ve solo el tono verde."
+ },
+ {
+  "n": 15,
+  "category": "tops",
+  "style": [
+   "artesanal",
+   "minimalista"
+  ],
+  "occasion": [
+   "casual",
+   "dia-a-dia"
+  ],
+  "color": [
+   "blanco",
+   "azul"
+  ],
+  "fabric": null,
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Camiseta blanca de corte relajado con ojo nazar bordado en cuentas azules como detalle central."
+ },
+ {
+  "n": 16,
+  "category": "accesorios",
+  "style": [
+   "urbano",
+   "vintage"
+  ],
+  "occasion": [
+   "casual",
+   "dia-a-dia"
+  ],
+  "color": [
+   "azul"
+  ],
+  "fabric": "denim",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Gorra de denim azul lavado con bordado blanco en el frente; es el accesorio principal de la foto."
+ },
+ {
+  "n": 17,
+  "category": "chaquetas",
+  "style": [
+   "clasico",
+   "urbano"
+  ],
+  "occasion": [
+   "casual",
+   "dia-a-dia"
+  ],
+  "color": [
+   "azul-oscuro"
+  ],
+  "fabric": "denim",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Chaqueta de denim índigo tipo trucker con bolsillos de pecho y botones frontales; la foto la muestra con pantalón ancho oscuro."
+ },
+ {
+  "n": 18,
+  "category": "vestidos",
+  "style": [
+   "clasico",
+   "elegante"
+  ],
+  "occasion": [
+   "brunch",
+   "trabajo"
+  ],
+  "color": [
+   "azul"
+  ],
+  "fabric": null,
+  "nuevos_estilos": [],
+  "confianza": "media",
+  "nota": "Vestido camisero azul de manga corta con cinturón anudado y falda amplia; el largo en la foto es midi (debajo de la rodilla), no largo, y la imagen parece muy editada o generada, confirmar."
+ },
+ {
+  "n": 19,
+  "category": "blusas",
+  "style": [
+   "elegante",
+   "clasico"
+  ],
+  "occasion": [
+   "evento",
+   "trabajo"
+  ],
+  "color": [
+   "negro",
+   "dorado"
+  ],
+  "fabric": null,
+  "nuevos_estilos": [],
+  "confianza": "media",
+  "nota": "Blusa negra sin mangas con peplum, escote en V y botones decorativos dorados al frente; la imagen parece muy editada o generada, confirmar."
+ },
+ {
+  "n": 101,
+  "category": "tops",
+  "style": [
+   "vintage",
+   "urbano"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "blanco",
+   "estampado"
+  ],
+  "fabric": "algodón",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Camiseta blanca oversized con gráfico vintage en espalda (Ballet Azul, años 50); el tag actual 'camisas' se corrige a tops porque no tiene cuello camisero."
+ },
+ {
+  "n": 102,
+  "category": "tops",
+  "style": [
+   "deportivo",
+   "vintage"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "azul-oscuro",
+   "estampado"
+  ],
+  "fabric": "algodón",
+  "nuevos_estilos": [],
+  "confianza": "media",
+  "nota": "Camiseta oversized azul marino muy oscuro (podría leerse como gris oscuro) con gráfico 'Campeón Continental' en espalda; tag 'camisas' corregido a tops."
+ },
+ {
+  "n": 103,
+  "category": "tops",
+  "style": [
+   "vintage",
+   "deportivo"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "negro",
+   "estampado"
+  ],
+  "fabric": null,
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Camiseta negra con póster vintage 'Fútbol Champagne' en espalda; tag 'camisas' corregido a tops y la tela no se puede saber de la foto."
+ },
+ {
+  "n": 104,
+  "category": "tops",
+  "style": [
+   "vintage",
+   "deportivo"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "crudo",
+   "estampado"
+  ],
+  "fabric": null,
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Camiseta crudo con estampado tipo sello postal de estadios de la Premier en espalda; tag 'camisas' corregido a tops."
+ },
+ {
+  "n": 105,
+  "category": "tops",
+  "style": [
+   "urbano",
+   "colorido"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "blanco",
+   "estampado"
+  ],
+  "fabric": null,
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Camiseta blanca con gráfico grande 'Rey de Copas' en verde y dorado en espalda; tag 'camisas' corregido a tops."
+ },
+ {
+  "n": 106,
+  "category": "abrigos-y-tejidos",
+  "style": [
+   "streetwear",
+   "vintage"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "blanco",
+   "estampado"
+  ],
+  "fabric": null,
+  "nuevos_estilos": [
+   "Motorsport"
+  ],
+  "confianza": "alta",
+  "nota": "Hoodie blanco con gráfico de carrera de F1 en Mónaco en espalda; el tag 'elegante' no encaja con la foto."
+ },
+ {
+  "n": 107,
+  "category": "accesorios",
+  "style": [
+   "clasico",
+   "vintage"
+  ],
+  "occasion": [
+   "viaje",
+   "casual"
+  ],
+  "color": [
+   "vino",
+   "azul-oscuro"
+  ],
+  "fabric": "punto",
+  "nuevos_estilos": [
+   "Preppy"
+  ],
+  "confianza": "media",
+  "nota": "Bufanda de punto en rombos (argyle) vino y azul marino con líneas blancas; la fibra no se puede confirmar, parece lana o punto."
+ },
+ {
+  "n": 108,
+  "category": "abrigos-y-tejidos",
+  "style": [
+   "romantico",
+   "clasico"
+  ],
+  "occasion": [
+   "brunch",
+   "casual"
+  ],
+  "color": [
+   "rosado",
+   "vino"
+  ],
+  "fabric": "punto",
+  "nuevos_estilos": [
+   "Preppy"
+  ],
+  "confianza": "media",
+  "nota": "Cardigan corto de punto con botones y rombos rosado y vino; categoría ambigua, se puede usar chaquetas si se prefiere tratarlo como chaqueta."
+ },
+ {
+  "n": 109,
+  "category": "faldas",
+  "style": [
+   "clasico",
+   "minimalista"
+  ],
+  "occasion": [
+   "trabajo",
+   "brunch"
+  ],
+  "color": [
+   "gris",
+   "azul-oscuro"
+  ],
+  "fabric": "punto",
+  "nuevos_estilos": [
+   "Preppy"
+  ],
+  "confianza": "alta",
+  "nota": "Falda midi de punto acampanada en rombos gris y azul marino con pretina azul; mismo patrón de rombos que 107 y 108."
+ },
+ {
+  "n": 110,
+  "category": "pantalones",
+  "style": [
+   "artesanal",
+   "minimalista"
+  ],
+  "occasion": [
+   "viaje",
+   "brunch"
+  ],
+  "color": [
+   "crudo"
+  ],
+  "fabric": "punto",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Pantalón recto de punto trenzado (cable) en crudo con cintura elástica."
+ },
+ {
+  "n": 111,
+  "category": "vestidos",
+  "style": [
+   "elegante",
+   "vintage"
+  ],
+  "occasion": [
+   "evento",
+   "noche"
+  ],
+  "color": [
+   "crudo",
+   "negro"
+  ],
+  "fabric": "punto",
+  "nuevos_estilos": [],
+  "confianza": "media",
+  "nota": "Vestido largo de punto de un hombro con zigzag negro sobre crudo y manga larga en un solo brazo; el nombre 'Mediobeso' no aporta datos de estilo, revisar."
+ },
+ {
+  "n": 112,
+  "category": "vestidos",
+  "style": [
+   "elegante",
+   "minimalista"
+  ],
+  "occasion": [
+   "noche",
+   "evento"
+  ],
+  "color": [
+   "negro",
+   "crudo"
+  ],
+  "fabric": "punto",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Vestido maxi de punto ajustado con rayas verticales negro y crudo, escote en V con aro metálico y mangas acampanadas."
+ },
+ {
+  "n": 113,
+  "category": "accesorios",
+  "style": [
+   "minimalista"
+  ],
+  "occasion": [
+   "evento"
+  ],
+  "color": [
+   "negro"
+  ],
+  "fabric": null,
+  "nuevos_estilos": [],
+  "confianza": "baja",
+  "nota": "No es una prenda sino un bono de regalo digital (foto de tarjeta metálica negra); sugiero excluirlo del catálogo de prendas."
+ },
+ {
+  "n": 114,
+  "category": "tops",
+  "style": [
+   "streetwear",
+   "minimalista"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "celeste"
+  ],
+  "fabric": "algodón",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Camiseta boxy celeste con logo CROWNCODE arqueado y 'Art & Creative Design Studio' en espalda."
+ },
+ {
+  "n": 115,
+  "category": "tops",
+  "style": [
+   "streetwear",
+   "urbano"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "negro",
+   "blanco",
+   "estampado"
+  ],
+  "fabric": "algodón",
+  "nuevos_estilos": [
+   "Gothic"
+  ],
+  "confianza": "alta",
+  "nota": "Camiseta negra con mangas blancas de capa doble, logo gótico y cruces en mangas."
+ },
+ {
+  "n": 116,
+  "category": "tops",
+  "style": [
+   "streetwear",
+   "urbano"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "verde"
+  ],
+  "fabric": "algodón",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Camiseta oversized verde bosque con estrellas y sello 'C' en espalda y texto 'by brothers for dreamers'."
+ },
+ {
+  "n": 117,
+  "category": "tops",
+  "style": [
+   "streetwear",
+   "minimalista"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "negro"
+  ],
+  "fabric": "algodón",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Camiseta negra oversized básica con 'CROWNCODE' grande y 'By Brothers, For Dreamers' en espalda."
+ },
+ {
+  "n": 118,
+  "category": "tops",
+  "style": [
+   "streetwear",
+   "minimalista"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "verde"
+  ],
+  "fabric": "algodón",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Camiseta oversized verde menta (la paleta no tiene menta, uso verde) con el mismo diseño de espalda que 117."
+ },
+ {
+  "n": 119,
+  "category": "tops",
+  "style": [
+   "streetwear",
+   "urbano"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "gris",
+   "estampado"
+  ],
+  "fabric": "algodón",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Camiseta gris oscuro oversized con estatua de la Libertad vendada y encadenada en espalda."
+ },
+ {
+  "n": 120,
+  "category": "tops",
+  "style": [
+   "streetwear",
+   "artesanal"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "crudo",
+   "estampado"
+  ],
+  "fabric": "algodón",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Camiseta crudo con ilustración de ángel con alas en sombreado tipo carboncillo al frente."
+ },
+ {
+  "n": 121,
+  "category": "tops",
+  "style": [
+   "streetwear",
+   "urbano"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "negro",
+   "estampado"
+  ],
+  "fabric": "algodón",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Camiseta negra con cordero rodeado de lobos y halo dorado; el título dice 'GOAT' (cabra) pero la imagen es una oveja, posible juego de palabras, revisar."
+ },
+ {
+  "n": 122,
+  "category": "tops",
+  "style": [
+   "streetwear",
+   "vintage"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "negro",
+   "rosado",
+   "estampado"
+  ],
+  "fabric": "algodón",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Camiseta negra con degradé y escudo heráldico rosado con corona y león en espalda."
+ },
+ {
+  "n": 123,
+  "category": "tops",
+  "style": [
+   "streetwear",
+   "vintage"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "gris"
+  ],
+  "fabric": "algodón",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Camiseta gris hielo lavada con efecto desgastado y 'CROWNCODE' grande en blanco en espalda."
+ },
+ {
+  "n": 124,
+  "category": "tops",
+  "style": [
+   "minimalista",
+   "streetwear"
+  ],
+  "occasion": [
+   "dia-a-dia"
+  ],
+  "color": [
+   "crudo"
+  ],
+  "fabric": "algodón",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Camiseta crudo básica con 'CROWNCODE' en negro en espalda."
+ },
+ {
+  "n": 125,
+  "category": "tops",
+  "style": [
+   "streetwear",
+   "deportivo"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "azul-oscuro",
+   "estampado"
+  ],
+  "fabric": "algodón",
+  "nuevos_estilos": [
+   "Varsity"
+  ],
+  "confianza": "alta",
+  "nota": "Camiseta azul marino estilo varsity con '99' y silueta de la Estatua de la Libertad en espalda."
+ },
+ {
+  "n": 126,
+  "category": "tops",
+  "style": [
+   "vintage",
+   "urbano"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "negro",
+   "estampado"
+  ],
+  "fabric": "algodón",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Camiseta negra oversized con ilustración de Londres (Big Ben y bus de dos pisos) en tonos naranjas en espalda."
+ },
+ {
+  "n": 127,
+  "category": "tops",
+  "style": [
+   "streetwear",
+   "vintage"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "negro",
+   "gris",
+   "estampado"
+  ],
+  "fabric": "algodón",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Camiseta negra degradada con escultura clásica en escala de grises en espalda."
+ },
+ {
+  "n": 128,
+  "category": "tops",
+  "style": [
+   "vintage",
+   "urbano"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "crudo",
+   "estampado"
+  ],
+  "fabric": "algodón",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Camiseta crudo con logo tipo script retro 'CROWNCODE NYC' y franja de estrellas en espalda."
+ },
+ {
+  "n": 129,
+  "category": "tops",
+  "style": [
+   "clasico",
+   "streetwear"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "negro",
+   "dorado",
+   "estampado"
+  ],
+  "fabric": "algodón",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Camiseta boxy negra con retrato barroco enmarcado en dorado y llaves en espalda."
+ },
+ {
+  "n": 130,
+  "category": "tops",
+  "style": [
+   "deportivo",
+   "streetwear"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "negro",
+   "celeste",
+   "estampado"
+  ],
+  "fabric": "algodón",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Camiseta negra oversized con escudo de damero celeste en espalda y frase 'designed for true dreamers'."
+ },
+ {
+  "n": 131,
+  "category": "tops",
+  "style": [
+   "deportivo",
+   "streetwear"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "rojo",
+   "blanco",
+   "estampado"
+  ],
+  "fabric": "algodón",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Camiseta roja con el mismo escudo de damero en blanco que la 130."
+ },
+ {
+  "n": 132,
+  "category": "tops",
+  "style": [
+   "minimalista",
+   "streetwear"
+  ],
+  "occasion": [
+   "dia-a-dia"
+  ],
+  "color": [
+   "negro"
+  ],
+  "fabric": "algodón",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Camiseta negra básica regular fit con logo pequeño en el pecho (vista frontal)."
+ },
+ {
+  "n": 133,
+  "category": "tops",
+  "style": [
+   "minimalista",
+   "streetwear"
+  ],
+  "occasion": [
+   "dia-a-dia"
+  ],
+  "color": [
+   "crudo"
+  ],
+  "fabric": "algodón",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Camiseta crudo básica regular fit con logo pequeño en el pecho, mismo corte que la 132."
+ },
+ {
+  "n": 134,
+  "category": "tops",
+  "style": [
+   "streetwear",
+   "vintage"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "negro",
+   "gris",
+   "estampado"
+  ],
+  "fabric": "algodón",
+  "nuevos_estilos": [
+   "Gothic"
+  ],
+  "confianza": "alta",
+  "nota": "Camiseta negra degradada con imagen religiosa en escala de grises (Virgen con corazón) al frente."
+ },
+ {
+  "n": 135,
+  "category": "tops",
+  "style": [
+   "streetwear",
+   "deportivo"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "negro",
+   "celeste",
+   "estampado"
+  ],
+  "fabric": "algodón",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Camiseta negra con estampado frontal de skyline de Nueva York y estadio en azul neón."
+ },
+ {
+  "n": 136,
+  "category": "tops",
+  "style": [
+   "deportivo",
+   "streetwear"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "rojo",
+   "estampado"
+  ],
+  "fabric": "algodón",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Camiseta degradé rojo cherry con '042 Legacy Piece' en blanco en espalda."
+ },
+ {
+  "n": 137,
+  "category": "chaquetas",
+  "style": [
+   "urbano",
+   "streetwear"
+  ],
+  "occasion": [
+   "noche",
+   "casual"
+  ],
+  "color": [
+   "negro"
+  ],
+  "fabric": "cuero",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Chaqueta de cuero negra con cuello, cierre frontal y print 'CROWNCODE DEPT London Studio' en espalda."
+ },
+ {
+  "n": 138,
+  "category": "chaquetas",
+  "style": [
+   "urbano",
+   "vintage"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "celeste"
+  ],
+  "fabric": "denim",
+  "nuevos_estilos": [
+   "Workwear"
+  ],
+  "confianza": "alta",
+  "nota": "Chaqueta de denim celeste desgastado con cuello camisero, cierre frontal y bolsillos tipo canguro; tag 'jeans' corregido a chaquetas."
+ },
+ {
+  "n": 139,
+  "category": "chaquetas",
+  "style": [
+   "urbano",
+   "streetwear"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "negro"
+  ],
+  "fabric": "denim",
+  "nuevos_estilos": [
+   "Workwear"
+  ],
+  "confianza": "alta",
+  "nota": "Chaqueta de denim negro desgastado con cuello, cierre frontal y bolsillos tipo canguro; tag 'jeans' corregido a chaquetas."
+ },
+ {
+  "n": 140,
+  "category": "chaquetas",
+  "style": [
+   "urbano",
+   "vintage"
+  ],
+  "occasion": [
+   "casual",
+   "viaje"
+  ],
+  "color": [
+   "rojo",
+   "negro",
+   "estampado"
+  ],
+  "fabric": "algodón",
+  "nuevos_estilos": [
+   "Grunge"
+  ],
+  "confianza": "alta",
+  "nota": "Chaqueta tipo camisa a cuadros rojo y negro con cierre frontal y bolsillos; al no tener botones es chaquetas y no camisas."
+ },
+ {
+  "n": 141,
+  "category": "abrigos-y-tejidos",
+  "style": [
+   "streetwear",
+   "minimalista"
+  ],
+  "occasion": [
+   "dia-a-dia"
+  ],
+  "color": [
+   "crudo"
+  ],
+  "fabric": "algodón",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Hoodie con cierre completo crema y logo de estrella tono sobre tono en pecho, sin texto visible."
+ },
+ {
+  "n": 142,
+  "category": "abrigos-y-tejidos",
+  "style": [
+   "streetwear",
+   "minimalista"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "beige"
+  ],
+  "fabric": "punto",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Hoodie de punto con cierre completo beige y 'CROWNCODE' tono sobre tono al frente, con puños y basta de rib."
+ },
+ {
+  "n": 143,
+  "category": "abrigos-y-tejidos",
+  "style": [
+   "streetwear",
+   "minimalista"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "negro",
+   "gris"
+  ],
+  "fabric": "punto",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Hoodie negro de punto con cierre completo y logo gris arqueado en pecho, con rib de efecto vintage."
+ },
+ {
+  "n": 144,
+  "category": "chaquetas",
+  "style": [
+   "urbano",
+   "minimalista"
+  ],
+  "occasion": [
+   "casual",
+   "viaje"
+  ],
+  "color": [
+   "cafe"
+  ],
+  "fabric": "cuero sintético",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Bomber café de cuero sintético con cierre, cuello, puños y basta elásticos, y logo pequeño en el pecho."
+ },
+ {
+  "n": 145,
+  "category": "chaquetas",
+  "style": [
+   "urbano",
+   "minimalista"
+  ],
+  "occasion": [
+   "dia-a-dia"
+  ],
+  "color": [
+   "negro"
+  ],
+  "fabric": "cuero sintético",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Bomber negro de cuero sintético con cuello camisero, cierre frontal y logo metálico pequeño en pecho; corte boxy."
+ },
+ {
+  "n": 146,
+  "category": "accesorios",
+  "style": [
+   "urbano",
+   "streetwear"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "negro"
+  ],
+  "fabric": "algodón",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Gorra trucker negra de 5 paneles con bordado frontal en alto relieve; coincide con el título."
+ },
+ {
+  "n": 147,
+  "category": "accesorios",
+  "style": [
+   "urbano",
+   "streetwear"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "cafe"
+  ],
+  "fabric": "algodón",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Gorra trucker café con parche bordado Old West; coincide con el título."
+ },
+ {
+  "n": 148,
+  "category": "accesorios",
+  "style": [
+   "minimalista",
+   "urbano"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "crudo",
+   "beige"
+  ],
+  "fabric": "algodón",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Gorra trucker crema con bordado tono sobre tono y visera beige; coincide con el título."
+ },
+ {
+  "n": 149,
+  "category": "abrigos-y-tejidos",
+  "style": [
+   "urbano",
+   "streetwear"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "negro"
+  ],
+  "fabric": "algodón",
+  "nuevos_estilos": [
+   "Grunge"
+  ],
+  "confianza": "alta",
+  "nota": "Hoodie negro oversized desgastado con cruz de taches en espalda; estética grunge/gótica."
+ },
+ {
+  "n": 150,
+  "category": "abrigos-y-tejidos",
+  "style": [
+   "urbano",
+   "streetwear"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "gris"
+  ],
+  "fabric": "algodón",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Hoodie gris oscuro lavado con dobladillo deshilachado y estampado grande CROWNCODE New York City en espalda."
+ },
+ {
+  "n": 151,
+  "category": "abrigos-y-tejidos",
+  "style": [
+   "urbano",
+   "streetwear"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "gris"
+  ],
+  "fabric": "algodón",
+  "nuevos_estilos": [],
+  "confianza": "media",
+  "nota": "Hoodie gris claro con estampado blanco 'By Brothers, For Dreamers' en espalda; el efecto tie dye del texto no se aprecia bien en la foto."
+ },
+ {
+  "n": 152,
+  "category": "abrigos-y-tejidos",
+  "style": [
+   "urbano",
+   "streetwear"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "crudo"
+  ],
+  "fabric": "algodón",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Hoodie off-white con estampado negro 'By Brothers, For Dreamers' en espalda; coincide con el título."
+ },
+ {
+  "n": 153,
+  "category": "abrigos-y-tejidos",
+  "style": [
+   "urbano",
+   "streetwear"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "negro"
+  ],
+  "fabric": "algodón",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Hoodie negro oversized con CROWNCODE en bloque blanco en espalda; coincide con el título."
+ },
+ {
+  "n": 154,
+  "category": "abrigos-y-tejidos",
+  "style": [
+   "urbano",
+   "colorido"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "verde"
+  ],
+  "fabric": "algodón",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Hoodie verde menta con CROWNCODE en bloque blanco en espalda; color claro y fresco."
+ },
+ {
+  "n": 155,
+  "category": "abrigos-y-tejidos",
+  "style": [
+   "urbano",
+   "streetwear"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "verde"
+  ],
+  "fabric": "algodón",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Hoodie verde bosque con logo script 'CROWNCODE NYC' blanco en espalda."
+ },
+ {
+  "n": 156,
+  "category": "abrigos-y-tejidos",
+  "style": [
+   "deportivo",
+   "streetwear"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "negro",
+   "multicolor"
+  ],
+  "fabric": "algodón",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Hoodie negro con gráfico motorsport en espalda (escudo, banderas de cuadros, laureles amarillos y banner rojo); la foto muestra la espalda."
+ },
+ {
+  "n": 157,
+  "category": "abrigos-y-tejidos",
+  "style": [
+   "urbano",
+   "vintage"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "crudo",
+   "beige"
+  ],
+  "fabric": "algodón",
+  "nuevos_estilos": [
+   "Western"
+  ],
+  "confianza": "alta",
+  "nota": "Hoodie crema oversized con gráfico 'Old West Rodeo Show' (cráneo de toro y sombrero) en espalda; la foto es de modelo con short a juego, la prenda es el hoodie."
+ },
+ {
+  "n": 158,
+  "category": "abrigos-y-tejidos",
+  "style": [
+   "colorido",
+   "urbano"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "rosado"
+  ],
+  "fabric": "algodón",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Hoodie rosado pastel con logo tonal en arco al frente y bolsillo canguro; la foto solo muestra el frente, la espalda descrita no se ve."
+ },
+ {
+  "n": 159,
+  "category": "abrigos-y-tejidos",
+  "style": [
+   "urbano",
+   "streetwear"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "cafe"
+  ],
+  "fabric": "algodón",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Hoodie café con estrellas tono sobre tono en pecho, mangas y espalda, y logo pequeño en pecho."
+ },
+ {
+  "n": 160,
+  "category": "abrigos-y-tejidos",
+  "style": [
+   "streetwear",
+   "vintage"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "negro",
+   "multicolor"
+  ],
+  "fabric": "algodón",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Hoodie negro con gráfico de lobos y letras amarillas y rojas en espalda, de estilo gráfico retro."
+ },
+ {
+  "n": 161,
+  "category": "jeans",
+  "style": [
+   "urbano"
+  ],
+  "occasion": [
+   "dia-a-dia"
+  ],
+  "color": [
+   "azul"
+  ],
+  "fabric": "denim",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Jean recto de lavado azul medio con bota deshilachada; básico sin roturas visibles."
+ },
+ {
+  "n": 162,
+  "category": "jeans",
+  "style": [
+   "urbano",
+   "vintage"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "celeste"
+  ],
+  "fabric": "denim",
+  "nuevos_estilos": [],
+  "confianza": "media",
+  "nota": "Jean celeste con roturas en rodillas y bota deshilachada; la foto muestra corte recto, no flare como dice el título, y no se ve el monograma."
+ },
+ {
+  "n": 163,
+  "category": "jeans",
+  "style": [
+   "urbano",
+   "streetwear"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "negro"
+  ],
+  "fabric": "denim",
+  "nuevos_estilos": [],
+  "confianza": "media",
+  "nota": "Jean negro cropped con roturas y bota deshilachada; el título dice Flared con monograma, la foto no muestra ni flare ni monograma."
+ },
+ {
+  "n": 164,
+  "category": "jeans",
+  "style": [
+   "urbano",
+   "streetwear"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "negro"
+  ],
+  "fabric": "denim",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Jean negro desgastado de corte amplio; la foto es trasera con logo CROWNCODE serigrafiado en bolsillos traseros."
+ },
+ {
+  "n": 165,
+  "category": "jeans",
+  "style": [
+   "urbano",
+   "minimalista"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "negro"
+  ],
+  "fabric": "denim",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Jean negro desgastado de corte recto/wide con remaches en bolsillos; coincide con el título."
+ },
+ {
+  "n": 166,
+  "category": "jeans",
+  "style": [
+   "urbano",
+   "vintage"
+  ],
+  "occasion": [
+   "dia-a-dia"
+  ],
+  "color": [
+   "celeste"
+  ],
+  "fabric": "denim",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Jean celeste de cintura alta con lavado vintage y corte recto; el título dice azul oceano, la foto es más clara."
+ },
+ {
+  "n": 167,
+  "category": "pantalones",
+  "style": [
+   "urbano",
+   "streetwear"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "cafe"
+  ],
+  "fabric": "algodón",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Jogger café de corte recto con cintura elástica y logo pequeño en muslo; la descripción menciona estampado frontal grande que no se ve."
+ },
+ {
+  "n": 168,
+  "category": "pantalones",
+  "style": [
+   "minimalista",
+   "urbano"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "crudo"
+  ],
+  "fabric": "algodón",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Jogger crudo de corte recto con monograma CC bordado pequeño; la descripción dice estampado grande, no se ve en la foto."
+ },
+ {
+  "n": 169,
+  "category": "pantalones",
+  "style": [
+   "urbano",
+   "streetwear"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "gris"
+  ],
+  "fabric": "algodón",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Jogger gris claro liso de corte recto con monograma pequeño bordado en blanco; el desgaste del título no se aprecia."
+ },
+ {
+  "n": 170,
+  "category": "pantalones",
+  "style": [
+   "minimalista",
+   "urbano"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "negro"
+  ],
+  "fabric": "algodón",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Jogger negro de corte recto con monograma CC pequeño bordado; la descripción menciona estampado grande, no se ve."
+ },
+ {
+  "n": 171,
+  "category": "pantalones",
+  "style": [
+   "urbano",
+   "streetwear"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "verde"
+  ],
+  "fabric": "algodón",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Jogger verde menta de corte recto con logo pequeño blanco en muslo; coincide con el título."
+ },
+ {
+  "n": 172,
+  "category": "pantalones",
+  "style": [
+   "urbano",
+   "streetwear"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "negro",
+   "gris"
+  ],
+  "fabric": "algodón",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Jogger con degradé de negro a gris y monograma C pequeño; coincide con el título."
+ },
+ {
+  "n": 173,
+  "category": "tops",
+  "style": [
+   "urbano",
+   "streetwear"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "gris"
+  ],
+  "fabric": "algodón",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Camiseta manga larga gris oscuro de corte boxy con mangas anchas; estampado tono sobre tono 'Divine Presence N°1923' en espalda."
+ },
+ {
+  "n": 174,
+  "category": "shorts",
+  "style": [
+   "urbano",
+   "minimalista"
+  ],
+  "occasion": [
+   "dia-a-dia"
+  ],
+  "color": [
+   "crudo"
+  ],
+  "fabric": "algodón",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Short tipo sweat crema con cordón, bolsillos y logo pequeño en la pierna inferior; coincide con el título."
+ },
+ {
+  "n": 175,
+  "category": "jeans",
+  "style": [
+   "urbano"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "cafe"
+  ],
+  "fabric": "denim",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Jean café lavado de corte recto con costuras contrastantes; coincide con el título."
+ },
+ {
+  "n": 176,
+  "category": "jeans",
+  "style": [
+   "urbano"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "negro"
+  ],
+  "fabric": "denim",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Jean negro desgastado de corte wide con costuras visibles; coincide con el título."
+ },
+ {
+  "n": 177,
+  "category": "jeans",
+  "style": [
+   "urbano",
+   "minimalista"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "azul-oscuro"
+  ],
+  "fabric": "denim",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Jean índigo oscuro de corte wide con costuras contrastantes; coincide con el título (raw)."
+ },
+ {
+  "n": 178,
+  "category": "abrigos-y-tejidos",
+  "style": [
+   "clasico",
+   "minimalista"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "crudo"
+  ],
+  "fabric": "acrílico",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Suéter de punto crema oversized con bordado tipo cordón 'crowncode' en espalda."
+ },
+ {
+  "n": 179,
+  "category": "abrigos-y-tejidos",
+  "style": [
+   "clasico",
+   "minimalista"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "verde"
+  ],
+  "fabric": "acrílico",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Suéter de punto verde bosque con bordado tono sobre tono en espalda; coincide con el título."
+ },
+ {
+  "n": 180,
+  "category": "tops",
+  "style": [
+   "streetwear",
+   "deportivo"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "gris"
+  ],
+  "fabric": "algodón",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Tank oversized gris lavado con gráfico de monoplaza F1 y firma; la descripción dice color negro, pero la foto y el título son gris."
+ },
+ {
+  "n": 181,
+  "category": "chaquetas",
+  "style": [
+   "urbano",
+   "vintage"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "cafe",
+   "crudo"
+  ],
+  "fabric": "gamuza y cuero sintético",
+  "nuevos_estilos": [
+   "Western"
+  ],
+  "confianza": "alta",
+  "nota": "Varsity de cuerpo café en gamuza con mangas crema de cuero sintético; espalda con 'Crowncode Old West' y 'Ride Your Dreams'."
+ },
+ {
+  "n": 182,
+  "category": "abrigos-y-tejidos",
+  "style": [
+   "urbano"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "azul"
+  ],
+  "fabric": "denim",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Abrigo largo tipo gabardina en denim azul medio, con bolsillos utilitarios y correas laterales; coincide con el título."
+ },
+ {
+  "n": 183,
+  "category": "tops",
+  "style": [
+   "minimalista",
+   "urbano"
+  ],
+  "occasion": [
+   "dia-a-dia"
+  ],
+  "color": [
+   "azul-oscuro"
+  ],
+  "fabric": "algodón",
+  "nuevos_estilos": [],
+  "confianza": "media",
+  "nota": "La foto es un crop tee de rib en azul navy; el título dice blusa y la descripción lista varios colores que no se ven en la foto."
+ },
+ {
+  "n": 184,
+  "category": "abrigos-y-tejidos",
+  "style": [
+   "urbano",
+   "streetwear"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "lila"
+  ],
+  "fabric": "algodón",
+  "nuevos_estilos": [],
+  "confianza": "media",
+  "nota": "Hoodie oversized lila lavado con gráfico de tres perros; la foto parece mockup generado (el estampado dice 'Brand Name')."
+ },
+ {
+  "n": 185,
+  "category": "abrigos-y-tejidos",
+  "style": [
+   "urbano",
+   "deportivo"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "verde"
+  ],
+  "fabric": "algodón",
+  "nuevos_estilos": [],
+  "confianza": "media",
+  "nota": "Hoodie verde con 'Bogota D.C.' y rayas blancas en mangas; la foto parece generada, con estampado desgastado poco realista."
+ },
+ {
+  "n": 186,
+  "category": "abrigos-y-tejidos",
+  "style": [
+   "minimalista",
+   "urbano"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "gris"
+  ],
+  "fabric": "algodón",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Hoodie gris lavado oversized con costuras raglán marcadas, bolsillo canguro y parche en manga."
+ },
+ {
+  "n": 187,
+  "category": "abrigos-y-tejidos",
+  "style": [
+   "urbano",
+   "minimalista"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "gris"
+  ],
+  "fabric": "algodón",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Hoodie gris lavado oversized liso, sin estampado visible; coincide con el título."
+ },
+ {
+  "n": 188,
+  "category": "abrigos-y-tejidos",
+  "style": [
+   "minimalista",
+   "urbano"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "gris"
+  ],
+  "fabric": "algodón",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Buzo crewneck oversize gris lavado sin logo visible; coincide con el título."
+ },
+ {
+  "n": 189,
+  "category": "abrigos-y-tejidos",
+  "style": [
+   "streetwear",
+   "urbano"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "gris"
+  ],
+  "fabric": "algodón",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Buzo pull over de algodón con lavado acid wash, se ve gris carbón; logo pequeño al centro del pecho. Coincide con la descripción."
+ },
+ {
+  "n": 190,
+  "category": "abrigos-y-tejidos",
+  "style": [
+   "streetwear",
+   "urbano"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "verde"
+  ],
+  "fabric": "algodón",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Hoodie verde con gráfica de tres perros dentro de un óvalo de alambre de púas. La foto es un mockup con el texto 'Brand Name' en la gráfica; parece generada o placeholder."
+ },
+ {
+  "n": 191,
+  "category": "tops",
+  "style": [
+   "streetwear",
+   "urbano"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "crudo"
+  ],
+  "fabric": "algodón",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Camiseta boxy crudo desgastada con texto rojo 'ERROR 404: APPROVAL NOT FOUND' en la espalda; la foto es de espalda. Coincide."
+ },
+ {
+  "n": 192,
+  "category": "tops",
+  "style": [
+   "streetwear",
+   "urbano"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "negro",
+   "rojo"
+  ],
+  "fabric": "algodón",
+  "nuevos_estilos": [],
+  "confianza": "media",
+  "nota": "Camiseta boxy negra con texto rojo 'MY HEART RUNS AT 128 BPM' en la espalda. La descripción dice color marfil, la foto es negra: revisar color."
+ },
+ {
+  "n": 193,
+  "category": "tops",
+  "style": [
+   "streetwear",
+   "urbano"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "azul-oscuro",
+   "amarillo"
+  ],
+  "fabric": "algodón",
+  "nuevos_estilos": [],
+  "confianza": "media",
+  "nota": "Camiseta boxy azul oscuro con estampado mostaza 'INSPIRED MY COMPETITION' en la espalda. La descripción dice color marfil, la foto es azul: revisar color."
+ },
+ {
+  "n": 194,
+  "category": "tops",
+  "style": [
+   "streetwear",
+   "urbano"
+  ],
+  "occasion": [
+   "fiesta"
+  ],
+  "color": [
+   "gris"
+  ],
+  "fabric": "algodón",
+  "nuevos_estilos": [],
+  "confianza": "media",
+  "nota": "Camiseta boxy gris carbón con 'offline dancing' y alambre de púas en la espalda. La descripción dice color marfil, la foto es gris: revisar color."
+ },
+ {
+  "n": 195,
+  "category": "tops",
+  "style": [
+   "streetwear",
+   "urbano"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "negro",
+   "plateado"
+  ],
+  "fabric": "algodón",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Camiseta oversize negra con gráfica plateada tipo cromo: cerezas que son calaveras con nudillos. Coincide con 'Cerezas'. La descripción habla de dos diseños del drop; la foto muestra uno."
+ },
+ {
+  "n": 196,
+  "category": "tops",
+  "style": [
+   "urbano",
+   "minimalista"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "negro"
+  ],
+  "fabric": "algodón",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Camiseta oversize negra con gráfica blanca de figura anatómica tipo Vitruvio y tipografía IKIGAI en la espalda. Coincide."
+ },
+ {
+  "n": 197,
+  "category": "tops",
+  "style": [
+   "streetwear",
+   "colorido"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "negro",
+   "multicolor"
+  ],
+  "fabric": "algodón",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Camiseta oversize negra con ilustración a color de hongo, colibríes y texto 'Nonsense Things' en la espalda. Coincide."
+ },
+ {
+  "n": 198,
+  "category": "tops",
+  "style": [
+   "streetwear",
+   "urbano"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "crudo",
+   "rojo"
+  ],
+  "fabric": "algodón",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Camiseta oversize crudo con gráfica roja y negra 'Ikigai Tour' y lista de localidades de Bogotá en la espalda. Coincide."
+ },
+ {
+  "n": 199,
+  "category": "tops",
+  "style": [
+   "streetwear",
+   "urbano"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "gris"
+  ],
+  "fabric": "algodón",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Camiseta oversize gris carbón con calavera en efecto de distorsión rosa y azul. Coincide."
+ },
+ {
+  "n": 200,
+  "category": "abrigos-y-tejidos",
+  "style": [
+   "artesanal",
+   "urbano"
+  ],
+  "occasion": [
+   "dia-a-dia"
+  ],
+  "color": [
+   "crudo",
+   "negro"
+  ],
+  "fabric": "punto reciclado",
+  "nuevos_estilos": [
+   "Witchy"
+  ],
+  "confianza": "alta",
+  "nota": "Cardigan de punto crudo con gráfica integral negra de botánicos, serpientes, velas y símbolos rituales; cuello en V y botones. Coincide."
+ },
+ {
+  "n": 201,
+  "category": "abrigos-y-tejidos",
+  "style": [
+   "urbano",
+   "streetwear"
+  ],
+  "occasion": [
+   "dia-a-dia"
+  ],
+  "color": [
+   "negro",
+   "blanco"
+  ],
+  "fabric": "punto",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Cardigan de punto negro con calaveras, huesos y cuchillos en blanco; botones frontales. Coincide."
+ },
+ {
+  "n": 202,
+  "category": "abrigos-y-tejidos",
+  "style": [
+   "urbano"
+  ],
+  "occasion": [
+   "dia-a-dia"
+  ],
+  "color": [
+   "negro",
+   "blanco"
+  ],
+  "fabric": "punto reciclado",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Cardigan de punto negro con serpientes en blanco, cuello en V y botones. Coincide."
+ },
+ {
+  "n": 203,
+  "category": "chaquetas",
+  "style": [
+   "streetwear",
+   "urbano"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "negro",
+   "blanco"
+  ],
+  "fabric": "algodón",
+  "nuevos_estilos": [],
+  "confianza": "media",
+  "nota": "La foto muestra un hoodie negro con cierre frontal, gráfica tribal pequeña en el pecho y cadena de cráneos en las mangas. El título dice chaqueta boxy; la prenda parece más un buzo con cierre, podría ser abrigos-y-tejidos."
+ },
+ {
+  "n": 204,
+  "category": "abrigos-y-tejidos",
+  "style": [
+   "minimalista",
+   "streetwear"
+  ],
+  "occasion": [
+   "dia-a-dia"
+  ],
+  "color": [
+   "negro"
+  ],
+  "fabric": "algodón",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Hoodie negra con cierre frontal, mangas amplias tipo globo y corte boxy, sin estampado. Coincide. Tags actuales vacías."
+ },
+ {
+  "n": 205,
+  "category": "abrigos-y-tejidos",
+  "style": [
+   "urbano",
+   "streetwear"
+  ],
+  "occasion": [
+   "noche",
+   "fiesta"
+  ],
+  "color": [
+   "negro"
+  ],
+  "fabric": null,
+  "nuevos_estilos": [
+   "Techwear"
+  ],
+  "confianza": "alta",
+  "nota": "Sudadera corta negra con mangas desmontables con cierre en los hombros, puños con agujero para el pulgar y etiqueta IKIGAI. La tela no se puede confirmar en la foto. Coincide."
+ },
+ {
+  "n": 206,
+  "category": "tops",
+  "style": [
+   "streetwear",
+   "urbano"
+  ],
+  "occasion": [
+   "dia-a-dia"
+  ],
+  "color": [
+   "blanco",
+   "negro"
+  ],
+  "fabric": "algodón",
+  "nuevos_estilos": [
+   "Metalhead"
+  ],
+  "confianza": "alta",
+  "nota": "Camiseta sin mangas blanca con logo tipo black metal 'Mayhem' en negro en el frente. Coincide con el estampado de la descripción."
+ },
+ {
+  "n": 207,
+  "category": "tops",
+  "style": [
+   "streetwear",
+   "urbano"
+  ],
+  "occasion": [
+   "dia-a-dia"
+  ],
+  "color": [
+   "negro"
+  ],
+  "fabric": "algodón",
+  "nuevos_estilos": [
+   "Metalhead"
+  ],
+  "confianza": "alta",
+  "nota": "Versión negra del mismo diseño Mayhem, sin mangas, con logo en blanco. Coincide."
+ },
+ {
+  "n": 208,
+  "category": "tops",
+  "style": [
+   "minimalista",
+   "urbano"
+  ],
+  "occasion": [
+   "dia-a-dia"
+  ],
+  "color": [
+   "blanco"
+  ],
+  "fabric": "algodón",
+  "nuevos_estilos": [],
+  "confianza": "media",
+  "nota": "Camiseta sin mangas blanca con texto pequeño negro 'Too Creaty For Nine To Five' en el pecho. La descripción habla de un mensaje en la espalda y la foto no la muestra."
+ },
+ {
+  "n": 209,
+  "category": "tops",
+  "style": [
+   "minimalista",
+   "urbano"
+  ],
+  "occasion": [
+   "dia-a-dia"
+  ],
+  "color": [
+   "negro"
+  ],
+  "fabric": "algodón",
+  "nuevos_estilos": [],
+  "confianza": "media",
+  "nota": "Versión negra con texto pequeño blanco en el pecho. La espalda no se ve en la foto, la descripción la menciona."
+ },
+ {
+  "n": 210,
+  "category": "accesorios",
+  "style": [
+   "streetwear",
+   "urbano"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "negro"
+  ],
+  "fabric": "algodón",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Gorra negra de lado con bordado tonal en relieve tribal y ajuste posterior. Coincide."
+ },
+ {
+  "n": 211,
+  "category": "jeans",
+  "style": [
+   "streetwear",
+   "urbano"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "celeste"
+  ],
+  "fabric": "denim",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Jean baggy de lavado azul claro con tiro alto y pierna ancha que se estrecha en el tobillo. Coincide."
+ },
+ {
+  "n": 212,
+  "category": "jeans",
+  "style": [
+   "boho",
+   "colorido"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "azul-oscuro",
+   "estampado"
+  ],
+  "fabric": "denim",
+  "nuevos_estilos": [],
+  "confianza": "media",
+  "nota": "Jean baggy índigo con estampado paisley en azul claro. La descripción dice bordado integral; en la foto parece estampado o jacquard. Revisar la técnica."
+ },
+ {
+  "n": 213,
+  "category": "jeans",
+  "style": [
+   "minimalista",
+   "streetwear"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "negro"
+  ],
+  "fabric": "denim",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Jean de pierna ancha negro con lavado gris oscuro y tiro alto. Coincide."
+ },
+ {
+  "n": 214,
+  "category": "jeans",
+  "style": [
+   "urbano",
+   "minimalista"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "verde-oliva"
+  ],
+  "fabric": "denim",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Jean ancho en verde oliva de acabado mate, pierna recta y amplia. Coincide."
+ },
+ {
+  "n": 215,
+  "category": "jeans",
+  "style": [
+   "clasico",
+   "urbano"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "azul-oscuro"
+  ],
+  "fabric": "denim",
+  "nuevos_estilos": [],
+  "confianza": "media",
+  "nota": "La foto muestra un jean índigo de corte recto, sin campana. El título y la descripción dicen flare (acampanado): revisar el corte."
+ },
+ {
+  "n": 216,
+  "category": "jeans",
+  "style": [
+   "vintage",
+   "urbano"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "azul",
+   "verde"
+  ],
+  "fabric": "denim",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Jean flare de lavado desgastado con tono verdoso y amarillento, tiro alto y campana desde la rodilla. Coincide."
+ },
+ {
+  "n": 217,
+  "category": "jeans",
+  "style": [
+   "clasico",
+   "urbano"
+  ],
+  "occasion": [
+   "dia-a-dia"
+  ],
+  "color": [
+   "azul"
+  ],
+  "fabric": "denim",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Jean ancho azul medio con costuras frontales verticales, silueta palazzo. Coincide."
+ },
+ {
+  "n": 218,
+  "category": "jeans",
+  "style": [
+   "urbano",
+   "clasico"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "azul"
+  ],
+  "fabric": "denim",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Jean ancho azul medio con basta deshilachada y tiro alto. Coincide con el desgaste descrito."
+ },
+ {
+  "n": 219,
+  "category": "jeans",
+  "style": [
+   "streetwear",
+   "urbano"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "celeste"
+  ],
+  "fabric": "denim",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Jean de corte recto y ancho en azul claro con lavado acid wash y largo cropped. Coincide."
+ },
+ {
+  "n": 220,
+  "category": "jeans",
+  "style": [
+   "streetwear",
+   "urbano"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "negro",
+   "gris"
+  ],
+  "fabric": "denim",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Jean recto negro con lavado gris y efecto desgastado en cintura y piernas. Coincide."
+ },
+ {
+  "n": 221,
+  "category": "shorts",
+  "style": [
+   "streetwear",
+   "urbano"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "gris"
+  ],
+  "fabric": "denim",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Short de denim gris claro lavado con cintura elástica y cordón. Coincide. La etiqueta actual jeans debería ser shorts."
+ },
+ {
+  "n": 222,
+  "category": "shorts",
+  "style": [
+   "streetwear",
+   "urbano"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "negro"
+  ],
+  "fabric": "denim",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Short de denim negro lavado con cintura elástica y cordón. Coincide."
+ },
+ {
+  "n": 223,
+  "category": "enterizos-y-conjuntos",
+  "style": [
+   "urbano",
+   "vintage"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "celeste"
+  ],
+  "fabric": "denim",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Overol de denim azul claro con peto, tirantes ajustables y varios bolsillos. Es un enterizo; la etiqueta actual jeans no corresponde."
+ },
+ {
+  "n": 224,
+  "category": "pantalones",
+  "style": [
+   "elegante",
+   "clasico"
+  ],
+  "occasion": [
+   "noche"
+  ],
+  "color": [
+   "negro"
+  ],
+  "fabric": "terciopelo",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Pantalón de terciopelo negro de tiro alto y pierna recta-amplia con caída fluida. Coincide."
+ },
+ {
+  "n": 225,
+  "category": "abrigos-y-tejidos",
+  "style": [
+   "urbano"
+  ],
+  "occasion": [
+   "dia-a-dia"
+  ],
+  "color": [
+   "blanco",
+   "negro"
+  ],
+  "fabric": "punto reciclado",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Suéter de punto blanco con calaveras negras en todo el tejido, cuello y puños acanalados. Coincide. Revisar que no sea duplicado de 229."
+ },
+ {
+  "n": 226,
+  "category": "abrigos-y-tejidos",
+  "style": [
+   "urbano"
+  ],
+  "occasion": [
+   "dia-a-dia"
+  ],
+  "color": [
+   "negro",
+   "blanco"
+  ],
+  "fabric": "punto reciclado",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Suéter de punto negro con gráfica blanca de sol yin-yang, lunas y calavera entre columnas. Coincide."
+ },
+ {
+  "n": 227,
+  "category": "abrigos-y-tejidos",
+  "style": [
+   "urbano",
+   "streetwear"
+  ],
+  "occasion": [
+   "dia-a-dia"
+  ],
+  "color": [
+   "negro",
+   "blanco"
+  ],
+  "fabric": "punto reciclado",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Suéter de punto negro con gráfica tribal blanca de alto contraste en el pecho y mangas. Coincide."
+ },
+ {
+  "n": 228,
+  "category": "tops",
+  "style": [
+   "urbano",
+   "streetwear"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "negro"
+  ],
+  "fabric": "algodón",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Tank top negra cropped y boxy con costura central y bajo deshilachado; se ve un detalle de bandera en el cuello y una etiqueta lateral. El título dice 'DESIGUAL' (posible error de copy)."
+ },
+ {
+  "n": 229,
+  "category": "abrigos-y-tejidos",
+  "style": [
+   "urbano"
+  ],
+  "occasion": [
+   "dia-a-dia"
+  ],
+  "color": [
+   "negro",
+   "blanco"
+  ],
+  "fabric": "punto",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Suéter de punto negro con calavera en reloj de arena en blanco, tejido a dos colores. Coincide."
+ },
+ {
+  "n": 230,
+  "category": "blusas",
+  "style": [
+   "elegante",
+   "romantico"
+  ],
+  "occasion": [
+   "brunch",
+   "evento"
+  ],
+  "color": [
+   "crudo"
+  ],
+  "fabric": "encaje",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Blusa de encaje floral semitransparente crudo con cuello mandarín, presillas y botones forrados. Foto en modelo; coincide."
+ },
+ {
+  "n": 231,
+  "category": "blusas",
+  "style": [
+   "romantico",
+   "elegante"
+  ],
+  "occasion": [
+   "evento"
+  ],
+  "color": [
+   "crudo"
+  ],
+  "fabric": "encaje",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Top corto crudo de encaje floral calado con mangas acampanadas y bajo festoneado. Coincide."
+ },
+ {
+  "n": 232,
+  "category": "camisas",
+  "style": [
+   "minimalista",
+   "urbano"
+  ],
+  "occasion": [
+   "dia-a-dia"
+  ],
+  "color": [
+   "crudo"
+  ],
+  "fabric": "denim",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Camisa de denim crudo de manga corta con cuello camisero, botones de presión y bolsillos de parche. La descripción está vacía; la etiqueta actual jeans debería ser camisas."
+ },
+ {
+  "n": 233,
+  "category": "tops",
+  "style": [
+   "elegante",
+   "romantico"
+  ],
+  "occasion": [
+   "evento",
+   "noche"
+  ],
+  "color": [
+   "rosado"
+  ],
+  "fabric": null,
+  "nuevos_estilos": [],
+  "confianza": "media",
+  "nota": "Corset strapless rosado con costuras verticales marcadas; en la foto va con pantalon rosado ancho (no etiquetado). La tela no se distingue."
+ },
+ {
+  "n": 234,
+  "category": "faldas",
+  "style": [
+   "romantico",
+   "elegante"
+  ],
+  "occasion": [
+   "evento",
+   "viaje"
+  ],
+  "color": [
+   "blanco"
+  ],
+  "fabric": null,
+  "nuevos_estilos": [],
+  "confianza": "media",
+  "nota": "Falda maxi blanca con cintura de encaje/crochet y vuelo fluido; la foto muestra top de crochet blanco con volantes (no etiquetado)."
+ },
+ {
+  "n": 235,
+  "category": "faldas",
+  "style": [
+   "romantico"
+  ],
+  "occasion": [
+   "brunch",
+   "viaje"
+  ],
+  "color": [
+   "blanco"
+  ],
+  "fabric": null,
+  "nuevos_estilos": [],
+  "confianza": "media",
+  "nota": "Mini falda blanca con discos aplicados/calados en todo el cuerpo y ruedo festoneado; la foto muestra tee crudo oversized encima (no etiquetado). Mismo motivo de discos que el top n=250."
+ },
+ {
+  "n": 236,
+  "category": "faldas",
+  "style": [
+   "romantico",
+   "elegante"
+  ],
+  "occasion": [
+   "evento",
+   "matrimonio"
+  ],
+  "color": [
+   "crudo"
+  ],
+  "fabric": "encaje",
+  "nuevos_estilos": [
+   "Coquette"
+  ],
+  "confianza": "alta",
+  "nota": "Mini de encaje guipur floral color crudo con motivos grandes y borde festoneado en petalos; coincide con la descripcion."
+ },
+ {
+  "n": 237,
+  "category": "faldas",
+  "style": [
+   "elegante",
+   "minimalista"
+  ],
+  "occasion": [
+   "brunch",
+   "viaje"
+  ],
+  "color": [
+   "azul-oscuro"
+  ],
+  "fabric": null,
+  "nuevos_estilos": [],
+  "confianza": "media",
+  "nota": "La foto muestra conjunto azul marino (top de tirantes + falda midi con cintura fruncida). Los colores del listado (blanco hueso, turqui, rosa, vinotinto, rojo) no coinciden con la foto."
+ },
+ {
+  "n": 238,
+  "category": "faldas",
+  "style": [
+   "romantico",
+   "elegante"
+  ],
+  "occasion": [
+   "fiesta",
+   "noche"
+  ],
+  "color": [
+   "negro"
+  ],
+  "fabric": "encaje",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Mini tipo burbuja de encaje floral calado negro, cintura alta y borde festoneado; la foto muestra top de encaje a juego (no etiquetado)."
+ },
+ {
+  "n": 239,
+  "category": "faldas",
+  "style": [
+   "romantico",
+   "y2k"
+  ],
+  "occasion": [
+   "fiesta",
+   "brunch"
+  ],
+  "color": [
+   "rosado"
+  ],
+  "fabric": null,
+  "nuevos_estilos": [],
+  "confianza": "media",
+  "nota": "Misma foto que n=253 (Top Virginia): conjunto rosado con top de tirantes en bandas y falda con volante. La ficha lista blanco hueso y negro que no aparecen en la foto."
+ },
+ {
+  "n": 240,
+  "category": "faldas",
+  "style": [
+   "boho",
+   "vintage"
+  ],
+  "occasion": [
+   "viaje",
+   "evento"
+  ],
+  "color": [
+   "estampado",
+   "negro",
+   "beige"
+  ],
+  "fabric": null,
+  "nuevos_estilos": [],
+  "confianza": "media",
+  "nota": "Falda maxi amplia con estampado paisley/floral en negro y beige; la foto muestra top de cuadros a juego (no etiquetado)."
+ },
+ {
+  "n": 241,
+  "category": "pantalones",
+  "style": [
+   "elegante",
+   "urbano"
+  ],
+  "occasion": [
+   "fiesta",
+   "noche"
+  ],
+  "color": [
+   "plateado"
+  ],
+  "fabric": "lentejuelas",
+  "nuevos_estilos": [],
+  "confianza": "media",
+  "nota": "Pantalon ancho de lentejuelas plateadas con cintura elastica en tela azul marino; la foto muestra top de punto azul marino (no etiquetado). El titulo es generico."
+ },
+ {
+  "n": 242,
+  "category": "pantalones",
+  "style": [
+   "elegante",
+   "minimalista"
+  ],
+  "occasion": [
+   "trabajo",
+   "viaje"
+  ],
+  "color": [
+   "azul-oscuro"
+  ],
+  "fabric": "gabardina",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Pantalon tipo globo de pinzas, tiro alto y puno elastico en el tobillo, azul marino; coincide con la descripcion. Top blanco no etiquetado."
+ },
+ {
+  "n": 243,
+  "category": "pantalones",
+  "style": [
+   "elegante",
+   "minimalista"
+  ],
+  "occasion": [
+   "trabajo",
+   "evento"
+  ],
+  "color": [
+   "lila"
+  ],
+  "fabric": "lino",
+  "nuevos_estilos": [],
+  "confianza": "media",
+  "nota": "Pantalon recto de tiro alto en lila palido con textura de lino; la foto muestra corset lila sin tirantes (no etiquetado, mismo diseno que Corset Solferino n=233)."
+ },
+ {
+  "n": 244,
+  "category": "pantalones",
+  "style": [
+   "elegante",
+   "clasico"
+  ],
+  "occasion": [
+   "trabajo",
+   "viaje"
+  ],
+  "color": [
+   "cafe"
+  ],
+  "fabric": null,
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Pantalon globo de tiro alto en tono chocolate, con pliegues frontales verticales y puno elastico en el tobillo; coincide con la descripcion."
+ },
+ {
+  "n": 245,
+  "category": "pantalones",
+  "style": [
+   "tropical",
+   "colorido"
+  ],
+  "occasion": [
+   "beachwear",
+   "viaje"
+  ],
+  "color": [
+   "estampado",
+   "blanco",
+   "negro"
+  ],
+  "fabric": "chifon",
+  "nuevos_estilos": [],
+  "confianza": "media",
+  "nota": "Pantalon semitransparente con estampado de cebra blanco y negro; la foto (en playa) muestra camisa de amarre a juego (no etiquetada). La ficha no tiene descripcion."
+ },
+ {
+  "n": 246,
+  "category": "shorts",
+  "style": [
+   "romantico",
+   "boho"
+  ],
+  "occasion": [
+   "brunch",
+   "viaje"
+  ],
+  "color": [
+   "crudo"
+  ],
+  "fabric": "encaje",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Short de encaje floral color crudo con cintura elastica y ruedo festoneado; coincide con la descripcion."
+ },
+ {
+  "n": 247,
+  "category": "shorts",
+  "style": [
+   "minimalista",
+   "urbano"
+  ],
+  "occasion": [
+   "viaje",
+   "casual"
+  ],
+  "color": [
+   "blanco"
+  ],
+  "fabric": "denim",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Short de denim blanco con costuras contrastantes y bolsillos frontales; la foto muestra camisa de denim blanca abierta y top negro (no etiquetados)."
+ },
+ {
+  "n": 248,
+  "category": "tops",
+  "style": [
+   "romantico",
+   "minimalista"
+  ],
+  "occasion": [
+   "brunch",
+   "viaje"
+  ],
+  "color": [
+   "crudo"
+  ],
+  "fabric": "punto",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Tank de punto acanalado color crudo con bordado floral tipo paisley en el frente; la ficha no tiene descripcion."
+ },
+ {
+  "n": 249,
+  "category": "blusas",
+  "style": [
+   "romantico",
+   "boho"
+  ],
+  "occasion": [
+   "brunch",
+   "evento"
+  ],
+  "color": [
+   "blanco"
+  ],
+  "fabric": "crochet",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Blusa de crochet blanco con cuello alto de volante, mangas tipo flutter y lazos en la espalda. La descripcion dice encaje bordado, pero la textura visible es crochet."
+ },
+ {
+  "n": 250,
+  "category": "tops",
+  "style": [
+   "romantico",
+   "minimalista"
+  ],
+  "occasion": [
+   "brunch",
+   "viaje"
+  ],
+  "color": [
+   "blanco"
+  ],
+  "fabric": null,
+  "nuevos_estilos": [],
+  "confianza": "media",
+  "nota": "Top sin mangas blanco con discos aplicados sobre malla, mismo diseno que la falda n=235; la foto muestra falda mini de volantes con encaje a juego (no etiquetada)."
+ },
+ {
+  "n": 251,
+  "category": "tops",
+  "style": [
+   "romantico",
+   "elegante"
+  ],
+  "occasion": [
+   "brunch",
+   "evento"
+  ],
+  "color": [
+   "cafe"
+  ],
+  "fabric": "gasa",
+  "nuevos_estilos": [],
+  "confianza": "media",
+  "nota": "Top strapless cafe de tejido semitransparente con pliegues verticales, volante en el escote y peplum; espalda con botones. Coincide con la descripcion."
+ },
+ {
+  "n": 252,
+  "category": "tops",
+  "style": [
+   "romantico",
+   "elegante"
+  ],
+  "occasion": [
+   "fiesta",
+   "noche"
+  ],
+  "color": [
+   "negro"
+  ],
+  "fabric": "encaje",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Crop top de encaje floral negro calado con borde festoneado y tirantes finos; mismo encaje que la falda Totti (n=238)."
+ },
+ {
+  "n": 253,
+  "category": "tops",
+  "style": [
+   "romantico",
+   "y2k"
+  ],
+  "occasion": [
+   "fiesta",
+   "brunch"
+  ],
+  "color": [
+   "rosado"
+  ],
+  "fabric": "punto",
+  "nuevos_estilos": [],
+  "confianza": "media",
+  "nota": "Misma foto que n=239 (Falda Virginia): top de tirantes rosado con bandas horizontales y botones en la espalda. La ficha lista blanco hueso y negro que no aparecen en la foto."
+ },
+ {
+  "n": 254,
+  "category": "vestidos",
+  "style": [
+   "elegante",
+   "minimalista"
+  ],
+  "occasion": [
+   "evento",
+   "matrimonio"
+  ],
+  "color": [
+   "lila"
+  ],
+  "fabric": "jersey",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Vestido maxi lila sin espalda, con drapeado asimetrico en el torso y falda fluida; la foto es de exterior de evento. La tela parece jersey fluido (aproximado)."
+ },
+ {
+  "n": 255,
+  "category": "vestidos",
+  "style": [
+   "elegante"
+  ],
+  "occasion": [
+   "fiesta",
+   "noche"
+  ],
+  "color": [
+   "fucsia"
+  ],
+  "fabric": "jersey",
+  "nuevos_estilos": [],
+  "confianza": "media",
+  "nota": "Maxi halter color frambuesa/magenta con drapeado en cintura y escote profundo; el color se acerca mas a fucsia que a vino, conviene revisar."
+ },
+ {
+  "n": 256,
+  "category": "vestidos",
+  "style": [
+   "elegante",
+   "minimalista"
+  ],
+  "occasion": [
+   "fiesta",
+   "noche"
+  ],
+  "color": [
+   "negro"
+  ],
+  "fabric": "jersey",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Mini halter negro con escote profundo, drapeado en cintura y lazo frontal; mismo corte que Naema largo (n=255)."
+ },
+ {
+  "n": 257,
+  "category": "jeans",
+  "style": [
+   "urbano"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "gris"
+  ],
+  "fabric": "algodon",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Baggy de tiro alto gris ceniza con lavado, coincide con la descripcion. Body negro no etiquetado."
+ },
+ {
+  "n": 258,
+  "category": "jeans",
+  "style": [
+   "urbano"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "negro"
+  ],
+  "fabric": "algodon",
+  "nuevos_estilos": [],
+  "confianza": "media",
+  "nota": "Pantalon barrel de tiro alto negro carbon con cinturon y corset negro de malla (no etiquetado). Se ve mas opaco que un denim lavado."
+ },
+ {
+  "n": 259,
+  "category": "jeans",
+  "style": [
+   "urbano"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "gris"
+  ],
+  "fabric": "algodon",
+  "nuevos_estilos": [],
+  "confianza": "media",
+  "nota": "Baggy gris carbon lavado (fade) de tiro alto; el tono se acerca a negro en la foto. Top halter negro no etiquetado."
+ },
+ {
+  "n": 260,
+  "category": "jeans",
+  "style": [
+   "urbano"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "estampado",
+   "blanco"
+  ],
+  "fabric": "algodon",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Baggy de tiro alto con pinceladas negras sobre base blanca, coincide con la descripcion. Body blanco recortado no etiquetado."
+ },
+ {
+  "n": 261,
+  "category": "jeans",
+  "style": [
+   "urbano",
+   "minimalista"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "gris"
+  ],
+  "fabric": "algodon",
+  "nuevos_estilos": [],
+  "confianza": "media",
+  "nota": "Baggy gris con textura motead/pixelada; no se aprecia el tono cobre del titulo. Top negro cropped no etiquetado."
+ },
+ {
+  "n": 262,
+  "category": "jeans",
+  "style": [
+   "urbano",
+   "streetwear"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "estampado",
+   "negro"
+  ],
+  "fabric": "algodon",
+  "nuevos_estilos": [
+   "Grunge"
+  ],
+  "confianza": "alta",
+  "nota": "Baggy gris lavado con calaveras blancas difuminadas; top negro de manga larga y cadena en la cintura no etiquetados."
+ },
+ {
+  "n": 263,
+  "category": "jeans",
+  "style": [
+   "urbano",
+   "streetwear"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "azul-oscuro",
+   "estampado"
+  ],
+  "fabric": "algodon",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Baggy indigo con estampado de dragones y flores en azul claro; top halter negro no etiquetado."
+ },
+ {
+  "n": 264,
+  "category": "jeans",
+  "style": [
+   "urbano",
+   "vintage"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "celeste"
+  ],
+  "fabric": "algodon",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Baggy de denim celeste con lavado vintage y caida relajada, coincide con la descripcion. Top negro de tachuelas no etiquetado."
+ },
+ {
+  "n": 265,
+  "category": "jeans",
+  "style": [
+   "urbano"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "estampado",
+   "blanco",
+   "negro"
+  ],
+  "fabric": "algodon",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Baggy con siluetas humanas difuminadas en negro sobre base blanca, coincide con la descripcion. Body negro manga larga no etiquetado."
+ },
+ {
+  "n": 266,
+  "category": "jeans",
+  "style": [
+   "urbano"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "gris"
+  ],
+  "fabric": "algodon",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Baggy gris carbon con lavado de alto contraste en muslos y frente, coincide con la descripcion. Body negro no etiquetado."
+ },
+ {
+  "n": 267,
+  "category": "jeans",
+  "style": [
+   "urbano",
+   "streetwear"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "azul-oscuro",
+   "estampado"
+  ],
+  "fabric": "algodon",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Baggy indigo profundo con trazos blancos ramificados tipo rayo, coincide con la descripcion. Body negro no etiquetado."
+ },
+ {
+  "n": 268,
+  "category": "jeans",
+  "style": [
+   "urbano",
+   "streetwear"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "negro"
+  ],
+  "fabric": "algodon",
+  "nuevos_estilos": [],
+  "confianza": "media",
+  "nota": "Baggy de tiro alto con ojaletes metalicos en bolsillos delanteros; el lavado se ve oscuro y no se aprecian los tonos calidos del titulo. Top con tachuelas no etiquetado."
+ },
+ {
+  "n": 269,
+  "category": "jeans",
+  "style": [
+   "urbano",
+   "vintage"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "celeste"
+  ],
+  "fabric": "algodon",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Baggy celeste muy claro con lavado uniforme, coincide con la descripcion. Top gris oscuro de tachuelas no etiquetado."
+ },
+ {
+  "n": 270,
+  "category": "jeans",
+  "style": [
+   "urbano",
+   "streetwear"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "verde-oliva",
+   "estampado"
+  ],
+  "fabric": "algodon",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Cargo baggy con camuflaje verde militar, bolsillos laterales y tiras colgantes; coincide con la descripcion. Top negro de manga larga no etiquetado."
+ },
+ {
+  "n": 271,
+  "category": "shorts",
+  "style": [
+   "urbano",
+   "vintage"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "negro"
+  ],
+  "fabric": "algodon",
+  "nuevos_estilos": [],
+  "confianza": "media",
+  "nota": "Jort largo a la rodilla, tiro medio, en negro ahumado con lavado; los matices oliva del titulo casi no se ven en la foto."
+ },
+ {
+  "n": 272,
+  "category": "shorts",
+  "style": [
+   "urbano"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "negro"
+  ],
+  "fabric": "algodon",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Jort negro carbon con lavado de desgaste y cadena en el bolsillo, coincide con la descripcion. Top tubo negro no etiquetado."
+ },
+ {
+  "n": 273,
+  "category": "shorts",
+  "style": [
+   "urbano",
+   "vintage"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "gris",
+   "celeste"
+  ],
+  "fabric": "algodon",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Jort gris azulado claro con lavado vintage y desgaste suave, coincide con la descripcion. Body negro no etiquetado."
+ },
+ {
+  "n": 274,
+  "category": "shorts",
+  "style": [
+   "urbano",
+   "vintage"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "gris",
+   "cafe"
+  ],
+  "fabric": "algodon",
+  "nuevos_estilos": [],
+  "confianza": "media",
+  "nota": "Jort gris piedra con base calida y desgaste oscuro; el tono marron del lavado es sutil. Body negro no etiquetado."
+ },
+ {
+  "n": 275,
+  "category": "shorts",
+  "style": [
+   "urbano"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "celeste"
+  ],
+  "fabric": "algodon",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Jort azul claro con lavado frio e irregular y bolsillos parche; tank negro no etiquetado."
+ },
+ {
+  "n": 276,
+  "category": "shorts",
+  "style": [
+   "urbano",
+   "streetwear"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "negro",
+   "estampado"
+  ],
+  "fabric": "algodon",
+  "nuevos_estilos": [
+   "Grunge"
+  ],
+  "confianza": "media",
+  "nota": "Jort negro con calaveras tono sobre tono casi invisibles en la foto; tube top negro no etiquetado."
+ },
+ {
+  "n": 277,
+  "category": "shorts",
+  "style": [
+   "urbano"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "azul-oscuro"
+  ],
+  "fabric": "denim",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Jort de denim índigo oscuro con desgaste y decoloración irregular, tiro medio y corte hasta la rodilla. La foto muestra un look completo con top negro y botas."
+ },
+ {
+  "n": 278,
+  "category": "jeans",
+  "style": [
+   "vintage",
+   "urbano"
+  ],
+  "occasion": [
+   "fiesta",
+   "casual"
+  ],
+  "color": [
+   "crudo",
+   "gris",
+   "estampado"
+  ],
+  "fabric": "denim",
+  "nuevos_estilos": [
+   "Witchy"
+  ],
+  "confianza": "alta",
+  "nota": "Baggy de base crema con estampado gris de motivos astrales y celestes, tiro alto y pierna ancha."
+ },
+ {
+  "n": 279,
+  "category": "jeans",
+  "style": [
+   "urbano"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "azul"
+  ],
+  "fabric": "denim",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Baggy de denim azul medio con lavado uniforme, tiro alto y costuras marcadas en cadera y muslo."
+ },
+ {
+  "n": 280,
+  "category": "jeans",
+  "style": [
+   "urbano"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "negro",
+   "cafe"
+  ],
+  "fabric": "denim",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Baggy negro con lavado desgastado y degradé café rojizo hacia la pierna; tiro alto con pinzas al frente."
+ },
+ {
+  "n": 281,
+  "category": "jeans",
+  "style": [
+   "urbano"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "negro",
+   "gris"
+  ],
+  "fabric": "denim",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Baggy negro con matices grises y lavado irregular; silueta amplia con costuras curvas en la pierna."
+ },
+ {
+  "n": 282,
+  "category": "jeans",
+  "style": [
+   "urbano",
+   "streetwear"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "negro"
+  ],
+  "fabric": "denim",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Pantalón tipo balloon negro desgastado con bolsillo cargo lateral y bajo ajustado. El top gráfico de la foto no es la prenda."
+ },
+ {
+  "n": 283,
+  "category": "jeans",
+  "style": [
+   "urbano",
+   "streetwear"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "negro",
+   "estampado"
+  ],
+  "fabric": "denim",
+  "nuevos_estilos": [],
+  "confianza": "media",
+  "nota": "Jean negro desgastado con cargos y pretina ajustable. La foto muestra una camisa a cuadros anudada a la cintura, mientras la ficha habla de una pieza tipo buzo con cierre: verificar qué se vende."
+ },
+ {
+  "n": 284,
+  "category": "jeans",
+  "style": [
+   "urbano"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "crudo",
+   "estampado"
+  ],
+  "fabric": "denim",
+  "nuevos_estilos": [
+   "Gothic"
+  ],
+  "confianza": "media",
+  "nota": "Jean baggy crudo con estampado en negro de figuras tipo grabado o toile. La ficha habla de figuras espectrales y la foto no lo deja claro: verificar el motivo."
+ },
+ {
+  "n": 285,
+  "category": "jeans",
+  "style": [
+   "urbano",
+   "streetwear"
+  ],
+  "occasion": [
+   "fiesta",
+   "casual"
+  ],
+  "color": [
+   "negro",
+   "rosado"
+  ],
+  "fabric": "denim",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Baggy negro desgastado con estampados rosa intenso de inspiración oriental y contrastes grisáceos; tiro alto y silueta amplia."
+ },
+ {
+  "n": 286,
+  "category": "jeans",
+  "style": [
+   "urbano"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "negro"
+  ],
+  "fabric": "denim",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Baggy negro uniforme y profundo, tiro alto con pretina ajustable y silueta balloon. El top de ojales de la foto no es la prenda."
+ },
+ {
+  "n": 287,
+  "category": "jeans",
+  "style": [
+   "y2k",
+   "urbano"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "celeste",
+   "rosado"
+  ],
+  "fabric": "denim",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Azul hielo de acabado suave con manchas rosadas irregulares; wide leg de tiro alto."
+ },
+ {
+  "n": 288,
+  "category": "jeans",
+  "style": [
+   "urbano"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "azul-oscuro",
+   "gris"
+  ],
+  "fabric": "denim",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Denim azul índigo oscuro con estampado de frases y trazos manuscritos en gris; silueta baggy de tiro alto."
+ },
+ {
+  "n": 289,
+  "category": "jeans",
+  "style": [
+   "urbano"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "gris"
+  ],
+  "fabric": "denim",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Gris carbón texturizado con pliegues frontales y lavado sutil; silueta baggy."
+ },
+ {
+  "n": 290,
+  "category": "jeans",
+  "style": [
+   "urbano"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "azul-oscuro",
+   "gris"
+  ],
+  "fabric": "denim",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Índigo oscuro con estampado de letras y trazos en gris, muy parecido al de Marker (288). Revisar si son diseños distintos."
+ },
+ {
+  "n": 291,
+  "category": "jeans",
+  "style": [
+   "vintage",
+   "urbano"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "azul",
+   "beige"
+  ],
+  "fabric": "denim",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Índigo medio con desgaste marcado y matices amarillentos u ocres en muslos y pliegues."
+ },
+ {
+  "n": 292,
+  "category": "jeans",
+  "style": [
+   "urbano",
+   "streetwear"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "gris",
+   "cafe"
+  ],
+  "fabric": "denim",
+  "nuevos_estilos": [
+   "Grunge"
+  ],
+  "confianza": "media",
+  "nota": "Desgastado con roturas y cierre de doble botón horizontal en la cintura. La ficha dice café grisáceo y la foto se ve gris carbón oscuro: verificar color."
+ },
+ {
+  "n": 293,
+  "category": "jeans",
+  "style": [
+   "vintage",
+   "urbano"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "crudo",
+   "estampado"
+  ],
+  "fabric": "denim",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Estampado all-over de Snoopy y personajes de Peanuts sobre fondo crudo. Son personajes con marca registrada: verificar licencia antes de publicar."
+ },
+ {
+  "n": 294,
+  "category": "jeans",
+  "style": [
+   "urbano"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "celeste"
+  ],
+  "fabric": "denim",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Azul cielo lavado con bigotes marcados y tiro alto; silueta amplia."
+ },
+ {
+  "n": 295,
+  "category": "jeans",
+  "style": [
+   "urbano",
+   "streetwear"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "blanco",
+   "gris"
+  ],
+  "fabric": "denim",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Balloon blanco sucio con efecto gris, estrellas negras estampadas, bolsillos cargo y botones metálicos."
+ },
+ {
+  "n": 296,
+  "category": "jeans",
+  "style": [
+   "vintage",
+   "urbano"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "gris",
+   "cafe"
+  ],
+  "fabric": "denim",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Degradé de gris carbón a beige y café ceniza con efecto desgastado; silueta baggy de tiro alto."
+ },
+ {
+  "n": 297,
+  "category": "jeans",
+  "style": [
+   "urbano"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "negro",
+   "gris"
+  ],
+  "fabric": "denim",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Negro con degradé hacia gris, desgaste y profundidad; silueta baggy."
+ },
+ {
+  "n": 298,
+  "category": "pantalones",
+  "style": [
+   "urbano",
+   "streetwear"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "negro"
+  ],
+  "fabric": "algodón tipo pana",
+  "nuevos_estilos": [
+   "Gorpcore"
+  ],
+  "confianza": "alta",
+  "nota": "Cargo negro de tela tipo pana con varios bolsillos, correas y cierres desmontables que lo convierten en jort. La ficha incluye el accesorio de cuadros anudado al costado."
+ },
+ {
+  "n": 299,
+  "category": "jeans",
+  "style": [
+   "urbano",
+   "streetwear"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "celeste"
+  ],
+  "fabric": "denim",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Wide leg de azul claro con rotos distribuidos en rodillas y muslos; la foto confirma el desgaste."
+ },
+ {
+  "n": 300,
+  "category": "jeans",
+  "style": [
+   "urbano"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "gris",
+   "negro"
+  ],
+  "fabric": "denim",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Lavado ceniza gris carbón con matices irregulares; wide leg de tiro alto."
+ },
+ {
+  "n": 301,
+  "category": "jeans",
+  "style": [
+   "urbano",
+   "streetwear"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "crudo",
+   "estampado"
+  ],
+  "fabric": "denim",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Wide leg crudo con cruces negras de trazo irregular y deshilachado distribuidas por la prenda."
+ },
+ {
+  "n": 302,
+  "category": "jeans",
+  "style": [
+   "urbano",
+   "minimalista"
+  ],
+  "occasion": [
+   "dia-a-dia"
+  ],
+  "color": [
+   "negro"
+  ],
+  "fabric": "denim",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Wide leg negro intenso y uniforme, acabado limpio y tiro alto. Básico versátil."
+ },
+ {
+  "n": 303,
+  "category": "jeans",
+  "style": [
+   "vintage",
+   "urbano"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "azul",
+   "verde"
+  ],
+  "fabric": "denim",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Lavado vintage azul verdoso con desgaste envejecido; silueta amplia de tiro alto."
+ },
+ {
+  "n": 304,
+  "category": "jeans",
+  "style": [
+   "vintage",
+   "urbano"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "beige",
+   "verde-oliva"
+  ],
+  "fabric": "denim",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Wide leg arena envejecido con matices oliva y lavado irregular. La foto se ve más café-oliva que arena."
+ },
+ {
+  "n": 305,
+  "category": "accesorios",
+  "style": [
+   "artesanal",
+   "elegante"
+  ],
+  "occasion": [
+   "evento",
+   "noche"
+  ],
+  "color": [
+   "vino",
+   "plateado"
+  ],
+  "fabric": "vidrio",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Collar tejido con cuentas de vidrio morado profundo y detalles plateados. El morado no está en la paleta, se usó vino. La foto es un detalle sobre blusa gris."
+ },
+ {
+  "n": 306,
+  "category": "accesorios",
+  "style": [
+   "artesanal",
+   "colorido"
+  ],
+  "occasion": [
+   "beachwear",
+   "viaje"
+  ],
+  "color": [
+   "multicolor"
+  ],
+  "fabric": "vidrio",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Collar largo de cuentas de vidrio en naranja, rosa, verde, negro y rojo. La foto lo muestra sobre un vestido de lentejuelas, que no es la prenda."
+ },
+ {
+  "n": 307,
+  "category": "tops",
+  "style": [
+   "urbano",
+   "minimalista"
+  ],
+  "occasion": [
+   "noche",
+   "fiesta"
+  ],
+  "color": [
+   "negro"
+  ],
+  "fabric": "denim",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Top asimétrico de un hombro en denim negro con costuras tipo corsé, cuello camisero en el hombro y bolsillo con solapa. Sin botones, por eso va en tops y no en camisas. La ficha no tiene descripción."
+ },
+ {
+  "n": 308,
+  "category": "blusas",
+  "style": [
+   "minimalista",
+   "urbano"
+  ],
+  "occasion": [
+   "brunch",
+   "trabajo"
+  ],
+  "color": [
+   "azul-oscuro"
+  ],
+  "fabric": "denim",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Blusa de denim azul oscuro de manga corta, cuello redondo y cintura entallada con pliegues y costuras decorativas. El pantalón de la foto no es la prenda."
+ },
+ {
+  "n": 309,
+  "category": "jeans",
+  "style": [
+   "artesanal",
+   "boho"
+  ],
+  "occasion": [
+   "brunch",
+   "viaje"
+  ],
+  "color": [
+   "azul",
+   "multicolor"
+  ],
+  "fabric": "denim y crochet",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Jean de denim azul claro con paneles de crochet multicolor (vino, azul, blanco y café) en la pierna. El top blanco de la foto no es la prenda."
+ },
+ {
+  "n": 310,
+  "category": "jeans",
+  "style": [
+   "urbano",
+   "vintage"
+  ],
+  "occasion": [
+   "casual"
+  ],
+  "color": [
+   "verde"
+  ],
+  "fabric": "denim",
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Jean de tiro medio con lavado verde degradado en muslo y rodilla. La categoría original (abrigos-y-tejidos) era incorrecta. El top negro con estrella no es la prenda."
+ },
+ {
+  "n": 311,
+  "category": "tops",
+  "style": [
+   "minimalista",
+   "caribeno"
+  ],
+  "occasion": [
+   "dia-a-dia",
+   "viaje"
+  ],
+  "color": [
+   "blanco",
+   "rosado",
+   "dorado"
+  ],
+  "fabric": null,
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Camiseta blanca entallada de cuello redondo con caballito de mar bordado en cuentas rosa y dorado. Sin cuello camisero, por eso no es camisa. La ficha no indica tela."
+ },
+ {
+  "n": 312,
+  "category": "pantalones",
+  "style": [
+   "urbano",
+   "streetwear"
+  ],
+  "occasion": [
+   "noche",
+   "fiesta"
+  ],
+  "color": [
+   "estampado",
+   "cafe"
+  ],
+  "fabric": null,
+  "nuevos_estilos": [],
+  "confianza": "media",
+  "nota": "Pantalón recto con estampado de piel de serpiente en dorado, café y negro. El título dice jeans, pero la tela no se ve como denim: revisar la categoría. La ficha no tiene descripción."
+ },
+ {
+  "n": 313,
+  "category": "enterizos-y-conjuntos",
+  "style": [
+   "romantico",
+   "clasico"
+  ],
+  "occasion": [
+   "brunch",
+   "evento"
+  ],
+  "color": [
+   "blanco",
+   "amarillo"
+  ],
+  "fabric": null,
+  "nuevos_estilos": [],
+  "confianza": "media",
+  "nota": "Set de blusa blanca con bordado calado y botones dorados, con falda midi amarilla pastel y cinturón blanco. La foto parece generada por IA (fondo y piel muy uniformes): verificar."
+ },
+ {
+  "n": 314,
+  "category": "enterizos-y-conjuntos",
+  "style": [
+   "clasico",
+   "romantico"
+  ],
+  "occasion": [
+   "brunch",
+   "viaje"
+  ],
+  "color": [
+   "estampado",
+   "azul"
+  ],
+  "fabric": null,
+  "nuevos_estilos": [],
+  "confianza": "media",
+  "nota": "Set de top cuadrado sin mangas y pantalón ancho con estampado toile azul y blanco y ribete azul marino. La foto parece generada por IA: verificar."
+ },
+ {
+  "n": 315,
+  "category": "enterizos-y-conjuntos",
+  "style": [
+   "minimalista",
+   "urbano"
+  ],
+  "occasion": [
+   "dia-a-dia",
+   "viaje"
+  ],
+  "color": [
+   "azul"
+  ],
+  "fabric": "denim",
+  "nuevos_estilos": [],
+  "confianza": "media",
+  "nota": "Set de top corto sin mangas y short de tiro alto con bolsillos cargo, en azul medio tipo denim. La foto parece generada por IA: verificar el tejido."
+ },
+ {
+  "n": 316,
+  "category": "vestidos",
+  "style": [
+   "romantico",
+   "colorido"
+  ],
+  "occasion": [
+   "fiesta",
+   "brunch"
+  ],
+  "color": [
+   "estampado"
+  ],
+  "fabric": null,
+  "nuevos_estilos": [],
+  "confianza": "media",
+  "nota": "Mini vestido de tirantes con falda tipo globo y estampado floral en lila, amarillo, verde y rosa. La foto parece generada por IA: verificar."
+ },
+ {
+  "n": 317,
+  "category": "vestidos",
+  "style": [
+   "romantico",
+   "caribeno"
+  ],
+  "occasion": [
+   "evento",
+   "fiesta"
+  ],
+  "color": [
+   "rojo"
+  ],
+  "fabric": "algodón",
+  "nuevos_estilos": [],
+  "confianza": "media",
+  "nota": "Vestido rojo de corsé con botones frontales y falda con textura calada tipo broderie. La ficha dice largo y la foto es midi. La foto parece generada por IA."
+ },
+ {
+  "n": 318,
+  "category": "vestidos",
+  "style": [
+   "clasico",
+   "romantico"
+  ],
+  "occasion": [
+   "brunch",
+   "evento"
+  ],
+  "color": [
+   "blanco"
+  ],
+  "fabric": null,
+  "nuevos_estilos": [],
+  "confianza": "alta",
+  "nota": "Vestido camisero blanco midi con mangas abullonadas, cinturón de lazo y volante en el bajo. La foto parece generada por IA: verificar."
+ }
+]
