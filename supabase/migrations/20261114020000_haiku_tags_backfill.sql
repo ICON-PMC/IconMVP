@@ -1,3 +1,9 @@
+-- Migración de datos: etiquetado del catálogo con Haiku (spec 004-etiquetado-abierto-ia).
+-- Va después de 20261114000000_open_styles y 20261114010000_colors, de las que depende.
+-- Trae los ids de prendas de producción: en otra base (local, `supabase db reset`) solo crea
+-- los estilos de nicho y el respaldo vacío, porque las prendas no existen ahí. Es idempotente.
+-- Origen: specs/004-etiquetado-abierto-ia/piloto/ (sugerencias-catalogo.json, etiquetas-catalogo.csv).
+
 -- Carga del etiquetado con Haiku (spec 004, piloto 2026-11-14). Idempotente.
 -- Reglas: categoría = la sugerida; estilos = sugeridos (incl. nicho) + los que ya tenía, hasta 6;
 -- ocasiones = sugeridas + las que ya tenía, hasta 3; colores = los sugeridos (hasta 3);
