@@ -50,6 +50,8 @@ Una persona vio en la calle un pantalón cargo beige que le encantó. Abre Icon 
 
 ### User Story 2 - Elegir qué prenda buscar cuando la foto tiene varias (Priority: P1)
 
+> **Alcance v1 (decisión 2026-11-14):** solo recorte manual (escenarios 3 y 4). Los escenarios 1 y 2 (detección automática con recuadros) quedan para una versión siguiente.
+
 La persona sube una foto de cuerpo entero de una influencer con chaqueta, blusa, pantalón y botas. Icon detecta las prendas y le muestra recuadros sobre cada una; por defecto busca la más destacada. Toca el pantalón y los resultados cambian a pantalones. Si la detección no acierta, puede recortar a mano.
 
 **Why this priority**: la mayoría de fotos de inspiración (Instagram, calle) son de outfits completos; sin esto los resultados mezclarían prendas.
@@ -136,7 +138,7 @@ Cuando una marca publica, edita la foto o despublica una prenda, la búsqueda po
 - **FR-001**: El buscador de `/feed` MUST tener un acceso de búsqueda por foto (ícono de cámara) visible en móvil y escritorio.
 - **FR-002**: En móvil MUST permitir tomar una foto con la cámara o elegir una imagen de la galería; en escritorio, subir o arrastrar una imagen.
 - **FR-003**: MUST aceptar las fotos de cámara de iPhone y Android y los formatos de imagen comunes, hasta un tamaño máximo que se informa en el mensaje de error.
-- **FR-004**: Cuando la foto contiene varias prendas, el sistema MUST mostrar las prendas detectadas para elegir, buscar por defecto la más destacada y permitir recortar a mano.
+- **FR-004**: Cuando la foto contiene varias prendas, la persona MUST poder recortar a mano la prenda que quiere buscar y volver a buscar sin subir la foto de nuevo; por defecto se busca con la foto completa. *Decisión de la dueña (2026-11-14): la detección automática de prendas con recuadros queda fuera de esta versión; ver research R3.*
 
 **Resultados**
 
@@ -181,7 +183,7 @@ Cuando una marca publica, edita la foto o despublica una prenda, la búsqueda po
 
 - **SC-001**: En un conjunto de 30 fotos de referencia (10 de prendas del propio catálogo fotografiadas de nuevo, 20 de inspiración externa), la prenda buscada o una de la misma categoría y aspecto parecido aparece entre los primeros 6 resultados en al menos el 80 % de los casos; en las fotos de prendas del catálogo, la propia prenda aparece primera en al menos el 90 %.
 - **SC-002**: El 90 % de las búsquedas por foto muestra resultados en menos de 5 segundos desde que se envía la foto, en una conexión móvil 4G.
-- **SC-003**: En fotos de outfit completo, se detectan al menos las 2 prendas principales en el 80 % de los casos.
+- **SC-003**: En fotos de outfit completo, recortar la prenda deseada y obtener resultados de su categoría toma menos de 15 segundos. *(La meta de detección automática de 2 prendas en el 80 % de los casos aplica cuando se implemente la detección.)*
 - **SC-004**: Una persona pasa de abrir Icon a ver prendas parecidas a la de su foto en menos de 20 segundos.
 - **SC-005**: Ninguna foto de persona usuaria queda guardada después de 24 horas (verificable revisando el almacenamiento).
 - **SC-006**: El costo de preparar el catálogo actual completo es menor a USD 5 y el costo mensual se mantiene por debajo del tope configurado.

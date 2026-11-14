@@ -122,8 +122,8 @@ vercel.json                 # cron de /api/embeddings/process
 
 ## Decisiones pendientes de la dueña
 
-- **Detección automática de varias prendas (Historia 2, P1)**: el MVP usa recorte manual. Opciones:
-  detector abierto (USD 0, por validar licencia y calidad) o Claude Haiku (centavos por búsqueda).
+- ~~Detección automática de varias prendas~~ → **Decidido 2026-11-14: recorte manual por ahora.**
+  La detección (detector abierto o Claude Haiku) queda para una versión siguiente.
 - **Plan de Vercel**: en Hobby el cron corre una vez al día; las prendas nuevas igual se indexan al
   publicarse con `after()`, el cron es solo respaldo.
 
