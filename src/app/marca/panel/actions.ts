@@ -19,9 +19,11 @@ import {
 } from "@/lib/instagram";
 import { normalizeInstagramHandle, normalizeUrl } from "@/lib/links";
 import {
+  colorIdsFromForm,
   getTagOptions,
   idsOfTypes,
   replaceBrandStyles,
+  replaceGarmentColors,
   replaceGarmentTags,
   tagIdsFromForm,
 } from "@/lib/tags";
@@ -152,7 +154,6 @@ export async function createBrandGarment(formData: FormData) {
       description: str(formData, "description"),
       price_cop: priceRaw ? Number(priceRaw) : null,
       product_url,
-      color: str(formData, "color"),
       fabric: str(formData, "fabric"),
       status: "published",
       source: "brand",
@@ -173,6 +174,7 @@ export async function createBrandGarment(formData: FormData) {
       .from("garment_tags")
       .insert(tagIds.map((tag_id) => ({ garment_id: garment.id, tag_id })));
   }
+  await replaceGarmentColors(supabase, garment.id, colorIdsFromForm(formData));
   const sizeIds = formData.getAll("sizes").map(String);
   if (sizeIds.length) {
     await supabase
@@ -243,7 +245,6 @@ export async function updateBrandGarment(
       description: str(formData, "description"),
       price_cop: priceRaw ? Number(priceRaw) : null,
       product_url,
-      color: str(formData, "color"),
       fabric: str(formData, "fabric"),
     })
     .eq("id", garmentId)
@@ -259,6 +260,8 @@ export async function updateBrandGarment(
     [...(categoryId ? [categoryId] : []), ...tagIdsFromForm(formData, ["style", "occasion", "temperature"])],
   );
   if (tagError) return { ok: false, error: tagError };
+  const colorError = await replaceGarmentColors(supabase, garmentId, colorIdsFromForm(formData));
+  if (colorError) return { ok: false, error: colorError };
 
   await supabase.from("garment_sizes").delete().eq("garment_id", garmentId);
   const sizeIds = [...new Set(formData.getAll("sizes").map(String))].filter(Boolean);
