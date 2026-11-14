@@ -24,7 +24,7 @@
 | ORM (Prisma, Drizzle) | Las vistas y RPCs de Supabase ya dan lo que necesitamos; un ORM añade capa sin valor |
 | GraphQL | Complejidad injustificada para este esquema |
 | Redis / caché externa | La popularidad vive en Postgres via triggers; suficiente para el volumen del piloto |
-| pgvector / embeddings | Búsqueda semántica es Fase 2; el trigram cubre los casos de uso del MVP |
+| Embeddings de texto | Búsqueda semántica de texto es Fase 2; el trigram + sinónimos cubre el MVP. (pgvector sí se usa para la búsqueda por foto, spec 005.) |
 | Service worker / PWA completa | Despriorizado hasta después del piloto |
 
 ---

@@ -81,14 +81,20 @@ sin asumir género de usuarios, marcas ni personas del equipo. La audiencia no e
 ### VIII. Alcance disciplinado por señal, no por tiempo
 Las fases del roadmap (0 Fundación ✅, 1 Usuarios creadores, 2 Comunidad y confianza, 3 Monetización)
 avanzan al cumplirse su criterio de salida, no por calendario. Hasta nueva decisión explícita están
-fuera de alcance: PWA instalable, búsqueda semántica (pgvector), dominio propio de imágenes, pagos o
-inventario, y expansión fuera de Colombia. Cada spec MUST declarar su alcance y lo que deja fuera.
+fuera de alcance: PWA instalable, búsqueda semántica **de texto** (entre idiomas o por significado),
+dominio propio de imágenes, pagos o inventario, y expansión fuera de Colombia. Cada spec MUST declarar
+su alcance y lo que deja fuera.
+La **búsqueda por similitud visual** (buscar por foto, "más como esta") sí está dentro de alcance desde
+la enmienda 1.2.0 (decisión de la dueña, 2026-11-13; spec `005-busqueda-por-foto`): MAY usar `pgvector`
+en Postgres para guardar y comparar representaciones de imágenes del catálogo publicado. Las fotos que
+suben las personas para buscar MUST NOT guardarse más allá de la búsqueda ni usarse para entrenar.
 *Razón:* con escala objetivo de 10 marcas y 100 usuarios, la complejidad prematura es el mayor riesgo.
 
 ## Restricciones Técnicas
 
 - **Stack:** Next.js 16 (App Router, TypeScript, Tailwind v4, server actions), Supabase/Postgres y
-  Supabase Auth, Cloudflare R2, Vercel. Búsqueda con `pg_trgm` + `unaccent`.
+  Supabase Auth, Cloudflare R2, Vercel. Búsqueda de texto con `pg_trgm` + `unaccent`; similitud
+  visual con `pgvector` (principio VIII).
 - **Auth:** email+password activo; Google OAuth cableado pero sin credenciales. La sesión se refresca en
   `src/proxy.ts` (convención Next 16; no crear `middleware.ts`).
 - **Variables de entorno:** los nombres viven en `.env.example`. `NEXT_PUBLIC_*` se hornean en el build:
@@ -130,4 +136,4 @@ guía. Si discrepan, se corrige el otro documento (las migraciones siguen mandan
 - **Revisión periódica:** al cerrar cada fase del roadmap se revisa esta constitución y se reconcilia
   con el estado del repo.
 
-**Version**: 1.1.0 | **Ratified**: 2026-10-29 | **Last Amended**: 2026-10-30
+**Version**: 1.2.0 | **Ratified**: 2026-10-29 | **Last Amended**: 2026-11-14

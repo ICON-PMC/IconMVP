@@ -149,8 +149,9 @@ que los usuarios y marcas pagarían por el acceso.
 ## Fuera de alcance hasta nueva decisión explícita
 
 - **PWA instalable** — falta íconos PNG 192/512 y service worker; cosmético para el piloto.
-- **Búsqueda semántica** (pgvector/embeddings) — el trigram actual cubre el MVP; se añade si
-  el volumen de catálogo lo justifica.
+- **Búsqueda semántica de texto** (embeddings de texto, entre idiomas) — el trigram + sinónimos
+  cubre el MVP; se añade si el volumen de catálogo lo justifica. *La búsqueda por foto (similitud
+  visual con pgvector) ya entró: spec 005, enmienda 1.2.0 de la constitución.*
 - **Dominio propio para imágenes** — `pub-*.r2.dev` tiene rate limit; se nota solo con tráfico alto.
 - **Procesar pagos o inventario** — Icon conecta, no vende.
 - **Expandir fuera de Colombia** — primero profundidad en el nicho, luego amplitud geográfica.
