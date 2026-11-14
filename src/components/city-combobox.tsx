@@ -109,12 +109,16 @@ export function CityMultiCombobox({
   onValueChange,
   label,
   className,
+  placeholder = "Busca una ciudad",
+  emptyText = "No hay marcas en esa ciudad todavía.",
 }: {
   options: CityOption[];
   value: string[];
   onValueChange: (value: string[]) => void;
   label: string;
   className?: string;
+  placeholder?: string;
+  emptyText?: string;
 }) {
   const selected = useMemo(() => options.filter((o) => value.includes(o.value)), [options, value]);
   return (
@@ -143,16 +147,16 @@ export function CityMultiCombobox({
         </Combobox.Chips>
         <Combobox.Input
           aria-label={label}
-          placeholder={selected.length ? "" : "Busca una ciudad"}
+          placeholder={selected.length ? "" : placeholder}
           className={cn(input, "h-9 px-3 md:h-8")}
         />
         <div className="absolute right-1 flex h-full items-center text-ink/50">
-          <Combobox.Trigger aria-label="Ver ciudades" className="flex size-8 items-center justify-center">
+          <Combobox.Trigger aria-label={`Ver ${label.toLowerCase()}`} className="flex size-8 items-center justify-center">
             <ChevronDownIcon className="size-4" />
           </Combobox.Trigger>
         </div>
       </Combobox.InputGroup>
-      <Popup empty="No hay marcas en esa ciudad todavía." />
+      <Popup empty={emptyText} />
     </Combobox.Root>
   );
 }

@@ -14,7 +14,7 @@ import { LooksTab } from "./_components/looks-tab";
 import { ProfileTab } from "./_components/profile-tab";
 import { checkStorageQuota } from "@/lib/storage-quota";
 import { instagramImportEnabled } from "@/lib/instagram";
-import { EMPTY_TAG_OPTIONS, getTagOptions } from "@/lib/tags";
+import { EMPTY_TAG_OPTIONS, getGarmentColorIds, getTagOptions } from "@/lib/tags";
 import { getCityOptions } from "@/lib/cities";
 
 const FLASH = {
@@ -140,13 +140,15 @@ export default async function BrandPanelPage({
       : [[], { data: [] }, []];
   const gTagMap = new Map<string, string[]>();
   for (const t of gTags ?? []) gTagMap.set(t.garment_id, [...(gTagMap.get(t.garment_id) ?? []), t.tag_id]);
+  // Los colores van en `garment_colors`; se suman a `tagIds` para precargar el formulario.
+  const gColorMap = tab === "catalogo" ? await getGarmentColorIds(supabase, gIds) : new Map<string, string[]>();
   const gSizeMap = new Map<string, string[]>();
   for (const t of gSizes ?? []) gSizeMap.set(t.garment_id, [...(gSizeMap.get(t.garment_id) ?? []), t.size_id]);
 
   const catalog = (garments ?? []).map((g) => ({
     ...g,
     cf_image_id: gImageMap.get(g.id) ?? null,
-    tagIds: gTagMap.get(g.id) ?? [],
+    tagIds: [...(gTagMap.get(g.id) ?? []), ...(gColorMap.get(g.id) ?? [])],
     sizeIds: gSizeMap.get(g.id) ?? [],
   }));
   const looks = (posts ?? []).map((p) => ({

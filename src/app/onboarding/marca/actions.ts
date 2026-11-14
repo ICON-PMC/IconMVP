@@ -13,7 +13,7 @@ import {
   type BrandProfileInput,
   type FieldErrors,
 } from "@/lib/brand-registration";
-import { replaceBrandStyles, tagIdsFromForm } from "@/lib/tags";
+import { colorIdsFromForm, replaceBrandStyles, replaceGarmentColors, tagIdsFromForm } from "@/lib/tags";
 import { deleteFromR2 } from "@/lib/r2";
 import { saveBrandCoverImage } from "@/lib/brand-cover";
 import { imageKeysFor } from "@/lib/image-keys";
@@ -155,7 +155,9 @@ export async function addOnboardingGarment(
   const linkRaw = text(formData, "link");
   const photo = formData.get("image");
   const tags = tagIdsFromForm(formData, ["style", "occasion", "temperature"]);
-  const values = { title, price: text(formData, "price"), category, link: linkRaw, tags };
+  const colors = colorIdsFromForm(formData);
+  // `tags` del estado precarga los chips si hay errores: etiquetas y colores juntos.
+  const values = { title, price: text(formData, "price"), category, link: linkRaw, tags: [...tags, ...colors] };
 
   const errors: GarmentFieldErrors = {};
   if (!title) errors.title = "Escribe el nombre de la prenda.";
@@ -195,6 +197,8 @@ export async function addOnboardingGarment(
   const { error: tagErr } = await supabase
     .from("garment_tags")
     .insert([category, ...tags].map((tag_id) => ({ garment_id: garment.id, tag_id })));
+  const colorErr = await replaceGarmentColors(supabase, garment.id, colors);
+  if (colorErr) console.error("[onboarding/marca] colores de la prenda fallaron:", colorErr);
 
   let img: Awaited<ReturnType<typeof uploadImageField>> = null;
   try {
