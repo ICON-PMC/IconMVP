@@ -24,9 +24,27 @@ export type Database = {
         Relationships: [];
       };
       tags: {
-        Row: { id: string; type: Database["public"]["Enums"]["tag_type"]; name: string; slug: string; created_at: string };
-        Insert: { id?: string; type: Database["public"]["Enums"]["tag_type"]; name: string; slug: string; created_at?: string };
-        Update: { id?: string; type?: Database["public"]["Enums"]["tag_type"]; name?: string; slug?: string; created_at?: string };
+        Row: { id: string; type: Database["public"]["Enums"]["tag_type"]; name: string; slug: string; name_key: string; is_hidden: boolean; created_by_brand_id: string | null; created_by_user_id: string | null; created_at: string };
+        Insert: { id?: string; type: Database["public"]["Enums"]["tag_type"]; name: string; slug: string; is_hidden?: boolean; created_by_brand_id?: string | null; created_by_user_id?: string | null; created_at?: string };
+        Update: { id?: string; type?: Database["public"]["Enums"]["tag_type"]; name?: string; slug?: string; is_hidden?: boolean; created_by_brand_id?: string | null; created_by_user_id?: string | null; created_at?: string };
+        Relationships: [];
+      };
+      tag_blocklist: {
+        Row: { word: string };
+        Insert: { word: string };
+        Update: { word?: string };
+        Relationships: [];
+      };
+      colors: {
+        Row: { id: string; name: string; slug: string; name_key: string; hex: string | null; position: number; is_hidden: boolean; created_by_brand_id: string | null; created_by_user_id: string | null; created_at: string };
+        Insert: { id?: string; name: string; slug: string; hex?: string | null; position?: number; is_hidden?: boolean; created_by_brand_id?: string | null; created_by_user_id?: string | null; created_at?: string };
+        Update: { id?: string; name?: string; slug?: string; hex?: string | null; position?: number; is_hidden?: boolean; created_by_brand_id?: string | null; created_by_user_id?: string | null; created_at?: string };
+        Relationships: [];
+      };
+      garment_colors: {
+        Row: { garment_id: string; color_id: string };
+        Insert: { garment_id: string; color_id: string };
+        Update: { garment_id?: string; color_id?: string };
         Relationships: [];
       };
       sizes: {
@@ -233,6 +251,7 @@ export type Database = {
           price_ranges: string[];
           score: number;
           like_count: number;
+          colors: string[];
         };
         Relationships: [];
       };
@@ -326,6 +345,7 @@ export type Database = {
           p_sort?: string | null;
           p_limit?: number | null;
           p_offset?: number | null;
+          p_colors?: string[] | null;
         };
         Returns: {
           kind: "post" | "garment";
@@ -351,7 +371,21 @@ export type Database = {
           price_ranges: string[];
           score: number;
           like_count: number;
+          colors: string[];
         }[];
+      };
+      create_style_tag: {
+        Args: { p_name: string };
+        Returns: Database["public"]["Tables"]["tags"]["Row"][];
+      };
+      create_color: {
+        Args: { p_name: string };
+        Returns: Database["public"]["Tables"]["colors"]["Row"][];
+      };
+      vocab_name_error: { Args: { p_name: string }; Returns: string | null };
+      color_filter_options: {
+        Args: Record<string, never>;
+        Returns: { slug: string; name: string; hex: string | null; uses: number }[];
       };
     };
     Enums: {

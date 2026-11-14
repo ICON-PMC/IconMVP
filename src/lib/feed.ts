@@ -10,6 +10,7 @@ export type FeedFiltersInput = {
   style: string[];
   category: string[];
   price: string[];
+  color: string[];
 };
 
 export const FEED_SORTS = new Set(["relevant", "new", "popular", "az"]);
@@ -32,6 +33,7 @@ export function parseFeedParams(sp: SearchParamsLike): {
     style: parse("style"),
     category: parse("category"),
     price: parse("price"),
+    color: parse("color"),
   };
   const sortRaw = sp.sort ? String(sp.sort) : "relevant";
   const sort = FEED_SORTS.has(sortRaw) ? sortRaw : "relevant";
@@ -58,6 +60,7 @@ export async function getFeedPage(
     p_styles: filters.style.length ? filters.style : undefined,
     p_categories: filters.category.length ? filters.category : undefined,
     p_prices: filters.price.length ? filters.price : undefined,
+    p_colors: filters.color.length ? filters.color : undefined,
     p_sort: sort,
     p_limit: limit,
     p_offset: offset,

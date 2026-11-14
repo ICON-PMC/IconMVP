@@ -3,12 +3,16 @@ import type { createClient } from "@/lib/supabase/server";
 type Supabase = Awaited<ReturnType<typeof createClient>>;
 export type TagOption = { id: string; name: string };
 export type TagType = "category" | "style" | "occasion" | "temperature";
-export type TagOptions = Record<TagType, TagOption[]>;
+// `color` no es un tipo de etiqueta (va en `colors`/`garment_colors`, spec 004) pero viaja
+// junto al vocabulario para que los formularios de prenda lo reciban en un solo objeto.
+export type TagOptions = Record<TagType, TagOption[]> & { color: TagOption[] };
 
-// Límites de la base (triggers de 20261006000000_brand_tags.sql), repetidos aquí para que los
-// chips dejen de aceptar selecciones antes de que la base dé el error.
-export const MAX_BRAND_STYLES = 5;
+// Límites de la base (triggers de 20261114000000_open_styles.sql y 20261114010000_colors.sql),
+// repetidos aquí para que los chips dejen de aceptar selecciones antes de que la base dé el error.
+export const MAX_BRAND_STYLES = 10;
 export const MAX_GARMENT_TAGS_PER_TYPE = 3;
+export const MAX_GARMENT_STYLES = 6;
+export const MAX_GARMENT_COLORS = 3;
 
 // Campo del formulario por tipo: los mismos nombres que ya usa `setPostTags`.
 export const TAG_FIELDS = {
@@ -17,6 +21,9 @@ export const TAG_FIELDS = {
   temperature: "temperatures",
 } as const;
 
+/** Campo del formulario con los ids de color elegidos. */
+export const COLOR_FIELD = "colors";
+
 export const TAG_LABELS: Record<TagType, string> = {
   category: "Categoría",
   style: "Estilo",
@@ -24,11 +31,43 @@ export const TAG_LABELS: Record<TagType, string> = {
   temperature: "Clima",
 };
 
-/** Todo el vocabulario agrupado por tipo, ordenado por nombre. */
+/** Todo el vocabulario agrupado por tipo (por nombre) y los colores (por su orden). Sin ocultos. */
 export async function getTagOptions(supabase: Supabase): Promise<TagOptions> {
-  const { data } = await supabase.from("tags").select("id, name, type").order("name");
-  const out: TagOptions = { category: [], style: [], occasion: [], temperature: [] };
-  for (const t of data ?? []) out[t.type].push({ id: t.id, name: t.name });
+  const [{ data }, { data: colors }] = await Promise.all([
+    supabase.from("tags").select("id, name, type").eq("is_hidden", false).order("name"),
+    supabase.from("colors").select("id, name").eq("is_hidden", false).order("position").order("name"),
+  ]);
+  const out: TagOptions = { ...emptyTagOptions(), color: (colors ?? []).map((c) => ({ id: c.id, name: c.name })) };
+  for (const t of data ?? []) out[t.type]?.push({ id: t.id, name: t.name });
+  return out;
+}
+
+/** Ids de color elegidos en un formulario (campo `COLOR_FIELD`). */
+export function colorIdsFromForm(formData: FormData): string[] {
+  return [...new Set(formData.getAll(COLOR_FIELD).map(String))].filter(Boolean);
+}
+
+/** Reemplaza los colores de una prenda (el trigger reescribe `garments.color`). */
+export async function replaceGarmentColors(
+  supabase: Supabase,
+  garmentId: string,
+  colorIds: string[],
+): Promise<string | null> {
+  const { error: delError } = await supabase.from("garment_colors").delete().eq("garment_id", garmentId);
+  if (delError) return delError.message;
+  if (!colorIds.length) return null;
+  const { error } = await supabase
+    .from("garment_colors")
+    .insert(colorIds.map((color_id) => ({ garment_id: garmentId, color_id })));
+  return error?.message ?? null;
+}
+
+/** Ids de color de una prenda (para precargar el formulario de edición). */
+export async function getGarmentColorIds(supabase: Supabase, garmentIds: string[]): Promise<Map<string, string[]>> {
+  const out = new Map<string, string[]>();
+  if (!garmentIds.length) return out;
+  const { data } = await supabase.from("garment_colors").select("garment_id, color_id").in("garment_id", garmentIds);
+  for (const r of data ?? []) out.set(r.garment_id, [...(out.get(r.garment_id) ?? []), r.color_id]);
   return out;
 }
 
@@ -82,7 +121,11 @@ export async function replaceBrandStyles(
   return error?.message ?? null;
 }
 
-export const EMPTY_TAG_OPTIONS: TagOptions = { category: [], style: [], occasion: [], temperature: [] };
+function emptyTagOptions(): TagOptions {
+  return { category: [], style: [], occasion: [], temperature: [], color: [] };
+}
+
+export const EMPTY_TAG_OPTIONS: TagOptions = emptyTagOptions();
 
 /** Nombres de los estilos de cada marca (tarjetas de la búsqueda). */
 export async function getBrandStyleNames(

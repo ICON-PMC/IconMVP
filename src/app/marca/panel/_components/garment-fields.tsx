@@ -78,9 +78,6 @@ export function GarmentFields({
             defaultValue={defaults?.product_url ?? undefined}
           />
         </FormField>
-        <FormField label="Color" htmlFor={id("color")}>
-          <Input id={id("color")} name="color" defaultValue={defaults?.color ?? undefined} />
-        </FormField>
         <FormField label="Tela" htmlFor={id("fabric")}>
           <Input id={id("fabric")} name="fabric" defaultValue={defaults?.fabric ?? undefined} />
         </FormField>
