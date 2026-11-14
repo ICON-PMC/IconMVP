@@ -28,6 +28,7 @@ export type UploadData = {
   occasions: Named[];
   styles: Named[];
   temperatures: Named[];
+  colors: Named[];
   sizes: { id: string; label: string }[];
   brands: Named[];
   garments: { id: string; title: string }[];
@@ -137,9 +138,6 @@ function GarmentForm({ data }: { data: UploadData }) {
         <FormField label="Enlace del producto" htmlFor="g-url">
           <Input id="g-url" name="product_url" type="text" inputMode="url" placeholder="https://" />
         </FormField>
-        <FormField label="Color" htmlFor="g-color">
-          <Input id="g-color" name="color" />
-        </FormField>
         <FormField label="Tela" htmlFor="g-fabric">
           <Input id="g-fabric" name="fabric" />
         </FormField>
@@ -170,7 +168,7 @@ function GarmentForm({ data }: { data: UploadData }) {
         options={data.sizes.map((s) => ({ id: s.id, name: s.label }))}
       />
       <GarmentTagFields
-        options={{ style: data.styles, occasion: data.occasions, temperature: data.temperatures }}
+        options={{ style: data.styles, occasion: data.occasions, temperature: data.temperatures, color: data.colors }}
       />
       <FormField label="Foto" htmlFor="g-image">
         <Input id="g-image" name="image" type="file" accept="image/*" />

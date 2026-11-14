@@ -45,7 +45,7 @@ async function fetchFeedItemsByIds(
   supabase: Awaited<ReturnType<typeof createClient>>,
   kind: "post" | "garment",
   ids: string[],
-  f: { city: string[]; occasion: string[]; style: string[]; category: string[]; price: string[] },
+  f: { city: string[]; occasion: string[]; style: string[]; category: string[]; price: string[]; color: string[] },
 ): Promise<FeedItem[]> {
   if (ids.length === 0) return [];
   let q = supabase.from("feed_items").select("*").eq("kind", kind).in("id", ids);
@@ -54,6 +54,7 @@ async function fetchFeedItemsByIds(
   if (f.style.length) q = q.overlaps("styles", f.style);
   if (f.category.length) q = q.overlaps("categories", f.category);
   if (f.price.length) q = q.overlaps("price_ranges", f.price);
+  if (f.color.length) q = q.overlaps("colors", f.color);
   const { data } = await q;
   return data ?? [];
 }
@@ -66,6 +67,8 @@ const FEED_FLASH = {
 
 // Hasta este número de ciudades el filtro sigue siendo de chips.
 const CITY_CHIPS_MAX = 8;
+// Estilos más usados que se muestran como chips cuando hay buscador.
+const STYLE_CHIPS = 10;
 
 export default async function FeedPage({ searchParams }: { searchParams: SearchParams }) {
   const sp = await searchParams;
@@ -76,11 +79,13 @@ export default async function FeedPage({ searchParams }: { searchParams: SearchP
 
   const supabase = await createClient();
 
-  const [catsRes, occsRes, stylesRes, cityOptions] = await Promise.all([
+  const [catsRes, occsRes, stylesRes, cityOptions, colorsRes, styleUseRes] = await Promise.all([
     supabase.from("tags").select("slug, name").eq("type", "category").order("name"),
     supabase.from("tags").select("slug, name").eq("type", "occasion").order("name"),
-    supabase.from("tags").select("slug, name").eq("type", "style").order("name"),
+    supabase.from("tags").select("slug, name").eq("type", "style").eq("is_hidden", false).order("name"),
     getCityFilterOptions(supabase),
+    supabase.rpc("color_filter_options"),
+    supabase.from("feed_items").select("styles"),
   ]);
   const toOpts = (rows: { slug: string; name: string }[] | null) =>
     (rows ?? []).map((r) => ({ value: r.slug, label: r.name }));
@@ -99,8 +104,28 @@ export default async function FeedPage({ searchParams }: { searchParams: SearchP
   };
   const categoryGroup: FilterGroup = { param: "category", label: "Categoría", options: toOpts(catsRes.data) };
   const occasionGroup: FilterGroup = { param: "occasion", label: "Ocasión", options: toOpts(occsRes.data) };
-  const styleGroup: FilterGroup = { param: "style", label: "Estilo", options: toOpts(stylesRes.data) };
-  const allGroups = [occasionGroup, cityGroup, priceGroup, categoryGroup, styleGroup];
+  // Estilos: solo los que tienen contenido publicado. Vocabulario abierto (spec 004): con muchos,
+  // los STYLE_CHIPS más usados van como chips y el resto se encuentra con el buscador.
+  const styleUses = new Map<string, number>();
+  for (const row of styleUseRes.data ?? [])
+    for (const slug of row.styles ?? []) styleUses.set(slug, (styleUses.get(slug) ?? 0) + 1);
+  const styleOptions = toOpts((stylesRes.data ?? []).filter((t) => styleUses.has(t.slug)));
+  const styleGroup: FilterGroup = {
+    param: "style",
+    label: "Estilo",
+    options: styleOptions,
+    searchable: styleOptions.length > STYLE_CHIPS,
+    featured: [...styleUses.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, STYLE_CHIPS)
+      .map(([slug]) => slug),
+  };
+  const colorGroup: FilterGroup = {
+    param: "color",
+    label: "Color",
+    options: (colorsRes.data ?? []).map((c) => ({ value: c.slug, label: c.name, swatch: c.hex })),
+  };
+  const allGroups = [occasionGroup, cityGroup, priceGroup, categoryGroup, styleGroup, colorGroup];
 
   const tagNames: Record<string, string> = {};
   for (const t of [...(occsRes.data ?? []), ...(stylesRes.data ?? [])]) tagNames[t.slug] = t.name;
@@ -256,7 +281,7 @@ export default async function FeedPage({ searchParams }: { searchParams: SearchP
           </div>
         );
     } else if (type === "garments") {
-      groups = [cityGroup, priceGroup, categoryGroup];
+      groups = [cityGroup, priceGroup, categoryGroup, styleGroup, colorGroup];
       const matches = gCount.data ?? [];
       const meta = new Map<string, Meta>(
         matches.map((m) => [`garment:${m.id}`, { sim: m.sim, same_city: false }]),
