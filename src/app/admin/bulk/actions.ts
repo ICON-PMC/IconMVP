@@ -1,5 +1,6 @@
 "use server";
 
+import { scheduleEmbeddings } from "@/lib/visual/schedule";
 import { revalidatePath } from "next/cache";
 import ExcelJS from "exceljs";
 import { createClient } from "@/lib/supabase/server";
@@ -470,6 +471,7 @@ export async function uploadGarmentImageAction(
     .from("garments")
     .update({ status: "published", published_at: new Date().toISOString() })
     .eq("id", garmentId);
+  scheduleEmbeddings([garmentId]); // búsqueda por foto (spec 005)
 
   revalidatePath("/admin/bulk");
   revalidatePath("/feed");

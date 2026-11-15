@@ -1,5 +1,6 @@
 "use server";
 
+import { scheduleEmbeddings } from "@/lib/visual/schedule";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
@@ -195,6 +196,7 @@ export async function createBrandGarment(formData: FormData) {
     await supabase
       .from("garment_images")
       .insert({ garment_id: garment.id, cf_image_id: img.key, bytes: img.bytes, position: 0 });
+    scheduleEmbeddings([garment.id]); // búsqueda por foto (spec 005)
   }
 
   revalidatePath("/marca/panel");
@@ -305,6 +307,7 @@ async function replaceCoverImage(
     ({ error } = current
       ? await supabase.from("garment_images").update(row).eq("id", current.id)
       : await supabase.from("garment_images").insert({ ...row, garment_id: ownerId, position: 0 }));
+    if (!error) scheduleEmbeddings([ownerId]); // foto nueva → nueva huella visual (spec 005)
   } else {
     const { data: current } = await supabase
       .from("post_images")

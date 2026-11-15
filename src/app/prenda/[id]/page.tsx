@@ -12,6 +12,7 @@ import { getGarmentLikeCounts, getMyLikedGarmentIds } from "@/lib/social";
 import { getCurrentUser } from "@/lib/auth";
 import { SaveButton } from "@/components/save-button";
 import { LikeButton } from "@/components/like-button";
+import { SimilarGarments } from "@/components/visual/similar-garments";
 
 // Orígenes que la ficha conserva para atribuir el clic saliente (spec 005, FR-010).
 const FROM_SOURCES = new Set(["photo_search", "similar"]);
@@ -211,6 +212,7 @@ export default async function GarmentPage({
             </GlassCard>
           </div>
         </div>
+        <SimilarGarments garmentId={g.id} isLoggedIn={isLoggedIn} />
       </div>
     </>
   );
