@@ -12,6 +12,7 @@ import { FeedSuggestions } from "@/components/feed/suggestions";
 import { FeedGrid } from "@/components/feed-grid";
 import { FeedCard } from "@/components/feed-card";
 import { BrandCard } from "@/components/brand-card";
+import { VisualResults } from "@/components/visual/visual-results";
 import { PRICE_BUCKETS } from "@/lib/taxonomy";
 import { getMySavedIds } from "@/lib/saves";
 import { getMyLikedGarmentIds, getMyLikedPostIds } from "@/lib/social";
@@ -139,6 +140,27 @@ export default async function FeedPage({ searchParams }: { searchParams: SearchP
   ]);
   const liked = { posts: likedPosts, garments: likedGarments };
   const isLoggedIn = Boolean(session?.profile);
+
+  // ===================== Modo búsqueda por foto (spec 005) =====================
+  // La foto vive en el navegador (sessionStorage); aquí solo van los filtros aplicables a prendas.
+  if (sp.visual === "1") {
+    return (
+      <Shell
+        groups={[occasionGroup, cityGroup, priceGroup, categoryGroup, styleGroup, colorGroup]}
+        sort={sort}
+        suggestions={null}
+      >
+        <Suspense>
+          <VisualResults
+            tagNames={tagNames}
+            savedGarments={[...saved.garments]}
+            likedGarments={[...liked.garments]}
+            isLoggedIn={isLoggedIn}
+          />
+        </Suspense>
+      </Shell>
+    );
+  }
 
   // ===================== Modo búsqueda: pestañas Todo / Prendas / Outfits / Marcas =====================
   if (q) {

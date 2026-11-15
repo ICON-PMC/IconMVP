@@ -10,7 +10,9 @@ const TUNNEL_HOSTS = [
 
 const nextConfig: NextConfig = {
   // sharp se usa en server actions (subida a R2); debe ir externo (binario nativo).
-  serverExternalPackages: ["sharp"],
+  // onnxruntime-web (búsqueda por foto, spec 005) también va externo: carga sus .wasm desde
+  // node_modules en tiempo de ejecución y no debe pasar por el bundler.
+  serverExternalPackages: ["sharp", "onnxruntime-web"],
   // Solo en dev: permite el websocket de Hot Module Reload cuando se prueba a través
   // de un túnel (otro host que localhost). No afecta `next build` (producción).
   ...(process.env.NODE_ENV !== "production"
@@ -57,6 +59,20 @@ const nextConfig: NextConfig = {
     "/marca/panel/import": [
       "./node_modules/@img/sharp-libvips-linux-x64/**/*",
       "./node_modules/@img/sharp-linux-x64/**/*",
+    ],
+    // Búsqueda por foto (spec 005): sharp para preprocesar + el runtime WASM de onnxruntime.
+    // El modelo (~89 MB) NO se incluye: se descarga de R2 a /tmp en el arranque en frío.
+    "/api/visual/*": [
+      "./node_modules/@img/sharp-libvips-linux-x64/**/*",
+      "./node_modules/@img/sharp-linux-x64/**/*",
+      "./node_modules/onnxruntime-web/dist/ort-wasm-simd-threaded.{mjs,wasm}",
+      "./node_modules/onnxruntime-web/dist/ort.node.min.*",
+    ],
+    "/api/embeddings/*": [
+      "./node_modules/@img/sharp-libvips-linux-x64/**/*",
+      "./node_modules/@img/sharp-linux-x64/**/*",
+      "./node_modules/onnxruntime-web/dist/ort-wasm-simd-threaded.{mjs,wasm}",
+      "./node_modules/onnxruntime-web/dist/ort.node.min.*",
     ],
   },
 };

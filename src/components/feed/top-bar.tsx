@@ -2,6 +2,7 @@
 
 import { useFeedUrl } from "@/components/feed/use-feed-url";
 import { FeedFilterPanel, type FilterGroup } from "@/components/feed/filter-panel";
+import { CameraButton } from "@/components/visual/camera-button";
 
 const SORT_OPTS = [
   { value: "relevant", label: "Relevante" },
@@ -22,7 +23,7 @@ export function FeedTopBar({ groups, sort }: { groups: FilterGroup[]; sort: stri
           const fd = new FormData(e.currentTarget);
           setQuery(String(fd.get("q") ?? ""));
         }}
-        className="flex-1"
+        className="flex flex-1 items-center gap-2"
       >
         <input
           key={searchParams.get("q") ?? ""}
@@ -33,6 +34,7 @@ export function FeedTopBar({ groups, sort }: { groups: FilterGroup[]; sort: stri
           aria-label="Buscar"
           className="glass-input w-full rounded-full px-4 py-2 text-sm text-ink placeholder:text-ink/40"
         />
+        <CameraButton />
       </form>
       <div className="flex items-center gap-2">
         <FeedFilterPanel groups={groups} />

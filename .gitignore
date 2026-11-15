@@ -48,3 +48,6 @@ CLAUDE.md
 .mcp.json
 # catálogos exportados de las marcas (fotos y precios ajenos: no van al repo)
 /catalog-export/
+
+# Modelos de visión descargados (spec 005); el de producción vive en R2
+/.models/
