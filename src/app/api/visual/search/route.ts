@@ -45,6 +45,8 @@ export async function POST(req: NextRequest) {
   const admin = createAdminClient();
   const session = await getCurrentUser();
   const userId = session?.profile?.id ?? null;
+  // Solo personas con cuenta (decisión de la dueña, 2026-11-15).
+  if (!userId) return err(401, "Inicia sesión para buscar por foto.");
   const key = requesterKey(req, userId);
   const { filters } = parseFeedParams(Object.fromEntries(req.nextUrl.searchParams));
 
