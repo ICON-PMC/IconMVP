@@ -40,7 +40,7 @@ referencia (`visual:eval`) y los escenarios de `quickstart.md`.
 - [x] T012 Crear `scripts/embed-catalog.ts` y el script `db:embed` en `package.json` (marca todas las publicadas como `pending` si no tienen fila y llama a `processPending` en tandas; lee `.env.local`, admite la URL/service role de la nube por variables como los demás scripts)
 - [x] T013 Crear `scripts/build-visual-prompts.ts` (solo local, usa el encoder de texto de FashionCLIP) que genera `src/lib/visual/prompts.json` con un vector por categoría de Icon (`tags` tipo `category`) y frases de contenido no permitido
 - [x] T014 Implementar `src/lib/visual/classify.ts`: `detectCategory(vec, neighbors)` (frase más parecida confirmada por voto de los 10 vecinos) y `isBlocked(vec)` con umbral `BLOCK_MIN`
-- [ ] T015 Crear `scripts/visual-eval.ts` (`npm run visual:eval`): corre el set de `referencia/` contra la base, reporta top-1/top-6 (SC-001) y sugiere `SIMILAR_MIN` y `BLOCK_MIN`; guardar los umbrales elegidos en `src/lib/visual/thresholds.ts`
+- [x] T015 Crear `scripts/visual-eval.ts` (`npm run visual:eval`): corre el set de `referencia/` contra la base, reporta top-1/top-6 (SC-001) y sugiere `SIMILAR_MIN` y `BLOCK_MIN`; guardar los umbrales elegidos en `src/lib/visual/thresholds.ts`
 
 **Checkpoint**: catálogo local indexado con `db:embed` y `visual:eval` ≥ SC-001; si no se alcanza, evaluar Marqo-FashionSigLIP (research R1) antes de seguir.
 
@@ -116,7 +116,7 @@ referencia (`visual:eval`) y los escenarios de `quickstart.md`.
 
 - [x] T035 Métricas semanales en `/admin` (FR-020): búsquedas por foto, % con resultados "muy parecidos", clics salientes desde `photo_search` y `similar`, en `src/app/admin/_components/visual-index.tsx`
 - [ ] T036 [P] Texto de privacidad: mencionar que la foto se usa solo para la búsqueda, no se guarda y se procesa en nuestros servidores (FR-013), en la página o pie de privacidad existente
-- [ ] T037 Revisar diseño móvil 375 px de la hoja de cámara, el recorte y los resultados con los tokens glass/tropical (principio VI)
+- [x] T037 Revisar diseño móvil 375 px de la hoja de cámara, el recorte y los resultados con los tokens glass/tropical (principio VI)
 - [ ] T038 Aplicar las migraciones en Supabase cloud (SQL Editor) en orden, correr `npm run db:embed` contra la nube y verificar con `visual:eval`
 - [ ] T039 Configurar `VISUAL_MODEL_URL`, `CRON_SECRET`, `PHOTO_SEARCH_MONTHLY_CAP` en Vercel (Preview y Production)
 - [ ] T040 `npm run lint` + `npm run build`; validar todos los escenarios de `quickstart.md` en Preview y medir arranque en frío/inferencia en los logs de Vercel (SC-002); registrar resultados en el PR
