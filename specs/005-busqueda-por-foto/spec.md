@@ -42,7 +42,7 @@ Una persona vio en la calle un pantalón cargo beige que le encantó. Abre Icon 
 2. **Given** el buscador de `/feed` en escritorio, **When** la persona toca el ícono de cámara, **Then** puede subir una imagen o arrastrarla.
 3. **Given** una foto de una sola prenda, **When** se envía, **Then** la persona ve en menos de 5 segundos una cuadrícula de prendas similares, de la más parecida a la menos, con la miniatura de su foto arriba para saber qué buscó.
 4. **Given** los resultados, **When** la persona toca una prenda, **Then** llega a su ficha y desde allí puede ir a la tienda como siempre (el clic saliente se registra como hoy).
-5. **Given** una persona sin sesión, **When** busca por foto, **Then** funciona igual que con sesión.
+5. **Given** una persona sin sesión, **When** toca la cámara o abre una búsqueda por foto, **Then** se le pide iniciar sesión ("Inicia sesión para buscar por foto"). *Decisión de la dueña 2026-11-15: la búsqueda por foto es solo para personas registradas; "Más como esta" sigue siendo pública.*
 6. **Given** que ninguna prenda es suficientemente parecida, **When** se muestran resultados, **Then** se muestra un mensaje honesto ("No encontramos algo muy parecido; esto es lo más cercano") en vez de presentar resultados malos como si fueran buenos.
 7. **Given** una captura de pantalla de Instagram con textos e íconos alrededor de la foto, **When** se usa para buscar, **Then** los resultados se basan en la prenda, no en los elementos de la interfaz.
 
@@ -136,7 +136,7 @@ Cuando una marca publica, edita la foto o despublica una prenda, la búsqueda po
 **Entrada**
 
 - **FR-001**: El buscador de `/feed` MUST tener un acceso de búsqueda por foto (ícono de cámara) visible en móvil y escritorio.
-- **FR-002**: En móvil MUST permitir tomar una foto con la cámara o elegir una imagen de la galería; en escritorio, subir o arrastrar una imagen.
+- **FR-002**: En móvil, tocar la cámara MUST abrir directamente la cámara del teléfono, con la opción de elegir de la galería disponible detrás; en escritorio, subir o arrastrar una imagen. La búsqueda por foto MUST requerir sesión.
 - **FR-003**: MUST aceptar las fotos de cámara de iPhone y Android y los formatos de imagen comunes, hasta un tamaño máximo que se informa en el mensaje de error.
 - **FR-004**: Cuando la foto contiene varias prendas, la persona MUST poder recortar a mano la prenda que quiere buscar y volver a buscar sin subir la foto de nuevo; por defecto se busca con la foto completa. *Decisión de la dueña (2026-11-14): la detección automática de prendas con recuadros queda fuera de esta versión; ver research R3.*
 
@@ -146,6 +146,7 @@ Cuando una marca publica, edita la foto o despublica una prenda, la búsqueda po
 - **FR-006**: Los resultados MUST priorizar prendas de la misma categoría que la prenda buscada.
 - **FR-007**: Por debajo de un umbral de parecido, los resultados MUST presentarse como "lo más cercano" con un mensaje honesto, no como coincidencias.
 - **FR-008**: Los filtros de `/feed` aplicables a prendas MUST poder aplicarse sobre los resultados sin perder el orden por parecido, y MUST mantenerse al cambiar de prenda dentro de la foto.
+- **FR-009b**: La pantalla de resultados MUST seguir el layout de referencia (tipo Pinterest): la foto buscada a la izquierda (arriba en móvil) con el recorte ajustable directamente sobre ella y una X en la esquina para salir de la búsqueda; las coincidencias a la derecha (abajo en móvil). Al soltar el recorte, la búsqueda se rehace sola.
 - **FR-009**: La persona MUST poder volver a sus resultados (desde una ficha o al recargar) sin subir la foto de nuevo durante la misma sesión de navegación.
 - **FR-010**: Los resultados por foto MUST mostrarse con las mismas tarjetas de prenda del feed (guardar, like, ir a la ficha) y los clics salientes MUST registrarse como hoy, identificando que vienen de búsqueda por foto.
 
@@ -195,6 +196,6 @@ Cuando una marca publica, edita la foto o despublica una prenda, la búsqueda po
 - El análisis de imagen se hace con un servicio o modelo de visión elegido en el plan; la constitución exige justificar la nueva dependencia por el pilar que refuerza (*Intención*) y la enmienda del principio VIII.
 - La comparación se hace contra la foto principal de cada prenda publicada; las fotos secundarias pueden incorporarse en el plan si mejoran resultados sin cambiar esta spec.
 - Con el catálogo actual (237 prendas) la calidad percibida dependerá más de la variedad del catálogo que del sistema; FR-007 cubre ese límite.
-- La búsqueda por foto funciona sin sesión, como el resto de rutas públicas, con el límite de uso de FR-014.
+- La búsqueda por foto requiere sesión (decisión 2026-11-15); el límite de uso de FR-014 se cuenta por cuenta.
 - La foto subida no pasa por el pipeline de imágenes publicadas (principio V) porque no se publica ni se sirve; se trata como un dato efímero de la búsqueda.
 - La rama de trabajo se crea a partir de `dev`, según el flujo de la constitución, y el PR de enmienda de la constitución se mergea antes que el código.

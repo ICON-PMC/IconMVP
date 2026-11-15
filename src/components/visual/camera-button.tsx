@@ -1,16 +1,32 @@
 "use client";
 
 import { useRef, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { CameraIcon, ImageIcon, Loader2Icon } from "lucide-react";
 import { ResponsiveSheet } from "@/components/responsive-sheet";
+import { useMediaQuery } from "@/lib/use-media-query";
 import { fileToDataUrl, saveVisualSession, searchByPhoto, shrink } from "@/lib/visual/client";
 
+const LOGIN_HREF = `/login?aviso=${encodeURIComponent("Inicia sesión para buscar por foto.")}`;
+
 /**
- * Ícono de cámara del buscador (spec 005, US1). En móvil ofrece "Tomar foto" (abre la cámara) y
- * "Elegir de la galería"; en escritorio, subir o arrastrar. Precarga el modelo al abrirse.
+ * Ícono de cámara del buscador (spec 005, US1). Solo con sesión: sin ella lleva a iniciar sesión.
+ * En móvil abre la cámara directamente (la hoja con "Elegir de la galería" queda detrás, para
+ * errores y para quien prefiera una foto guardada); en escritorio, subir o arrastrar.
+ * Precarga el modelo al abrirse.
  */
-export function CameraButton({ className }: { className?: string }) {
+export function CameraButton({
+  className,
+  isLoggedIn = false,
+  label,
+}: {
+  className?: string;
+  isLoggedIn?: boolean;
+  /** Texto visible junto al ícono (p. ej. "Subir otra foto"); sin él es solo el ícono. */
+  label?: string;
+}) {
+  const mobile = useMediaQuery("(max-width: 767px)");
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -40,6 +56,7 @@ export function CameraButton({ className }: { className?: string }) {
       const res = await searchByPhoto(original.blob);
       saveVisualSession({ original: original.dataUrl, query: original.dataUrl, embedding: res.embedding });
       setOpen(false);
+      // Nueva foto: sin filtros previos y con el recorte en la foto completa.
       router.push(`/feed?visual=1&t=${Date.now()}`);
     } catch (e) {
       setError(e instanceof Error ? e.message : "No pudimos buscar con esa foto.");
@@ -50,6 +67,18 @@ export function CameraButton({ className }: { className?: string }) {
     }
   }
 
+  const buttonClass =
+    className ??
+    "glass-input flex size-10 shrink-0 items-center justify-center rounded-full text-ink/70 hover:bg-white/70 hover:text-forest";
+
+  if (!isLoggedIn)
+    return (
+      <Link href={LOGIN_HREF} aria-label="Buscar por foto (inicia sesión)" title="Buscar por foto" className={buttonClass}>
+        <CameraIcon className="size-5" />
+        {label}
+      </Link>
+    );
+
   const option =
     "glass-input flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-medium text-ink hover:bg-white/70 disabled:opacity-60";
 
@@ -57,16 +86,39 @@ export function CameraButton({ className }: { className?: string }) {
     <>
       <button
         type="button"
-        onClick={() => handleOpenChange(true)}
+        onClick={() => {
+          handleOpenChange(true);
+          // En el celular lo primero es la cámara: el clic del usuario permite abrirla aquí mismo.
+          if (mobile) cameraRef.current?.click();
+        }}
         aria-label="Buscar por foto"
         title="Buscar por foto"
-        className={
-          className ??
-          "glass-input flex size-10 shrink-0 items-center justify-center rounded-full text-ink/70 hover:bg-white/70 hover:text-forest"
-        }
+        className={buttonClass}
       >
         <CameraIcon className="size-5" />
+        {label}
       </button>
+
+      {/* Fuera de la hoja: deben existir antes de abrirla para que el clic abra la cámara. */}
+      <input
+        ref={cameraRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        className="sr-only"
+        tabIndex={-1}
+        aria-hidden
+        onChange={(e) => handleFile(e.target.files?.[0])}
+      />
+      <input
+        ref={galleryRef}
+        type="file"
+        accept="image/*,.heic,.heif"
+        className="sr-only"
+        tabIndex={-1}
+        aria-hidden
+        onChange={(e) => handleFile(e.target.files?.[0])}
+      />
 
       <ResponsiveSheet
         open={open}
@@ -99,21 +151,6 @@ export function CameraButton({ className }: { className?: string }) {
               <span className="hidden md:inline">Subir una foto o arrastrarla aquí</span>
             </span>
           </button>
-          <input
-            ref={cameraRef}
-            type="file"
-            accept="image/*"
-            capture="environment"
-            className="sr-only"
-            onChange={(e) => handleFile(e.target.files?.[0])}
-          />
-          <input
-            ref={galleryRef}
-            type="file"
-            accept="image/*,.heic,.heif"
-            className="sr-only"
-            onChange={(e) => handleFile(e.target.files?.[0])}
-          />
 
           {busy && (
             <p className="flex items-center gap-2 text-sm text-ink/60" role="status">

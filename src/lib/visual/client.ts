@@ -20,7 +20,17 @@ export type VisualSession = {
   /** Lo que se buscó (original o recorte), como miniatura. */
   query: string;
   embedding: number[];
+  /** Recorte actual sobre `original` (fracciones 0–1); sin él, la foto completa. */
+  rect?: { x: number; y: number; w: number; h: number };
 };
+
+export function clearVisualSession() {
+  try {
+    sessionStorage.removeItem(KEY);
+  } catch {
+    /* sin sessionStorage */
+  }
+}
 
 export function loadVisualSession(): VisualSession | null {
   try {

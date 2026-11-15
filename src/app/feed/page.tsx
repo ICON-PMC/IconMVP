@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { FlashToast } from "@/components/flash-toast";
 import { getBrandStyleNames } from "@/lib/tags";
@@ -144,8 +145,9 @@ export default async function FeedPage({ searchParams }: { searchParams: SearchP
   // ===================== Modo búsqueda por foto (spec 005) =====================
   // La foto vive en el navegador (sessionStorage); aquí solo van los filtros aplicables a prendas.
   if (sp.visual === "1") {
+    if (!isLoggedIn) redirect(`/login?aviso=${encodeURIComponent("Inicia sesión para buscar por foto.")}`);
     return (
-      <Shell
+      <Shell isLoggedIn={isLoggedIn}
         groups={[occasionGroup, cityGroup, priceGroup, categoryGroup, styleGroup, colorGroup]}
         sort={sort}
         suggestions={null}
@@ -155,7 +157,6 @@ export default async function FeedPage({ searchParams }: { searchParams: SearchP
             tagNames={tagNames}
             savedGarments={[...saved.garments]}
             likedGarments={[...liked.garments]}
-            isLoggedIn={isLoggedIn}
           />
         </Suspense>
       </Shell>
@@ -174,7 +175,7 @@ export default async function FeedPage({ searchParams }: { searchParams: SearchP
       await fetchFeedItemsByIds(supabase, "garment", (hits ?? []).map((h) => h.id), f)
     ).sort((a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0));
     return (
-      <Shell
+      <Shell isLoggedIn={isLoggedIn}
         groups={[occasionGroup, cityGroup, priceGroup, categoryGroup, styleGroup, colorGroup]}
         sort={sort}
         suggestions={null}
@@ -412,7 +413,7 @@ export default async function FeedPage({ searchParams }: { searchParams: SearchP
     }
 
     return (
-      <Shell groups={groups} sort={sort} suggestions={null}>
+      <Shell isLoggedIn={isLoggedIn} groups={groups} sort={sort} suggestions={null}>
         {tabs}
         {body}
       </Shell>
@@ -426,7 +427,7 @@ export default async function FeedPage({ searchParams }: { searchParams: SearchP
   ]);
 
   return (
-    <Shell groups={allGroups} sort={sort} suggestions={chips}>
+    <Shell isLoggedIn={isLoggedIn} groups={allGroups} sort={sort} suggestions={chips}>
       {error ? (
         <p className="glass rounded-2xl px-6 py-16 text-center text-sm text-ink/60">
           No pudimos cargar el feed en este momento. Intenta de nuevo en un momento.
@@ -461,10 +462,12 @@ function Shell({
   groups,
   sort,
   suggestions,
+  isLoggedIn,
   children,
 }: {
   groups: FilterGroup[];
   sort: string;
+  isLoggedIn: boolean;
   suggestions: Awaited<ReturnType<typeof getSuggestionChips>> | null;
   children: React.ReactNode;
 }) {
@@ -480,7 +483,7 @@ function Shell({
           Explorar
         </h1>
         <div className="mb-4">
-          <FeedTopBar groups={groups} sort={sort} />
+          <FeedTopBar groups={groups} sort={sort} isLoggedIn={isLoggedIn} />
         </div>
         {suggestions && suggestions.length > 0 && <FeedSuggestions chips={suggestions} />}
         <FeedActiveChips groups={groups} />
