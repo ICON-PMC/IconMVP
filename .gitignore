@@ -57,3 +57,9 @@ CLAUDE.md
 
 # Specs de Spec Kit (spec, plan, tareas, pilotos): internos, el repo es público. Solo local.
 /specs/
+
+# Docs internos del equipo (el repo es público). Solo local.
+/docs/
+/HANDOFF.md
+/TODO.md
+/.claude/
