@@ -54,3 +54,6 @@ CLAUDE.md
 
 # Spec Kit: constitución, roadmap y plantillas son internos (el repo es público). Solo local.
 /.specify/
+
+# Specs de Spec Kit (spec, plan, tareas, pilotos): internos, el repo es público. Solo local.
+/specs/
