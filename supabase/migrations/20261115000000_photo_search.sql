@@ -52,6 +52,10 @@ create policy photo_searches_staff_read on photo_searches
 grant select on photo_searches to authenticated;
 grant all on photo_searches to service_role;
 
+-- La ruta de búsqueda arma las tarjetas desde feed_items con el cliente de servicio; la vista
+-- (security_invoker) cuenta likes, así que el rol necesita leer también esas tablas.
+grant select on feed_items, post_likes, garment_likes to service_role;
+
 -- Atribución de clics salientes desde estos resultados (principio II).
 alter type click_source add value if not exists 'photo_search';
 alter type click_source add value if not exists 'similar';

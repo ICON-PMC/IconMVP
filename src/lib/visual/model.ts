@@ -21,6 +21,8 @@ async function loadModelBytes(): Promise<Uint8Array> {
   const url = process.env.VISUAL_MODEL_URL;
   if (!url) throw new Error("Falta VISUAL_MODEL_URL.");
   const expected = process.env.VISUAL_MODEL_SHA256?.toLowerCase();
+  // En local se puede apuntar a un archivo (ruta o file://) en vez de descargarlo.
+  if (!/^https?:\/\//.test(url)) return new Uint8Array(await readFile(url.replace(/^file:\/\//, "")));
   const cached = path.join(tmpdir(), `${VISUAL_MODEL}.onnx`);
   if (existsSync(cached)) return new Uint8Array(await readFile(cached));
 
