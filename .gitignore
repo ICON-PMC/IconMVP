@@ -51,3 +51,6 @@ CLAUDE.md
 
 # Modelos de visión descargados (spec 005); el de producción vive en R2
 /.models/
+
+# Spec Kit: constitución, roadmap y plantillas son internos (el repo es público). Solo local.
+/.specify/
