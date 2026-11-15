@@ -12,13 +12,21 @@ import { getGarmentLikeCounts, getMyLikedGarmentIds } from "@/lib/social";
 import { getCurrentUser } from "@/lib/auth";
 import { SaveButton } from "@/components/save-button";
 import { LikeButton } from "@/components/like-button";
+import { SimilarGarments } from "@/components/visual/similar-garments";
+
+// Orígenes que la ficha conserva para atribuir el clic saliente (spec 005, FR-010).
+const FROM_SOURCES = new Set(["photo_search", "similar"]);
 
 export default async function GarmentPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ from?: string }>;
 }) {
   const { id } = await params;
+  const { from } = await searchParams;
+  const outSource = from && FROM_SOURCES.has(from) ? from : "garment";
   const supabase = await createClient();
 
   const { data: g } = await supabase
@@ -194,7 +202,7 @@ export default async function GarmentPage({
               )}
 
               <a
-                href={`/out/${g.id}?source=garment`}
+                href={`/out/${g.id}?source=${outSource}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="mt-6 inline-block rounded-full bg-forest px-6 py-3 text-sm font-medium text-white hover:bg-forest-deep"
@@ -204,6 +212,7 @@ export default async function GarmentPage({
             </GlassCard>
           </div>
         </div>
+        <SimilarGarments garmentId={g.id} isLoggedIn={isLoggedIn} />
       </div>
     </>
   );

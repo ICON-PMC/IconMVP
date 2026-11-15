@@ -47,6 +47,18 @@ export type Database = {
         Update: { garment_id?: string; color_id?: string };
         Relationships: [];
       };
+      garment_embeddings: {
+        Row: { garment_id: string; embedding: string | null; image_key: string; model: string; status: "pending" | "ready" | "failed"; error: string | null; attempts: number; updated_at: string };
+        Insert: { garment_id: string; embedding?: string | null; image_key: string; model?: string; status?: "pending" | "ready" | "failed"; error?: string | null; attempts?: number; updated_at?: string };
+        Update: { garment_id?: string; embedding?: string | null; image_key?: string; model?: string; status?: "pending" | "ready" | "failed"; error?: string | null; attempts?: number; updated_at?: string };
+        Relationships: [];
+      };
+      photo_searches: {
+        Row: { id: string; kind: "photo" | "similar"; requester_key: string; user_id: string | null; detected_category: string | null; top_similarity: number | null; results: number; below_threshold: boolean; source_garment_id: string | null; created_at: string };
+        Insert: { id?: string; kind: "photo" | "similar"; requester_key: string; user_id?: string | null; detected_category?: string | null; top_similarity?: number | null; results: number; below_threshold: boolean; source_garment_id?: string | null; created_at?: string };
+        Update: { id?: string; kind?: "photo" | "similar"; requester_key?: string; user_id?: string | null; detected_category?: string | null; top_similarity?: number | null; results?: number; below_threshold?: boolean; source_garment_id?: string | null; created_at?: string };
+        Relationships: [];
+      };
       sizes: {
         Row: { id: string; system: Database["public"]["Enums"]["size_system"]; label: string; sort_order: number; aliases: string[] };
         Insert: { id?: string; system: Database["public"]["Enums"]["size_system"]; label: string; sort_order?: number; aliases?: string[] };
@@ -383,6 +395,26 @@ export type Database = {
         Returns: Database["public"]["Tables"]["colors"]["Row"][];
       };
       vocab_name_error: { Args: { p_name: string }; Returns: string | null };
+      search_by_embedding: {
+        Args: {
+          p_embedding: string;
+          p_limit?: number | null;
+          p_cities?: string[] | null;
+          p_occasions?: string[] | null;
+          p_styles?: string[] | null;
+          p_categories?: string[] | null;
+          p_prices?: string[] | null;
+          p_colors?: string[] | null;
+          p_prefer_category?: string | null;
+        };
+        Returns: { id: string; similarity: number }[];
+      };
+      photo_search_quota: { Args: { p_requester: string }; Returns: number };
+      similar_garments: {
+        Args: { p_garment_id: string; p_limit?: number | null; p_min?: number | null };
+        Returns: { id: string; similarity: number }[];
+      };
+      visual_index_status: { Args: Record<string, never>; Returns: { status: string; n: number }[] };
       color_filter_options: {
         Args: Record<string, never>;
         Returns: { slug: string; name: string; hex: string | null; uses: number }[];
@@ -399,7 +431,7 @@ export type Database = {
       post_status: "draft" | "published" | "archived";
       size_system: "alpha" | "numeric" | "special";
       brand_review_status: "pending" | "accepted" | "declined";
-      click_source: "feed" | "post" | "garment" | "brand_profile";
+      click_source: "feed" | "post" | "garment" | "brand_profile" | "photo_search" | "similar";
     };
     CompositeTypes: Record<string, never>;
   };

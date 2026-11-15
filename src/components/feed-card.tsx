@@ -26,6 +26,7 @@ export function FeedCard({
   liked = false,
   isLoggedIn = false,
   path = "/feed",
+  from,
 }: {
   item: FeedItem;
   tagNames: Record<string, string>;
@@ -33,8 +34,11 @@ export function FeedCard({
   liked?: boolean;
   isLoggedIn?: boolean;
   path?: string;
+  /** Origen para atribuir el clic saliente en la ficha (búsqueda por foto, "más como esta"). */
+  from?: "photo_search" | "similar";
 }) {
-  const href = item.kind === "post" ? `/post/${item.id}` : `/prenda/${item.id}`;
+  const base = item.kind === "post" ? `/post/${item.id}` : `/prenda/${item.id}`;
+  const href = from ? `${base}?from=${from}` : base;
   const price = priceLabel(item.min_price, item.max_price);
   const img = imageUrl(item.image);
   const ratio = cardRatio(item);
