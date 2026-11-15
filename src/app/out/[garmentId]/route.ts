@@ -8,6 +8,8 @@ const SOURCES: Database["public"]["Enums"]["click_source"][] = [
   "post",
   "garment",
   "brand_profile",
+  "photo_search", // búsqueda por foto (spec 005)
+  "similar", // "Más como esta" (spec 005)
 ];
 
 // Redirección de salida a la tienda de la marca, registrando el clic (tracking día 1).

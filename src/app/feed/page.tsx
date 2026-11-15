@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { FlashToast } from "@/components/flash-toast";
 import { getBrandStyleNames } from "@/lib/tags";
@@ -12,6 +13,7 @@ import { FeedSuggestions } from "@/components/feed/suggestions";
 import { FeedGrid } from "@/components/feed-grid";
 import { FeedCard } from "@/components/feed-card";
 import { BrandCard } from "@/components/brand-card";
+import { VisualResults } from "@/components/visual/visual-results";
 import { PRICE_BUCKETS } from "@/lib/taxonomy";
 import { getMySavedIds } from "@/lib/saves";
 import { getMyLikedGarmentIds, getMyLikedPostIds } from "@/lib/social";
@@ -139,6 +141,72 @@ export default async function FeedPage({ searchParams }: { searchParams: SearchP
   ]);
   const liked = { posts: likedPosts, garments: likedGarments };
   const isLoggedIn = Boolean(session?.profile);
+
+  // ===================== Modo búsqueda por foto (spec 005) =====================
+  // La foto vive en el navegador (sessionStorage); aquí solo van los filtros aplicables a prendas.
+  if (sp.visual === "1") {
+    if (!isLoggedIn) redirect(`/login?aviso=${encodeURIComponent("Inicia sesión para buscar por foto.")}`);
+    return (
+      <Shell isLoggedIn={isLoggedIn}
+        groups={[occasionGroup, cityGroup, priceGroup, categoryGroup, styleGroup, colorGroup]}
+        sort={sort}
+        suggestions={null}
+      >
+        <Suspense>
+          <VisualResults
+            tagNames={tagNames}
+            savedGarments={[...saved.garments]}
+            likedGarments={[...liked.garments]}
+          />
+        </Suspense>
+      </Shell>
+    );
+  }
+
+  // ===================== "Más como esta" completo (spec 005, US4) =====================
+  if (typeof sp.similar === "string" && /^[0-9a-f-]{36}$/i.test(sp.similar)) {
+    const { data: hits } = await supabase.rpc("similar_garments", {
+      p_garment_id: sp.similar,
+      p_limit: 48,
+      p_min: 0,
+    });
+    const order = new Map((hits ?? []).map((h, i) => [h.id, i]));
+    const rows = (
+      await fetchFeedItemsByIds(supabase, "garment", (hits ?? []).map((h) => h.id), f)
+    ).sort((a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0));
+    return (
+      <Shell isLoggedIn={isLoggedIn}
+        groups={[occasionGroup, cityGroup, priceGroup, categoryGroup, styleGroup, colorGroup]}
+        sort={sort}
+        suggestions={null}
+      >
+        <p className="mb-4 text-sm text-ink/60">
+          Prendas parecidas a la que estabas viendo.{" "}
+          <Link href={`/prenda/${sp.similar}`} className="font-medium text-coral hover:underline">
+            Volver a la prenda
+          </Link>
+        </p>
+        {rows.length === 0 ? (
+          <EmptyState text="Ninguna prenda parecida cumple esos filtros." clearHref={`/feed?similar=${sp.similar}`} />
+        ) : (
+          <div className="columns-2 gap-4 md:columns-3">
+            {rows.map((item) => (
+              <FeedCard
+                key={item.id}
+                item={item}
+                tagNames={tagNames}
+                saved={saved.garments.has(item.id)}
+                liked={liked.garments.has(item.id)}
+                isLoggedIn={isLoggedIn}
+                path="/feed"
+                from="similar"
+              />
+            ))}
+          </div>
+        )}
+      </Shell>
+    );
+  }
 
   // ===================== Modo búsqueda: pestañas Todo / Prendas / Outfits / Marcas =====================
   if (q) {
@@ -345,7 +413,7 @@ export default async function FeedPage({ searchParams }: { searchParams: SearchP
     }
 
     return (
-      <Shell groups={groups} sort={sort} suggestions={null}>
+      <Shell isLoggedIn={isLoggedIn} groups={groups} sort={sort} suggestions={null}>
         {tabs}
         {body}
       </Shell>
@@ -359,7 +427,7 @@ export default async function FeedPage({ searchParams }: { searchParams: SearchP
   ]);
 
   return (
-    <Shell groups={allGroups} sort={sort} suggestions={chips}>
+    <Shell isLoggedIn={isLoggedIn} groups={allGroups} sort={sort} suggestions={chips}>
       {error ? (
         <p className="glass rounded-2xl px-6 py-16 text-center text-sm text-ink/60">
           No pudimos cargar el feed en este momento. Intenta de nuevo en un momento.
@@ -394,10 +462,12 @@ function Shell({
   groups,
   sort,
   suggestions,
+  isLoggedIn,
   children,
 }: {
   groups: FilterGroup[];
   sort: string;
+  isLoggedIn: boolean;
   suggestions: Awaited<ReturnType<typeof getSuggestionChips>> | null;
   children: React.ReactNode;
 }) {
@@ -413,7 +483,7 @@ function Shell({
           Explorar
         </h1>
         <div className="mb-4">
-          <FeedTopBar groups={groups} sort={sort} />
+          <FeedTopBar groups={groups} sort={sort} isLoggedIn={isLoggedIn} />
         </div>
         {suggestions && suggestions.length > 0 && <FeedSuggestions chips={suggestions} />}
         <FeedActiveChips groups={groups} />

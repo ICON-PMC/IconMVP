@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { VisualIndexCard } from "./_components/visual-index";
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
@@ -206,7 +207,12 @@ export default async function AdminPage({
         <AdminTabs active={tab} pendingCount={pendingCount} />
 
         <div className="mt-6">
-          {tab === "metricas" && <MetricsTab {...(await loadMetrics())} />}
+          {tab === "metricas" && (
+            <>
+              <MetricsTab {...(await loadMetrics())} />
+              <VisualIndexCard />
+            </>
+          )}
           {tab === "cargar" && (
             <UploadTab form={parseUploadForm(form)} data={await loadUploadData()} />
           )}

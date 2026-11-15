@@ -1,0 +1,5 @@
+{
+  "crons": [
+    { "path": "/api/embeddings/process", "schedule": "0 6 * * *" }
+  ]
+}

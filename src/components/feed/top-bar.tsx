@@ -2,6 +2,7 @@
 
 import { useFeedUrl } from "@/components/feed/use-feed-url";
 import { FeedFilterPanel, type FilterGroup } from "@/components/feed/filter-panel";
+import { CameraButton } from "@/components/visual/camera-button";
 
 const SORT_OPTS = [
   { value: "relevant", label: "Relevante" },
@@ -11,7 +12,15 @@ const SORT_OPTS = [
 ] as const;
 
 // Barra superior del feed: búsqueda, botón "Filtros (n)" (abre el panel plegable) y orden.
-export function FeedTopBar({ groups, sort }: { groups: FilterGroup[]; sort: string }) {
+export function FeedTopBar({
+  groups,
+  sort,
+  isLoggedIn = false,
+}: {
+  groups: FilterGroup[];
+  sort: string;
+  isLoggedIn?: boolean;
+}) {
   const { searchParams, setQuery, setSort } = useFeedUrl();
 
   return (
@@ -22,7 +31,7 @@ export function FeedTopBar({ groups, sort }: { groups: FilterGroup[]; sort: stri
           const fd = new FormData(e.currentTarget);
           setQuery(String(fd.get("q") ?? ""));
         }}
-        className="flex-1"
+        className="flex flex-1 items-center gap-2"
       >
         <input
           key={searchParams.get("q") ?? ""}
@@ -33,6 +42,7 @@ export function FeedTopBar({ groups, sort }: { groups: FilterGroup[]; sort: stri
           aria-label="Buscar"
           className="glass-input w-full rounded-full px-4 py-2 text-sm text-ink placeholder:text-ink/40"
         />
+        <CameraButton isLoggedIn={isLoggedIn} />
       </form>
       <div className="flex items-center gap-2">
         <FeedFilterPanel groups={groups} />

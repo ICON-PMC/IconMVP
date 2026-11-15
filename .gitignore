@@ -48,3 +48,18 @@ CLAUDE.md
 .mcp.json
 # catálogos exportados de las marcas (fotos y precios ajenos: no van al repo)
 /catalog-export/
+
+# Modelos de visión descargados (spec 005); el de producción vive en R2
+/.models/
+
+# Spec Kit: constitución, roadmap y plantillas son internos (el repo es público). Solo local.
+/.specify/
+
+# Specs de Spec Kit (spec, plan, tareas, pilotos): internos, el repo es público. Solo local.
+/specs/
+
+# Docs internos del equipo (el repo es público). Solo local.
+/docs/
+/HANDOFF.md
+/TODO.md
+/.claude/
