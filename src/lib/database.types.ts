@@ -410,6 +410,11 @@ export type Database = {
         Returns: { id: string; similarity: number }[];
       };
       photo_search_quota: { Args: { p_requester: string }; Returns: number };
+      similar_garments: {
+        Args: { p_garment_id: string; p_limit?: number | null; p_min?: number | null };
+        Returns: { id: string; similarity: number }[];
+      };
+      visual_index_status: { Args: Record<string, never>; Returns: { status: string; n: number }[] };
       color_filter_options: {
         Args: Record<string, never>;
         Returns: { slug: string; name: string; hex: string | null; uses: number }[];

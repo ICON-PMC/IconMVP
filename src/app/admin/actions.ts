@@ -1,5 +1,6 @@
 "use server";
 
+import { scheduleEmbeddings } from "@/lib/visual/schedule";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
@@ -108,6 +109,7 @@ export async function createGarment(formData: FormData) {
     await supabase
       .from("garment_images")
       .insert({ garment_id: garment.id, cf_image_id: img.key, bytes: img.bytes, position: 0 });
+    scheduleEmbeddings([garment.id]); // búsqueda por foto (spec 005)
   }
 
   revalidatePath("/admin");
@@ -194,6 +196,7 @@ async function reviewBrand(
     return { ok: false, error: "No se pudo completar la acción. Intenta de nuevo." };
   }
 
+  if (fn === "approve_brand") scheduleEmbeddings(); // sus prendas acaban de publicarse (spec 005)
   revalidatePath("/admin");
   return { ok: true };
 }

@@ -162,6 +162,51 @@ export default async function FeedPage({ searchParams }: { searchParams: SearchP
     );
   }
 
+  // ===================== "Más como esta" completo (spec 005, US4) =====================
+  if (typeof sp.similar === "string" && /^[0-9a-f-]{36}$/i.test(sp.similar)) {
+    const { data: hits } = await supabase.rpc("similar_garments", {
+      p_garment_id: sp.similar,
+      p_limit: 48,
+      p_min: 0,
+    });
+    const order = new Map((hits ?? []).map((h, i) => [h.id, i]));
+    const rows = (
+      await fetchFeedItemsByIds(supabase, "garment", (hits ?? []).map((h) => h.id), f)
+    ).sort((a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0));
+    return (
+      <Shell
+        groups={[occasionGroup, cityGroup, priceGroup, categoryGroup, styleGroup, colorGroup]}
+        sort={sort}
+        suggestions={null}
+      >
+        <p className="mb-4 text-sm text-ink/60">
+          Prendas parecidas a la que estabas viendo.{" "}
+          <Link href={`/prenda/${sp.similar}`} className="font-medium text-coral hover:underline">
+            Volver a la prenda
+          </Link>
+        </p>
+        {rows.length === 0 ? (
+          <EmptyState text="Ninguna prenda parecida cumple esos filtros." clearHref={`/feed?similar=${sp.similar}`} />
+        ) : (
+          <div className="columns-2 gap-4 md:columns-3">
+            {rows.map((item) => (
+              <FeedCard
+                key={item.id}
+                item={item}
+                tagNames={tagNames}
+                saved={saved.garments.has(item.id)}
+                liked={liked.garments.has(item.id)}
+                isLoggedIn={isLoggedIn}
+                path="/feed"
+                from="similar"
+              />
+            ))}
+          </div>
+        )}
+      </Shell>
+    );
+  }
+
   // ===================== Modo búsqueda: pestañas Todo / Prendas / Outfits / Marcas =====================
   if (q) {
     const userCity = session?.profile?.home_city_id ?? undefined;
