@@ -24,8 +24,10 @@ async function resizeAndUpload(
     .webp({ quality: 80 })
     .toBuffer();
   if (opts.enforceQuotaFor) await assertStorageQuota(opts.enforceQuotaFor, out.length);
-  const key = `${keyPrefix}/0.webp`;
-  await uploadToR2(key, out, "image/webp");
+  // Clave única en cada subida (spec 006, US5): las fotos se sirven con caché larga e inmutable, así
+  // que una clave nunca se reutiliza; reemplazar una foto = clave nueva + borrar la anterior.
+  const key = `${keyPrefix}/${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}.webp`;
+  await uploadToR2(key, out, "image/webp", { immutable: true });
   const variantsReady = await uploadVariants(key, out);
   return { key, bytes: out.length, variantsReady };
 }

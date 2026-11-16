@@ -21,7 +21,7 @@ export async function uploadVariants(mainKey: string, mainBuffer: Buffer): Promi
           .resize({ width: w, withoutEnlargement: true })
           .webp({ quality: 78 })
           .toBuffer();
-        await uploadToR2(key, out, "image/webp");
+        await uploadToR2(key, out, "image/webp", { immutable: true });
         return true;
       }),
     );

@@ -15,7 +15,7 @@ export function imageUrl(
 
 // ── Variantes (spec 006) ─────────────────────────────────────────────
 // Cada foto en R2 existe en 1280 px (la clave principal) y en dos tamaños menores nombrados por
-// convención: `a/b/0.webp` → `a/b/0.w320.webp` y `a/b/0.w640.webp`. La base solo guarda la principal.
+// convención: `a/b/x.webp` → `a/b/x.w320.webp` y `a/b/x.w640.webp`. La base solo guarda la principal.
 export const IMAGE_VARIANT_WIDTHS = [320, 640] as const;
 export const IMAGE_MAIN_WIDTH = 1280;
 export type VariantWidth = (typeof IMAGE_VARIANT_WIDTHS)[number];

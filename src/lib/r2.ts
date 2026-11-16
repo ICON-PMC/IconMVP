@@ -20,6 +20,9 @@ export async function uploadToR2(
   key: string,
   body: Uint8Array | Buffer | ArrayBuffer | string,
   contentType: string,
+  // `immutable`: caché de un año en navegador y CDN (spec 006). Solo para claves que nunca se
+  // reutilizan (fotos publicadas); nunca para artefactos temporales ni el modelo visual.
+  opts: { immutable?: boolean } = {},
 ): Promise<string> {
   const { endpoint, bucket, accessKeyId, secretAccessKey } = r2Config();
 
@@ -43,7 +46,10 @@ export async function uploadToR2(
   const signer = new AwsV4Signer({
     url,
     method: "PUT",
-    headers: { "Content-Type": contentType },
+    headers: {
+      "Content-Type": contentType,
+      ...(opts.immutable ? { "Cache-Control": "public, max-age=31536000, immutable" } : {}),
+    },
     body: bytes,
     accessKeyId,
     secretAccessKey,
