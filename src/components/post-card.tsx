@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { Views } from "@/lib/database.types";
 import { priceLabel } from "@/lib/taxonomy";
-import { imageUrl } from "@/lib/images";
+import { R2Image, SIZES } from "@/components/r2-image";
 import { SaveButton } from "@/components/save-button";
 import { LikeButton } from "@/components/like-button";
 
@@ -26,7 +26,6 @@ export function PostCard({
   const chips = [...post.occasions, ...post.styles]
     .map((slug) => tagNames[slug] ?? slug)
     .slice(0, 4);
-  const img = imageUrl(post.image);
 
   return (
     <article className="mb-4 break-inside-avoid">
@@ -35,15 +34,7 @@ export function PostCard({
           href={`/post/${post.id}`}
           className="block"
         >
-          {img && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={img}
-              alt={post.caption ?? post.brand_name}
-              loading="lazy"
-              className="block w-full"
-            />
-          )}
+          <R2Image image={post.image} alt={post.caption ?? post.brand_name ?? ""} sizes={SIZES.card} className="block aspect-[4/5] w-full object-cover" />
           <div className="p-3 pb-1">
             <div className="flex items-center justify-between gap-2">
               <span className="flex items-center gap-1 text-sm font-medium text-forest">

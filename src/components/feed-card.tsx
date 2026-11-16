@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { FeedItem } from "@/lib/feed";
 import { priceLabel } from "@/lib/taxonomy";
-import { imageUrl } from "@/lib/images";
+import { R2Image, SIZES } from "@/components/r2-image";
 import { SaveButton } from "@/components/save-button";
 import { LikeButton } from "@/components/like-button";
 
@@ -27,6 +27,7 @@ export function FeedCard({
   isLoggedIn = false,
   path = "/feed",
   from,
+  priority = false,
 }: {
   item: FeedItem;
   tagNames: Record<string, string>;
@@ -36,11 +37,12 @@ export function FeedCard({
   path?: string;
   /** Origen para atribuir el clic saliente en la ficha (búsqueda por foto, "más como esta"). */
   from?: "photo_search" | "similar";
+  /** Primeras tarjetas de la pantalla: la foto se pide de inmediato y con prioridad (spec 006). */
+  priority?: boolean;
 }) {
   const base = item.kind === "post" ? `/post/${item.id}` : `/prenda/${item.id}`;
   const href = from ? `${base}?from=${from}` : base;
   const price = priceLabel(item.min_price, item.max_price);
-  const img = imageUrl(item.image);
   const ratio = cardRatio(item);
   const tags = [...item.occasions, ...item.styles]
     .map((slug) => tagNames[slug] ?? slug)
@@ -51,15 +53,7 @@ export function FeedCard({
       <div className="glass transform-gpu overflow-hidden rounded-2xl">
         <div className="relative w-full overflow-hidden bg-white/40" style={{ aspectRatio: `1 / ${ratio}` }}>
           <Link href={href} aria-label={item.title ?? item.brand_name} className="absolute inset-0 block">
-            {img && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={img}
-                alt={item.title ?? item.brand_name}
-                loading="lazy"
-                className="block h-full w-full object-cover"
-              />
-            )}
+            <R2Image image={item.image} alt={item.title ?? item.brand_name} sizes={SIZES.card} priority={priority} className="block h-full w-full object-cover" />
           </Link>
           {/* Acciones sobre la imagen, fuera del <Link> (un <button> dentro de un <a> es HTML
               inválido y el clic navegaría). */}

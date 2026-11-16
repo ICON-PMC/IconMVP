@@ -10,12 +10,18 @@ export async function GET(req: NextRequest) {
   const { filters, sort } = parseFeedParams(sp);
   const offset = Number(sp.offset ?? 0);
 
-  const [{ items, nextOffset, error }, saved, liked, likedGarments] = await Promise.all([
-    getFeedPage(filters, sort, Number.isFinite(offset) ? offset : 0, FEED_PAGE_SIZE),
-    getMySavedIds(),
-    getMyLikedPostIds(),
-    getMyLikedGarmentIds(),
-  ]);
+  const [{ items, nextOffset, error }, saved, liked, likedGarments] =
+    await Promise.all([
+      getFeedPage(
+        filters,
+        sort,
+        Number.isFinite(offset) ? offset : 0,
+        FEED_PAGE_SIZE,
+      ),
+      getMySavedIds(),
+      getMyLikedPostIds(),
+      getMyLikedGarmentIds(),
+    ]);
 
   if (error) {
     return NextResponse.json(
@@ -24,12 +30,16 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  return NextResponse.json({
-    items,
-    nextOffset,
-    savedPosts: [...saved.posts],
-    savedGarments: [...saved.garments],
-    likedPosts: [...liked],
-    likedGarments: [...likedGarments],
-  });
+  return NextResponse.json(
+    {
+      items,
+      nextOffset,
+      savedPosts: [...saved.posts],
+      savedGarments: [...saved.garments],
+      likedPosts: [...liked],
+      likedGarments: [...likedGarments],
+    },
+    // Datos de la persona (guardados, likes): nunca en caché compartida (spec 006, FR-018).
+    { headers: { "Cache-Control": "private, no-store" } },
+  );
 }

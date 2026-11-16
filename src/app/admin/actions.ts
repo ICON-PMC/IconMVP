@@ -108,7 +108,7 @@ export async function createGarment(formData: FormData) {
   if (img) {
     await supabase
       .from("garment_images")
-      .insert({ garment_id: garment.id, cf_image_id: img.key, bytes: img.bytes, position: 0 });
+      .insert({ garment_id: garment.id, cf_image_id: img.key, bytes: img.bytes, variants_ready: img.variantsReady, position: 0 });
     scheduleEmbeddings([garment.id]); // búsqueda por foto (spec 005)
   }
 
@@ -159,7 +159,7 @@ export async function createPost(formData: FormData) {
   if (img) {
     await supabase
       .from("post_images")
-      .insert({ post_id: post.id, cf_image_id: img.key, bytes: img.bytes, position: 0 });
+      .insert({ post_id: post.id, cf_image_id: img.key, bytes: img.bytes, variants_ready: img.variantsReady, position: 0 });
   }
 
   revalidatePath("/admin");

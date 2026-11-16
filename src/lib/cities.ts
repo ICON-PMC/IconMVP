@@ -1,6 +1,8 @@
-import type { createClient } from "@/lib/supabase/server";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@/lib/database.types";
 
-type Supabase = Awaited<ReturnType<typeof createClient>>;
+// Cliente de sesión o cliente público (spec 006: las opciones de filtros se leen sin cookies).
+type Supabase = SupabaseClient<Database>;
 
 /** Una ciudad lista para `CityCombobox`: `value` es el id (o el slug en filtros por URL). */
 export type CityOption = { value: string; label: string };

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { formatCop } from "@/lib/taxonomy";
-import { imageUrl } from "@/lib/images";
+import { R2Image, SIZES } from "@/components/r2-image";
 import { SaveButton } from "@/components/save-button";
 import { LikeButton } from "@/components/like-button";
 
@@ -27,7 +27,6 @@ export function GarmentCard({
   path?: string;
   sourcePostId?: string;
 }) {
-  const img = imageUrl(image);
   return (
     <article className="break-inside-avoid">
       <div className="glass transform-gpu overflow-hidden rounded-2xl">
@@ -35,15 +34,7 @@ export function GarmentCard({
           href={`/prenda/${id}`}
           className="block"
         >
-          {img && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={img}
-              alt={title}
-              loading="lazy"
-              className="block aspect-[3/4] w-full object-cover"
-            />
-          )}
+          <R2Image image={image} alt={title} sizes={SIZES.card} className="block aspect-[3/4] w-full object-cover" />
           <div className="p-3 pb-1">
             <p className="text-sm font-medium text-forest">{title}</p>
             {price_cop != null && (

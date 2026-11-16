@@ -42,27 +42,40 @@ function splitColumns(items: FeedItem[], count: number): FeedItem[][] {
   return cols;
 }
 
-// Grilla masonry del feed mixto con scroll infinito. Recibe la primera página ya
-// renderizada en el servidor y pide el resto a /api/feed con los mismos filtros/orden.
+const BATCH = 24;
+
+// Grilla masonry con scroll infinito. Recibe la primera tanda ya renderizada en el servidor y pide
+// el resto de una de dos formas:
+//  - feed: a /api/feed con los mismos filtros/orden y `offset`;
+//  - búsqueda (`pendingIds`): el servidor ya ordenó todos los resultados y aquí se piden sus filas
+//    completas por tandas de 24 a /api/feed/items (spec 006: la página no manda el catálogo entero).
 // Se remonta (key derivada de los searchParams, puesta por quien la usa) al cambiar filtros.
 export function FeedGrid({
   initialItems,
   initialNextOffset,
+  pendingIds,
   initialSaved,
   initialLiked,
   isLoggedIn,
   tagNames,
+  emptyState,
 }: {
   initialItems: FeedItem[];
-  initialNextOffset: number | null;
+  initialNextOffset?: number | null;
+  /** Ids ya ordenados que faltan por mostrar (modo búsqueda). */
+  pendingIds?: string[];
   initialSaved: SavedIds;
   initialLiked: LikedIds;
   isLoggedIn: boolean;
   tagNames: Record<string, string>;
+  /** Contenido cuando no hay resultados (por defecto, el aviso del feed). */
+  emptyState?: React.ReactNode;
 }) {
   const searchParams = useSearchParams();
   const [items, setItems] = useState(initialItems);
-  const [nextOffset, setNextOffset] = useState(initialNextOffset);
+  const [nextOffset, setNextOffset] = useState<number | null>(
+    pendingIds ? (pendingIds.length ? 0 : null) : (initialNextOffset ?? null),
+  );
   const [saved, setSaved] = useState(initialSaved);
   const [liked, setLiked] = useState(initialLiked);
   const [loading, setLoading] = useState(false);
@@ -76,9 +89,19 @@ export function FeedGrid({
     setLoading(true);
     setError(null);
     try {
-      const params = new URLSearchParams(searchParams.toString());
-      params.set("offset", String(nextOffset));
-      const res = await fetch(`/api/feed?${params}`);
+      let url: string;
+      let following: number | null;
+      if (pendingIds) {
+        const ids = pendingIds.slice(nextOffset, nextOffset + BATCH);
+        url = `/api/feed/items?ids=${ids.join(",")}`;
+        following = nextOffset + BATCH < pendingIds.length ? nextOffset + BATCH : null;
+      } else {
+        const params = new URLSearchParams(searchParams.toString());
+        params.set("offset", String(nextOffset));
+        url = `/api/feed?${params}`;
+        following = null;
+      }
+      const res = await fetch(url);
       if (!res.ok) throw new Error("request-failed");
       const data = await res.json();
       setItems((prev) => {
@@ -94,13 +117,13 @@ export function FeedGrid({
         posts: new Set([...prev.posts, ...((data.likedPosts as string[]) ?? [])]),
         garments: new Set([...prev.garments, ...((data.likedGarments as string[]) ?? [])]),
       }));
-      setNextOffset(data.nextOffset ?? null);
+      setNextOffset(pendingIds ? following : (data.nextOffset ?? null));
     } catch {
       setError("No pudimos cargar más contenido. Intenta de nuevo.");
     } finally {
       setLoading(false);
     }
-  }, [loading, nextOffset, searchParams]);
+  }, [loading, nextOffset, searchParams, pendingIds]);
 
   useEffect(() => {
     const el = sentinelRef.current;
@@ -116,6 +139,7 @@ export function FeedGrid({
   }, [nextOffset, loadMore]);
 
   if (items.length === 0) {
+    if (emptyState) return <>{emptyState}</>;
     return (
       <div className="glass rounded-2xl px-6 py-16 text-center">
         <p className="text-sm text-ink/60">
@@ -133,7 +157,7 @@ export function FeedGrid({
       <div className="flex items-start gap-4">
         {columns.map((col, i) => (
           <div key={i} className="min-w-0 flex-1">
-            {col.map((item) => (
+            {col.map((item, row) => (
               <FeedCard
                 key={itemKey(item)}
                 item={item}
@@ -142,16 +166,25 @@ export function FeedGrid({
                 liked={item.kind === "post" ? liked.posts.has(item.id) : liked.garments.has(item.id)}
                 isLoggedIn={isLoggedIn}
                 path="/feed"
+                // Primera fila de cada columna y la segunda en las dos primeras: ~4 fotos visibles al cargar.
+                priority={row === 0 || (row === 1 && i < 2)}
               />
             ))}
           </div>
         ))}
       </div>
       {nextOffset != null && (
-        <div ref={sentinelRef} className="flex justify-center py-8">
-          <p className="text-sm text-ink/40">
-            {error ?? (loading ? "Cargando más…" : "")}
-          </p>
+        <div ref={sentinelRef} className="flex flex-col items-center gap-2 py-8" aria-live="polite">
+          <p className="text-sm text-ink/40">{error ?? (loading ? "Cargando más…" : "")}</p>
+          {error && (
+            <button
+              type="button"
+              onClick={() => loadMore()}
+              className="glass-input min-h-11 rounded-full px-4 text-sm font-medium text-ink/80 hover:bg-white/70"
+            >
+              Reintentar
+            </button>
+          )}
         </div>
       )}
       {nextOffset == null && (

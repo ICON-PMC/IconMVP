@@ -1,7 +1,11 @@
+import { uploadVariants } from "@/lib/image-variants";
 import { uploadToR2 } from "@/lib/r2";
 import { assertStorageQuota } from "@/lib/storage-quota";
 
-export type UploadedImage = { key: string; bytes: number };
+// `bytes` es el peso de la imagen principal (lo único que cuenta para la cuota). `variantsReady`
+// indica si también quedaron las variantes de 320 y 640 px (spec 006): guardarlo en
+// `variants_ready` / `logo_variants_ready`; si es false, el cron diario las completa.
+export type UploadedImage = { key: string; bytes: number; variantsReady: boolean };
 
 // Si se pasa, la subida se bloquea cuando supera la cuota de esa marca (solo subidas de la
 // propia marca; el staff sube en su nombre sin bloqueo, pero el peso igual cuenta).
@@ -22,7 +26,8 @@ async function resizeAndUpload(
   if (opts.enforceQuotaFor) await assertStorageQuota(opts.enforceQuotaFor, out.length);
   const key = `${keyPrefix}/0.webp`;
   await uploadToR2(key, out, "image/webp");
-  return { key, bytes: out.length };
+  const variantsReady = await uploadVariants(key, out);
+  return { key, bytes: out.length, variantsReady };
 }
 
 // Procesa un File de un formulario (resize a WebP) y lo sube a R2; devuelve clave y peso, o null.

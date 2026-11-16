@@ -8,7 +8,7 @@ import { cookies } from "next/headers";
 import { MANAGED_BRAND_COOKIE, quotaBrandId, requireBrandOwner } from "@/lib/auth";
 import { saveBrandCoverImage } from "@/lib/brand-cover";
 import { brandNameMatches, deleteBrandWithImages } from "@/lib/brand-delete";
-import { uploadImageField, uploadImageFromUrl } from "@/lib/upload";
+import { type UploadedImage, uploadImageField, uploadImageFromUrl } from "@/lib/upload";
 import { StorageQuotaError } from "@/lib/storage-quota";
 import { deleteFromR2 } from "@/lib/r2";
 import { imageKeysFor } from "@/lib/image-keys";
@@ -195,7 +195,7 @@ export async function createBrandGarment(formData: FormData) {
   if (img) {
     await supabase
       .from("garment_images")
-      .insert({ garment_id: garment.id, cf_image_id: img.key, bytes: img.bytes, position: 0 });
+      .insert({ garment_id: garment.id, cf_image_id: img.key, bytes: img.bytes, variants_ready: img.variantsReady, position: 0 });
     scheduleEmbeddings([garment.id]); // búsqueda por foto (spec 005)
   }
 
@@ -291,9 +291,9 @@ async function replaceCoverImage(
   supabase: Awaited<ReturnType<typeof createClient>>,
   kind: "garment" | "post",
   ownerId: string,
-  image: { key: string; bytes: number },
+  image: UploadedImage,
 ): Promise<string | null> {
-  const row = { cf_image_id: image.key, bytes: image.bytes };
+  const row = { cf_image_id: image.key, bytes: image.bytes, variants_ready: image.variantsReady };
   let oldKey: string | null = null;
   let error: { message: string } | null = null;
   if (kind === "garment") {
@@ -364,7 +364,7 @@ export async function createBrandPost(formData: FormData) {
   if (img) {
     await supabase
       .from("post_images")
-      .insert({ post_id: post.id, cf_image_id: img.key, bytes: img.bytes, position: 0 });
+      .insert({ post_id: post.id, cf_image_id: img.key, bytes: img.bytes, variants_ready: img.variantsReady, position: 0 });
   }
 
   revalidatePath("/marca/panel");
@@ -846,7 +846,7 @@ export async function importInstagramMedia(
       });
       await supabase
         .from("post_images")
-        .insert({ post_id: post.id, cf_image_id: img.key, bytes: img.bytes, position: 0 });
+        .insert({ post_id: post.id, cf_image_id: img.key, bytes: img.bytes, variants_ready: img.variantsReady, position: 0 });
       created++;
     } catch (e) {
       if (e instanceof StorageQuotaError) {

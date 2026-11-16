@@ -3,9 +3,9 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { SiteHeader } from "@/components/site-header";
 import { Aurora } from "@/components/aurora";
+import { R2Image, SIZES } from "@/components/r2-image";
 import { GlassCard } from "@/components/glass-card";
 import { formatCop, priceLabel } from "@/lib/taxonomy";
-import { imageUrl } from "@/lib/images";
 import { getMySavedIds } from "@/lib/saves";
 import { SaveButton } from "@/components/save-button";
 import { LikeButton } from "@/components/like-button";
@@ -27,43 +27,37 @@ export default async function PostPage({
     .maybeSingle();
   if (!header) notFound();
 
-  const { data: images } = await supabase
-    .from("post_images")
-    .select("cf_image_id, position")
-    .eq("post_id", id)
-    .order("position");
-
-  const { data: items } = await supabase
-    .from("post_items")
-    .select("garment_id, size_id")
-    .eq("post_id", id);
+  // Consultas independientes en paralelo (spec 006, US4).
+  const [{ data: images }, { data: items }] = await Promise.all([
+    supabase.from("post_images").select("cf_image_id, position").eq("post_id", id).order("position"),
+    supabase.from("post_items").select("garment_id, size_id").eq("post_id", id),
+  ]);
 
   const garmentIds = (items ?? []).map((i) => i.garment_id);
   const sizeIds = (items ?? [])
     .map((i) => i.size_id)
     .filter((x): x is string => Boolean(x));
 
-  const garments = garmentIds.length
-    ? ((
-        await supabase
+  const [garments, gimages, sizes] = await Promise.all([
+    garmentIds.length
+      ? supabase
           .from("garments")
           .select("id, title, price_cop, product_url, color, fabric, brand_id")
           .in("id", garmentIds)
-      ).data ?? [])
-    : [];
-  const gimages = garmentIds.length
-    ? ((
-        await supabase
+          .then((r) => r.data ?? [])
+      : Promise.resolve([]),
+    garmentIds.length
+      ? supabase
           .from("garment_images")
           .select("garment_id, cf_image_id, position")
           .in("garment_id", garmentIds)
           .order("position")
-      ).data ?? [])
-    : [];
-  const sizes = sizeIds.length
-    ? ((await supabase.from("sizes").select("id, label").in("id", sizeIds)).data ??
-      [])
-    : [];
+          .then((r) => r.data ?? [])
+      : Promise.resolve([]),
+    sizeIds.length
+      ? supabase.from("sizes").select("id, label").in("id", sizeIds).then((r) => r.data ?? [])
+      : Promise.resolve([]),
+  ]);
   const brandIds = [...new Set(garments.map((g) => g.brand_id))];
   const itemBrands = brandIds.length
     ? ((await supabase.from("brands").select("id, name, slug").in("id", brandIds))
@@ -107,12 +101,13 @@ export default async function PostPage({
           {/* Galería */}
           <div className="flex flex-col gap-4">
             {gallery.map((src, idx) => (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
+              <R2Image
                 key={idx}
-                src={imageUrl(src) ?? ""}
-                alt={header.caption ?? header.brand_name}
-                className="w-full rounded-2xl"
+                image={src}
+                alt={header.caption ?? header.brand_name ?? ""}
+                sizes={SIZES.detail}
+                priority={idx === 0}
+                className="aspect-[4/5] w-full rounded-2xl bg-white/40 object-cover"
               />
             ))}
           </div>
@@ -175,19 +170,12 @@ export default async function PostPage({
               {(items ?? []).map((it) => {
                 const g = garments.find((x) => x.id === it.garment_id);
                 if (!g) return null;
-                const img = imageUrl(firstImageOf(g.id));
+                const img = firstImageOf(g.id);
                 const size = sizeLabel(it.size_id);
                 const brand = brandOf(g.brand_id);
                 return (
                   <GlassCard key={g.id} className="flex gap-3 p-3">
-                    {img && (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={img}
-                        alt={g.title}
-                        className="h-24 w-20 flex-none rounded-xl object-cover"
-                      />
-                    )}
+                    <R2Image image={img} alt={g.title} sizes="80px" className="h-24 w-20 flex-none rounded-xl object-cover" />
                     <div className="flex flex-1 flex-col">
                       <Link
                         href={`/prenda/${g.id}`}

@@ -32,62 +32,54 @@ export default async function BrandPage({
   const instagramHandle = normalizeInstagramHandle(brand.instagram);
   const instagramHref = instagramUrl(brand.instagram);
 
-  let cityName: string | null = null;
-  if (brand.city_id) {
-    const { data: city } = await supabase
-      .from("cities")
-      .select("name, department")
-      .eq("id", brand.city_id)
-      .maybeSingle();
-    cityName = city ? cityLabel(city.name, city.department) : null;
-  }
+  // Consultas independientes en paralelo (spec 006, US4).
+  const [city, { data: brandTags }, { data: posts }, { data: garments }, saved, followedBrandIds, likedPostIds, likedGarmentIds, session] =
+    await Promise.all([
+      brand.city_id
+        ? supabase.from("cities").select("name, department").eq("id", brand.city_id).maybeSingle().then((r) => r.data)
+        : Promise.resolve(null),
+      supabase.from("brand_tags").select("tag_id").eq("brand_id", brand.id),
+      supabase
+        .from("post_feed")
+        .select("*")
+        .eq("brand_slug", slug)
+        .order("published_at", { ascending: false, nullsFirst: false }),
+      supabase
+        .from("garments")
+        .select("id, title, price_cop")
+        .eq("brand_id", brand.id)
+        .eq("status", "published")
+        .order("created_at", { ascending: false }),
+      getMySavedIds(),
+      getMyFollowedBrandIds(),
+      getMyLikedPostIds(),
+      getMyLikedGarmentIds(),
+      getCurrentUser(),
+    ]);
+  const cityName = city ? cityLabel(city.name, city.department) : null;
 
-  const { data: brandTags } = await supabase
-    .from("brand_tags")
-    .select("tag_id")
-    .eq("brand_id", brand.id);
   const styleIds = (brandTags ?? []).map((t) => t.tag_id);
-  const styles = styleIds.length
-    ? ((await supabase.from("tags").select("name, slug").in("id", styleIds).order("name")).data ?? [])
-    : [];
-
-  const { data: posts } = await supabase
-    .from("post_feed")
-    .select("*")
-    .eq("brand_slug", slug)
-    .order("published_at", { ascending: false, nullsFirst: false });
-
-  const { data: garments } = await supabase
-    .from("garments")
-    .select("id, title, price_cop")
-    .eq("brand_id", brand.id)
-    .eq("status", "published")
-    .order("created_at", { ascending: false });
-
   const gids = (garments ?? []).map((g) => g.id);
-  const gimages = gids.length
-    ? ((
-        await supabase
+  const [styles, gimages, garmentLikeCounts] = await Promise.all([
+    styleIds.length
+      ? supabase.from("tags").select("name, slug").in("id", styleIds).order("name").then((r) => r.data ?? [])
+      : Promise.resolve([]),
+    gids.length
+      ? supabase
           .from("garment_images")
           .select("garment_id, cf_image_id, position")
           .in("garment_id", gids)
           .order("position")
-      ).data ?? [])
-    : [];
+          .then((r) => r.data ?? [])
+      : Promise.resolve([]),
+    getGarmentLikeCounts(gids),
+  ]);
   const imageOf = (gid: string) =>
     gimages.find((x) => x.garment_id === gid)?.cf_image_id ?? null;
 
-  const [saved, followedBrandIds, likedPostIds, likedGarmentIds, session] = await Promise.all([
-    getMySavedIds(),
-    getMyFollowedBrandIds(),
-    getMyLikedPostIds(),
-    getMyLikedGarmentIds(),
-    getCurrentUser(),
-  ]);
   const path = `/marca/${slug}`;
   const isFollowing = followedBrandIds.has(brand.id);
   const isLoggedIn = Boolean(session?.profile);
-  const garmentLikeCounts = await getGarmentLikeCounts(gids);
 
   return (
     <>
