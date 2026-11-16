@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Archivo, Familjen_Grotesk } from "next/font/google";
 import { BadgeCheckIcon, SearchXIcon } from "lucide-react";
 import { Avatar } from "@/components/avatar";
 import { Chip } from "@/components/chip";
@@ -11,22 +10,10 @@ import { Price } from "@/components/price";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { requireStaff } from "@/lib/auth";
-import { displayFont } from "@/lib/fonts";
-import { cn } from "@/lib/utils";
 import { ButtonDemo, ChipDemo, FieldDemo, SheetDemo } from "./demos";
 
 // Guía de estilo viva del sistema "tropical plano" (spec 007, US1). Solo equipo; sin indexar.
 export const metadata: Metadata = { title: "Guía de estilo · Icon", robots: { index: false } };
-
-// Candidatas de tipografía para comparar (solo se cargan en esta página).
-const archivo = Archivo({ subsets: ["latin"], weight: "variable", display: "swap", variable: "--font-display-family" });
-const familjen = Familjen_Grotesk({ subsets: ["latin"], weight: "variable", display: "swap", variable: "--font-display-family" });
-const FONTS = {
-  bricolage: { label: "Bricolage Grotesque", font: displayFont, note: "Grotesca con carácter; la más cercana a la referencia 1." },
-  archivo: { label: "Archivo", font: archivo, note: "Más neutra y compacta." },
-  familjen: { label: "Familjen Grotesk", font: familjen, note: "Más suave, cercana a la referencia 2." },
-} as const;
-type FontKey = keyof typeof FONTS;
 
 // ── Contraste WCAG 2.1, calculado aquí para que la guía no mienta ─────────────
 function lum(hex: string) {
@@ -92,20 +79,11 @@ function Section({ id, title, children }: { id: string; title: string; children:
   );
 }
 
-export default async function StyleGuidePage({ searchParams }: { searchParams: Promise<{ fuente?: string }> }) {
+export default async function StyleGuidePage() {
   await requireStaff();
-  const { fuente } = await searchParams;
-  const key: FontKey = fuente && fuente in FONTS ? (fuente as FontKey) : "bricolage";
-  const chosen = FONTS[key];
 
   return (
-    // La variable --font-display-family de la candidata elegida se aplica a toda la guía.
-    <div
-      className={cn(chosen.font.variable, "min-h-dvh bg-surface text-text")}
-      // Las variables CSS se resuelven donde se declaran: hay que volver a declarar --font-display
-      // aquí para que tome la candidata de este contenedor y no la de la raíz.
-      style={{ "--font-display": "var(--font-display-family), var(--font-geist-sans), system-ui, sans-serif" } as React.CSSProperties}
-    >
+    <div className="min-h-dvh bg-surface text-text">
       <div className="mx-auto w-full max-w-5xl px-4 py-8">
         <PageHeader
           title="Guía de estilo"
@@ -150,17 +128,9 @@ export default async function StyleGuidePage({ searchParams }: { searchParams: P
         </Section>
 
         <Section id="tipografia" title="Tipografía">
-          <div className="mb-6 flex flex-wrap items-center gap-2">
-            <span className="text-label">Candidata:</span>
-            {(Object.keys(FONTS) as FontKey[]).map((k) => (
-              <Chip key={k} href={`/admin/estilo?fuente=${k}#tipografia`} selected={k === key}>
-                {FONTS[k].label}
-              </Chip>
-            ))}
-          </div>
           <p className="mb-6 text-sm text-text-muted">
-            {chosen.label}: {chosen.note} Los títulos usan esta familia; el texto sigue en Geist. El
-            wordmark <span className="wordmark text-2xl">ICON</span> sigue en serif.
+            Títulos: Bricolage Grotesque (elegida por la dueña el 2026-11-16). Texto: Geist. El wordmark{" "}
+            <span className="wordmark text-2xl">ICON</span> sigue en serif.
           </p>
           <div className="flex flex-col gap-5">
             <p className="text-display">Moda colombiana, hecha con intención</p>
