@@ -293,6 +293,8 @@ export default async function FeedPage({ searchParams }: { searchParams: SearchP
           {rows.map((b) => (
             <BrandCard
               key={b.id}
+              id={b.id}
+              logo={b.logo_url}
               slug={b.slug}
               name={b.name}
               bio={b.bio}

@@ -21,19 +21,22 @@ export function Avatar({
   seed,
   size = 32,
   className,
+  priority = false,
 }: {
   image: string | null | undefined;
   name: string | null;
   seed: string;
   size?: 24 | 32 | 48 | 96;
   className?: string;
+  /** Avatar visible al cargar (cabecera de perfil o marca): se pide de inmediato. */
+  priority?: boolean;
 }) {
   const box = cn("relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full", className);
   const style = { width: size, height: size };
   if (image)
     return (
       <span className={box} style={style}>
-        <R2Image image={image} alt="" sizes={`${size}px`} className="size-full object-cover" />
+        <R2Image image={image} alt="" sizes={`${size}px`} priority={priority} className="size-full object-cover" />
       </span>
     );
   return (

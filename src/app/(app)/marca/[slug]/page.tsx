@@ -1,10 +1,13 @@
 import { notFound } from "next/navigation";
 import { cityLabel } from "@/lib/cities";
 import { createClient } from "@/lib/supabase/server";
-import { GlassCard } from "@/components/glass-card";
 import { Avatar } from "@/components/avatar";
 import { Badge } from "@/components/ui/badge";
-import { BadgeCheckIcon } from "lucide-react";
+import { ArrowUpRightIcon, BadgeCheckIcon, ImageIcon, ShirtIcon } from "lucide-react";
+import { Chip } from "@/components/chip";
+import { EmptyState } from "@/components/empty-state";
+import { LinkTabs } from "@/components/link-tabs";
+import { Button } from "@/components/ui/button";
 import { PostCard } from "@/components/post-card";
 import { BrandGarments } from "@/components/brand-garments";
 import { FollowButton } from "@/components/follow-button";
@@ -15,10 +18,14 @@ import { instagramUrl, normalizeInstagramHandle, normalizeUrl } from "@/lib/link
 
 export default async function BrandPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ tab?: string }>;
 }) {
   const { slug } = await params;
+  const { tab: tabParam } = await searchParams;
+  const tab = tabParam === "looks" ? "looks" : "prendas";
   const supabase = await createClient();
 
   const { data: brand } = await supabase
@@ -82,121 +89,99 @@ export default async function BrandPage({
   const isFollowing = followedBrandIds.has(brand.id);
   const isLoggedIn = Boolean(session?.profile);
 
-  return (
-    <>
-      <div className="mx-auto w-full max-w-5xl px-4 py-6">
+  const garmentCount = garments?.length ?? 0;
+  const lookCount = posts?.length ?? 0;
 
-        {/* Cabecera de marca */}
-        <GlassCard className="mt-6 p-6">
-          {/* Logo de la tienda (ajuste de la dueña, 2026-11-16): la imagen que la marca subió como
-              portada, en círculo. Sin imagen, iniciales sobre un color de acento. */}
-          <div className="flex items-center gap-4">
-            <Avatar image={brand.logo_url} name={brand.name} seed={brand.id} size={96} className="border border-line bg-surface-raised" />
-            <div className="min-w-0">
-              <div className="flex flex-wrap items-center gap-2">
-                <h1 className="text-h1 text-text">{brand.name}</h1>
-                {brand.is_verified && (
-                  <Badge variant="verified">
-                    <BadgeCheckIcon data-icon="inline-start" /> Verificada
-                  </Badge>
-                )}
-                {brand.is_sustainable && <Badge variant="neutral">Sostenible</Badge>}
-              </div>
-              {cityName && <p className="mt-1 text-sm text-text-muted">{cityName}</p>}
-            </div>
+  // Página de marca con estructura de perfil (spec 007, US4): logo, nombre, ciudad, estilos, seguir y
+  // enlaces; luego pestañas Prendas / Looks. La spec 009 reutiliza esta misma estructura para usuarios.
+  return (
+    <div className="mx-auto w-full max-w-6xl px-4 py-5 md:px-6">
+      <header className="surface overflow-hidden">
+        <div className="h-20 bg-surface-inverse md:h-28" aria-hidden />
+        <div className="px-5 pb-5 md:px-8 md:pb-7">
+          {/* Logo de la tienda (ajuste de la dueña, 2026-11-16). */}
+          <Avatar
+            image={brand.logo_url}
+            name={brand.name}
+            seed={brand.id}
+            size={96}
+            priority
+            className="-mt-12 border-4 border-surface-raised bg-surface-raised"
+          />
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <h1 className="text-h1 text-text">{brand.name}</h1>
+            {brand.is_verified && (
+              <Badge variant="verified">
+                <BadgeCheckIcon data-icon="inline-start" /> Verificada
+              </Badge>
+            )}
+            {brand.is_sustainable && <Badge variant="neutral">Sostenible</Badge>}
           </div>
-          {brand.bio && <p className="mt-3 max-w-xl text-ink/70">{brand.bio}</p>}
+          {cityName && <p className="mt-1 text-sm text-text-muted">{cityName}</p>}
+          {brand.bio && <p className="mt-3 max-w-2xl text-[15px] leading-6 text-text">{brand.bio}</p>}
           {styles.length > 0 && (
-            <ul aria-label="Estilos" className="mt-3 flex flex-wrap gap-1.5">
+            <ul aria-label="Estilos" className="mt-3 flex flex-wrap gap-x-2">
               {styles.map((s) => (
-                <li
-                  key={s.slug}
-                  className="rounded-full bg-white/50 px-2.5 py-0.5 text-xs text-forest-deep"
-                >
-                  {s.name}
+                <li key={s.slug}>
+                  <Chip variant="tag">{s.name}</Chip>
                 </li>
               ))}
             </ul>
           )}
-          <div className="mt-4 flex flex-wrap items-center gap-3 text-sm">
-            <FollowButton
-              brandId={brand.id}
-              slug={slug}
-              initialFollowing={isFollowing}
-              isLoggedIn={isLoggedIn}
-            />
+          <div className="mt-4 flex flex-wrap items-center gap-2">
+            <FollowButton brandId={brand.id} slug={slug} initialFollowing={isFollowing} isLoggedIn={isLoggedIn} />
             {storeUrl && (
-              <a
-                href={storeUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="rounded-full bg-forest px-4 py-2 font-medium text-white hover:bg-forest-deep"
-              >
-                Visitar tienda ↗
-              </a>
+              <Button render={<a href={storeUrl} target="_blank" rel="noopener noreferrer" />} nativeButton={false}>
+                Visitar tienda <ArrowUpRightIcon data-icon="inline-end" />
+              </Button>
             )}
             {instagramHref && instagramHandle && (
-              <a
-                href={instagramHref}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="glass-input rounded-full px-4 py-2 font-medium text-ink/80 hover:bg-white/70"
-              >
+              <Button variant="secondary" render={<a href={instagramHref} target="_blank" rel="noopener noreferrer" />} nativeButton={false}>
                 @{instagramHandle}
-              </a>
+              </Button>
             )}
           </div>
-        </GlassCard>
+        </div>
+      </header>
 
-        {/* Posts */}
-        <h2 className="mt-10 mb-4 text-sm font-medium uppercase tracking-wide text-ink/50">
-          Posts
-        </h2>
-        {posts && posts.length > 0 ? (
-          <div className="columns-2 gap-4 md:columns-3">
-            {posts.map((p) => (
-              <PostCard
-                key={p.id}
-                post={p}
-                saved={saved.posts.has(p.id)}
-                liked={likedPostIds.has(p.id)}
-                isLoggedIn={isLoggedIn}
-                path={path}
-              />
+      <LinkTabs
+        label="Contenido de la marca"
+        variant="underline"
+        active={tab}
+        className="mt-6 mb-5"
+        tabs={[
+          { id: "prendas", label: "Prendas", href: `/marca/${slug}`, badge: garmentCount },
+          { id: "looks", label: "Looks", href: `/marca/${slug}?tab=looks`, badge: lookCount },
+        ]}
+      />
+
+      {tab === "looks" ? (
+        lookCount > 0 ? (
+          <div className="columns-2 gap-3 md:columns-3 md:gap-4 lg:columns-4">
+            {posts!.map((p) => (
+              <PostCard key={p.id} post={p} saved={saved.posts.has(p.id)} liked={likedPostIds.has(p.id)} isLoggedIn={isLoggedIn} path={path} />
             ))}
           </div>
         ) : (
-          <p className="text-sm text-ink/50">Aún no hay posts.</p>
-        )}
-
-        {/* Items de la tienda */}
-        <h2 className="mt-10 mb-4 text-sm font-medium uppercase tracking-wide text-ink/50">
-          Items de la tienda
-        </h2>
-        {garments && garments.length > 0 ? (
-          <BrandGarments
-            garments={garments.map((g) => ({
-              id: g.id,
-              title: g.title,
-              price_cop: g.price_cop,
-              image: imageOf(g.id),
-              likeCount: garmentLikeCounts.get(g.id) ?? 0,
-            }))}
-            savedIds={[...saved.garments]}
-            likedIds={[...likedGarmentIds]}
-            isLoggedIn={isLoggedIn}
-            path={path}
-          />
-        ) : (
-          <p className="text-sm text-ink/50">Aún no hay items.</p>
-        )}
-
-        {/* Reviews (futuro) */}
-        <h2 className="mt-10 mb-4 text-sm font-medium uppercase tracking-wide text-ink/50">
-          Reviews
-        </h2>
-        <p className="mb-10 text-sm text-ink/50">Próximamente.</p>
-      </div>
-    </>
+          <EmptyState icon={ImageIcon} title="Aún no hay looks" description={`Cuando ${brand.name} publique looks, aparecerán aquí.`} />
+        )
+      ) : garmentCount > 0 ? (
+        <BrandGarments
+          garments={garments!.map((g) => ({
+            id: g.id,
+            title: g.title,
+            price_cop: g.price_cop,
+            image: imageOf(g.id),
+            likeCount: garmentLikeCounts.get(g.id) ?? 0,
+          }))}
+          savedIds={[...saved.garments]}
+          likedIds={[...likedGarmentIds]}
+          isLoggedIn={isLoggedIn}
+          path={path}
+        />
+      ) : (
+        <EmptyState icon={ShirtIcon} title="Aún no hay prendas" description={`${brand.name} todavía no tiene prendas publicadas.`} />
+      )}
+    </div>
   );
 }

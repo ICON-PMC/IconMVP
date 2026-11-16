@@ -2,9 +2,13 @@ import Link from "next/link";
 import { cityLabel } from "@/lib/cities";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { R2Image, SIZES } from "@/components/r2-image";
-import { GlassCard } from "@/components/glass-card";
-import { formatCop } from "@/lib/taxonomy";
+import { R2Image } from "@/components/r2-image";
+import { ArrowLeftIcon, ArrowUpRightIcon, BadgeCheckIcon } from "lucide-react";
+import { Avatar } from "@/components/avatar";
+import { Chip } from "@/components/chip";
+import { Price } from "@/components/price";
+import { StickyActionBar } from "@/components/sticky-action-bar";
+import { Button } from "@/components/ui/button";
 import { getMySavedIds } from "@/lib/saves";
 import { getGarmentLikeCounts, getMyLikedGarmentIds } from "@/lib/social";
 import { getCurrentUser } from "@/lib/auth";
@@ -47,10 +51,10 @@ export default async function GarmentPage({
     session,
     garmentLikeCounts,
   ] = await Promise.all([
-    supabase.from("garment_images").select("cf_image_id, position").eq("garment_id", id).order("position"),
+    supabase.from("garment_images").select("cf_image_id, position, width, height").eq("garment_id", id).order("position"),
     supabase
       .from("brands")
-      .select("id, name, slug, city_id, is_verified, is_sustainable, is_active")
+      .select("id, name, slug, city_id, is_verified, is_sustainable, is_active, logo_url")
       .eq("id", g.brand_id)
       .maybeSingle(),
     supabase.from("garment_sizes").select("size_id").eq("garment_id", id),
@@ -92,127 +96,128 @@ export default async function GarmentPage({
     (a, b) => TAG_ORDER.indexOf(a.type) - TAG_ORDER.indexOf(b.type) || a.name.localeCompare(b.name),
   );
 
-  const gallery = images?.map((i) => i.cf_image_id) ?? [];
+  const gallery = images ?? [];
   const meta = [g.color, g.fabric].filter(Boolean).join(" · ");
   const isLoggedIn = Boolean(session?.profile);
 
-  return (
+  const path = `/prenda/${g.id}`;
+  const outHref = `/out/${g.id}?source=${outSource}`;
+  const actions = (
     <>
-      <div className="mx-auto w-full max-w-5xl px-4 py-6">
+      <SaveButton kind="garment" id={g.id} saved={saved.garments.has(g.id)} path={path} />
+      <LikeButton
+        kind="garment"
+        itemId={g.id}
+        initialLiked={likedGarmentIds.has(g.id)}
+        initialCount={garmentLikeCounts.get(g.id) ?? 0}
+        path={path}
+        isLoggedIn={isLoggedIn}
+      />
+    </>
+  );
 
-        <Link
-          href="/feed"
-          className="mt-6 inline-block text-sm font-medium text-coral hover:underline"
-        >
-          ← Volver al feed
-        </Link>
+  // Ficha de prenda (spec 007, US4): foto grande con su proporción real, y a la derecha (o debajo en
+  // celular) marca, nombre, precio, etiquetas y tallas. "Ir a la tienda" siempre visible en celular.
+  return (
+    // pb-24 en celular: espacio para la barra fija de "Ir a la tienda" además de la de navegación.
+    <div className="mx-auto w-full max-w-6xl px-4 pt-5 pb-24 md:px-6 md:pb-5">
+      <PageHeaderBack />
 
-        <div className="mt-4 grid gap-6 md:grid-cols-2">
-          {/* Galería */}
-          <div className="flex flex-col gap-4">
-            {gallery.map((src, idx) => (
+      <div className="grid gap-6 md:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] md:gap-10">
+        <div className="flex flex-col gap-3">
+          {gallery.map((img, idx) => (
+            <div
+              key={img.cf_image_id}
+              className="overflow-hidden rounded-[var(--radius-card)] bg-surface-sunken"
+              style={{ aspectRatio: img.width && img.height ? `${img.width} / ${img.height}` : "4 / 5" }}
+            >
               <R2Image
-                key={idx}
-                image={src}
-                alt={g.title}
-                sizes={SIZES.detail}
+                image={img.cf_image_id}
+                alt={idx === 0 ? g.title : `${g.title}, foto ${idx + 1}`}
+                sizes="(min-width: 1152px) 640px, (min-width: 768px) 58vw, 100vw"
                 priority={idx === 0}
-                // Espacio reservado antes de que llegue la foto (CLS, spec 006); contain para no recortar la prenda.
-                className="aspect-[4/5] w-full rounded-2xl bg-white/40 object-contain"
+                className="size-full object-cover"
               />
-            ))}
-          </div>
+            </div>
+          ))}
+          {gallery.length === 0 && (
+            <div className="flex aspect-[4/5] items-end rounded-[var(--radius-card)] bg-leaf-soft p-6 text-h2">{g.title}</div>
+          )}
+        </div>
 
-          {/* Info */}
-          <div>
-            <GlassCard className="relative p-6">
-              <div className="absolute right-4 top-4 flex items-center gap-2">
-                <LikeButton
-                  kind="garment"
-                  itemId={g.id}
-                  initialLiked={likedGarmentIds.has(g.id)}
-                  initialCount={garmentLikeCounts.get(g.id) ?? 0}
-                  path={`/prenda/${g.id}`}
-                  isLoggedIn={isLoggedIn}
-                />
-                <SaveButton
-                  kind="garment"
-                  id={g.id}
-                  saved={saved.garments.has(g.id)}
-                  path={`/prenda/${g.id}`}
-                />
-              </div>
-              {brand && (
-                <Link
-                  href={`/marca/${brand.slug}`}
-                  className="flex items-center gap-1 text-sm font-medium text-forest hover:underline"
-                >
+        <div className="md:sticky md:top-24 md:self-start">
+          {brand && (
+            <Link href={`/marca/${brand.slug}`} className="group flex w-fit items-center gap-3">
+              <Avatar image={brand.logo_url} name={brand.name} seed={brand.id} size={48} className="border border-line bg-surface-raised" />
+              <span className="min-w-0">
+                <span className="flex items-center gap-1 font-semibold text-text group-hover:underline">
                   {brand.name}
-                  {brand.is_verified && (
-                    <span aria-label="verificada" title="Verificada por el equipo">
-                      ✓
-                    </span>
-                  )}
-                </Link>
-              )}
-              {cityName && <p className="text-xs text-ink/50">{cityName}</p>}
+                  {brand.is_verified && <BadgeCheckIcon className="size-4 text-forest" aria-label="verificada" />}
+                </span>
+                {cityName && <span className="block text-[13px] text-text-muted">{cityName}</span>}
+              </span>
+            </Link>
+          )}
 
-              <h1 className="mt-3 text-2xl font-medium tracking-tight text-ink">
-                {g.title}
-              </h1>
-              {g.price_cop != null && (
-                <p className="mt-1 text-xl text-forest">{formatCop(g.price_cop)}</p>
-              )}
+          <h1 className="mt-5 text-h1 text-text">{g.title}</h1>
+          <Price min={g.price_cop} className="mt-2 block text-2xl" />
 
-              {g.description && (
-                <p className="mt-3 text-sm text-ink/70">{g.description}</p>
-              )}
-              {meta && <p className="mt-3 text-sm text-ink/60">{meta}</p>}
+          {categories.length > 0 && (
+            <div className="mt-4 flex flex-wrap gap-x-2">
+              {categories.map((c) => (
+                <Chip key={c.name} variant="tag">
+                  {c.name}
+                </Chip>
+              ))}
+            </div>
+          )}
 
-              {categories.length > 0 && (
-                <div className="mt-3 flex flex-wrap gap-1.5">
-                  {categories.map((c) => (
-                    <span
-                      key={c.name}
-                      className="rounded-full bg-white/50 px-2.5 py-0.5 text-xs text-forest-deep"
-                    >
-                      {c.name}
-                    </span>
-                  ))}
-                </div>
-              )}
+          {g.description && <p className="mt-4 text-[15px] leading-6 text-text">{g.description}</p>}
+          {meta && <p className="mt-3 text-sm text-text-muted">{meta}</p>}
 
-              {sizes.length > 0 && (
-                <div className="mt-4">
-                  <p className="mb-1.5 text-xs font-medium uppercase tracking-wide text-ink/50">
-                    Tallas
-                  </p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {sizes.map((s) => (
-                      <span
-                        key={s.label}
-                        className="glass-input rounded-lg px-2.5 py-1 text-xs text-ink/80"
-                      >
-                        {s.label}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
+          {sizes.length > 0 && (
+            <div className="mt-5">
+              <p className="mb-1 text-label text-text">Tallas</p>
+              <div className="flex flex-wrap gap-x-2">
+                {sizes.map((s) => (
+                  <Chip key={s.label} variant="tag">
+                    {s.label}
+                  </Chip>
+                ))}
+              </div>
+            </div>
+          )}
 
-              <a
-                href={`/out/${g.id}?source=${outSource}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-6 inline-block rounded-full bg-forest px-6 py-3 text-sm font-medium text-white hover:bg-forest-deep"
-              >
-                Ver en la tienda ↗
-              </a>
-            </GlassCard>
+          {/* Escritorio: acciones en línea. */}
+          <div className="mt-6 hidden items-center gap-2 md:flex">
+            <Button size="lg" className="flex-1" render={<a href={outHref} target="_blank" rel="noopener noreferrer" />} nativeButton={false}>
+              Ir a la tienda <ArrowUpRightIcon data-icon="inline-end" />
+            </Button>
+            {actions}
           </div>
         </div>
-        <SimilarGarments garmentId={g.id} isLoggedIn={isLoggedIn} />
       </div>
-    </>
+
+      <SimilarGarments garmentId={g.id} isLoggedIn={isLoggedIn} />
+
+      {/* Celular: barra fija sobre la barra de navegación (FR-020). */}
+      <StickyActionBar stackAboveNav className="md:hidden">
+        <Button size="lg" className="flex-1" render={<a href={outHref} target="_blank" rel="noopener noreferrer" />} nativeButton={false}>
+          Ir a la tienda <ArrowUpRightIcon data-icon="inline-end" />
+        </Button>
+        {actions}
+      </StickyActionBar>
+    </div>
+  );
+}
+
+function PageHeaderBack() {
+  return (
+    <Link
+      href="/feed"
+      className="mb-4 inline-flex min-h-11 items-center gap-1.5 text-sm font-semibold text-action-text hover:underline"
+    >
+      <ArrowLeftIcon className="size-4" aria-hidden /> Volver al feed
+    </Link>
   );
 }
