@@ -6,8 +6,6 @@ import { getBrandStyleNames } from "@/lib/tags";
 import { createClient } from "@/lib/supabase/server";
 import { EMPTY_FEED_OPTIONS, getFeedOptions } from "@/lib/feed-options";
 import { FeedSkeletonGrid } from "@/components/feed/feed-skeleton";
-import { SiteHeader } from "@/components/site-header";
-import { Aurora } from "@/components/aurora";
 import { FeedTopBar } from "@/components/feed/top-bar";
 import { FeedActiveChips } from "@/components/feed/active-chips";
 import { FeedSuggestions } from "@/components/feed/suggestions";
@@ -494,9 +492,7 @@ function Shell({
 }) {
   return (
     <>
-      <Aurora />
       <div className="mx-auto w-full max-w-5xl px-4 py-6">
-        <SiteHeader />
         <Suspense>
           <FlashToast messages={FEED_FLASH} />
         </Suspense>

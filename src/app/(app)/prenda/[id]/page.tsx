@@ -2,8 +2,6 @@ import Link from "next/link";
 import { cityLabel } from "@/lib/cities";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { SiteHeader } from "@/components/site-header";
-import { Aurora } from "@/components/aurora";
 import { R2Image, SIZES } from "@/components/r2-image";
 import { GlassCard } from "@/components/glass-card";
 import { formatCop } from "@/lib/taxonomy";
@@ -100,9 +98,7 @@ export default async function GarmentPage({
 
   return (
     <>
-      <Aurora />
       <div className="mx-auto w-full max-w-5xl px-4 py-6">
-        <SiteHeader />
 
         <Link
           href="/feed"

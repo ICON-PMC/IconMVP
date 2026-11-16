@@ -2,8 +2,6 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/auth";
 import { getGarmentLikeCounts, getMyFollowedBrands, getMyLikedGarmentIds, getMyLikedPostIds } from "@/lib/social";
-import { SiteHeader } from "@/components/site-header";
-import { Aurora } from "@/components/aurora";
 import { PostCard } from "@/components/post-card";
 import { GarmentCard } from "@/components/garment-card";
 import { BrandCard } from "@/components/brand-card";
@@ -30,9 +28,7 @@ export default async function SavedPage({
     const followed = await getMyFollowedBrands();
     return (
       <>
-        <Aurora />
         <div className="mx-auto w-full max-w-5xl px-4 py-6">
-          <SiteHeader />
 
           <h1 className="mt-8 mb-4 text-3xl font-medium tracking-tight text-forest">
             Lo mío
@@ -113,9 +109,7 @@ export default async function SavedPage({
 
   return (
     <>
-      <Aurora />
       <div className="mx-auto w-full max-w-5xl px-4 py-6">
-        <SiteHeader />
 
         <h1 className="mt-8 mb-4 text-3xl font-medium tracking-tight text-forest">
           Lo mío

@@ -1,12 +1,12 @@
 import { redirect } from "next/navigation";
 import { DeleteAccountSection } from "./delete-account-section";
+import { signOut } from "@/app/auth/actions";
+import { Button } from "@/components/ui/button";
 import { CityCombobox } from "@/components/city-combobox";
 import { getCityOptions } from "@/lib/cities";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser, getMyBrand } from "@/lib/auth";
-import { Aurora } from "@/components/aurora";
 import { GlassCard } from "@/components/glass-card";
-import { SiteHeader } from "@/components/site-header";
 import { updateSettings } from "./actions";
 
 export default async function SettingsPage({
@@ -31,9 +31,7 @@ export default async function SettingsPage({
 
   return (
     <>
-      <Aurora />
       <div className="mx-auto w-full max-w-lg px-4 py-6">
-        <SiteHeader />
 
         <h1 className="mt-8 text-3xl font-medium tracking-tight text-forest">
           Ajustes
@@ -102,6 +100,12 @@ export default async function SettingsPage({
             </div>
           </form>
         </GlassCard>
+        {/* En móvil no hay menú de cuenta en la barra superior: salir vive aquí (spec 007). */}
+        <form action={signOut} className="mt-6">
+          <Button type="submit" variant="secondary" className="w-full sm:w-auto">
+            Cerrar sesión
+          </Button>
+        </form>
         <DeleteAccountSection brandName={myBrand?.name ?? null} />
       </div>
     </>

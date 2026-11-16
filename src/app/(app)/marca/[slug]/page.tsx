@@ -1,8 +1,6 @@
 import { notFound } from "next/navigation";
 import { cityLabel } from "@/lib/cities";
 import { createClient } from "@/lib/supabase/server";
-import { SiteHeader } from "@/components/site-header";
-import { Aurora } from "@/components/aurora";
 import { GlassCard } from "@/components/glass-card";
 import { PostCard } from "@/components/post-card";
 import { BrandGarments } from "@/components/brand-garments";
@@ -83,9 +81,7 @@ export default async function BrandPage({
 
   return (
     <>
-      <Aurora />
       <div className="mx-auto w-full max-w-5xl px-4 py-6">
-        <SiteHeader />
 
         {/* Cabecera de marca */}
         <GlassCard className="mt-6 p-6">

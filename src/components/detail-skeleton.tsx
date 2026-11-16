@@ -1,14 +1,10 @@
-import { Aurora } from "@/components/aurora";
-import { SiteHeader } from "@/components/site-header";
 
 // Esqueleto de las fichas (prenda, look, marca) mientras carga el servidor (spec 006, US4): al tocar
 // una tarjeta se ve de inmediato la estructura de la página, con las mismas proporciones.
 export function DetailSkeleton({ variant }: { variant: "garment" | "post" | "brand" }) {
   return (
     <>
-      <Aurora />
       <div className="mx-auto w-full max-w-5xl px-4 py-6" role="status" aria-label="Cargando">
-        <SiteHeader />
         <div className="mt-6 h-4 w-28 animate-pulse rounded bg-white/50" />
         {variant === "brand" ? (
           <>

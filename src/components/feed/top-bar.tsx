@@ -35,6 +35,8 @@ export function FeedTopBar({
       >
         <input
           key={searchParams.get("q") ?? ""}
+          // "Buscar" de la barra inferior (spec 007): llega con ?buscar=1 y enfoca el campo.
+          autoFocus={searchParams.get("buscar") === "1"}
           name="q"
           type="search"
           defaultValue={searchParams.get("q") ?? ""}

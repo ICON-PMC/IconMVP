@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/auth";
-import type { LikeResult } from "@/app/post/[id]/actions";
+import type { LikeResult } from "@/app/(app)/post/[id]/actions";
 
 // Dar like / quitar like a una prenda (espejo de post/[id]/actions.ts).
 //

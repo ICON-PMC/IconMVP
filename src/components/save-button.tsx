@@ -1,5 +1,5 @@
 import { Bookmark } from "lucide-react";
-import { toggleSavedPost, toggleSavedGarment } from "@/app/saved/actions";
+import { toggleSavedPost, toggleSavedGarment } from "@/app/(app)/saved/actions";
 
 // Botón de guardar (marcador/bookmark). Server component: el form llama a un server action.
 // Ícono a propósito distinto del corazón del LikeButton, para no confundirlos.

@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { UserPlus, UserCheck } from "lucide-react";
-import { followBrand, unfollowBrand } from "@/app/marca/[slug]/actions";
+import { followBrand, unfollowBrand } from "@/app/(app)/marca/[slug]/actions";
 
 // Botón Seguir / Siguiendo con UI optimista (Grupo 2 de docs/legacy-specs/2026-09-22-user-social-actions).
 //
