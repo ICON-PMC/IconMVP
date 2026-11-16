@@ -15,7 +15,8 @@
     "db:embed": "tsx scripts/embed-catalog.ts",
     "visual:eval": "tsx scripts/visual-eval.ts",
     "perf:measure": "tsx scripts/perf-measure.ts",
-    "db:image-variants": "tsx scripts/backfill-image-variants.ts"
+    "db:image-variants": "tsx scripts/backfill-image-variants.ts",
+    "db:image-dims": "tsx scripts/backfill-image-dims.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",

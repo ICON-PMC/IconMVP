@@ -25,7 +25,7 @@ export function LookCard({
   const author = item.brand_name ?? "Icon";
   const tags = [...item.occasions, ...item.styles].map((slug) => tagNames[slug] ?? slug).slice(0, 2);
   return (
-    <article className="mb-5 break-inside-avoid">
+    <article className="mb-4 break-inside-avoid">
       <div
         className="relative w-full overflow-hidden rounded-[var(--radius-card)] bg-surface-inverse"
         style={{ aspectRatio: `1 / ${ratio}` }}

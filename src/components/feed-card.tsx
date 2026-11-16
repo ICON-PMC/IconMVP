@@ -3,10 +3,10 @@ import type { FeedCardProps } from "@/components/cards/card-props";
 import { GarmentFeedCard } from "@/components/cards/garment-feed-card";
 import { LookCard } from "@/components/cards/look-card";
 
-// Alto/ancho de la imagen acotado: se conserva la proporción real (estilo Pinterest)
-// pero sin extremos, para que la grilla no se descuadre con fotos muy altas o muy bajas.
-const MIN_RATIO = 0.9;
-const MAX_RATIO = 1.45;
+// Proporción real de cada foto (alto/ancho), como un board de Pinterest (ajuste de la dueña,
+// 2026-11-16). Solo se recortan los extremos (panorámicas o tiras muy altas).
+const MIN_RATIO = 0.6;
+const MAX_RATIO = 2;
 const DEFAULT_RATIO = 1.25;
 
 export function cardRatio(item: Pick<FeedItem, "image_width" | "image_height">) {

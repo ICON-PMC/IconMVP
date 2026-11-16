@@ -24,7 +24,7 @@ export function GarmentFeedCard({
   const href = cardHref(item, from);
   const name = item.title ?? item.brand_name ?? "Prenda";
   return (
-    <article className="mb-5 break-inside-avoid">
+    <article className="mb-4 break-inside-avoid">
       <div
         className="relative w-full overflow-hidden rounded-[var(--radius-photo)] bg-surface-sunken"
         style={{ aspectRatio: `1 / ${ratio}` }}
@@ -46,13 +46,19 @@ export function GarmentFeedCard({
           </div>
         </div>
       </div>
-      <Link href={href} prefetch={prefetch} className="mt-2 block px-0.5">
-        <p className="truncate text-sm font-semibold text-text">{name}</p>
-        <p className="flex items-center gap-1 truncate text-[13px] text-text-muted">
-          {item.brand_name}
-          {item.brand_verified && <BadgeCheckIcon className="size-3.5 shrink-0 text-forest" aria-label="verificada" />}
+      {/* Board (ajuste de la dueña): una línea de nombre y una línea discreta de marca y precio. */}
+      <Link href={href} prefetch={prefetch} className="mt-1.5 block px-1">
+        <p className="truncate text-[13px] font-semibold leading-5 text-text">{name}</p>
+        <p className="flex items-center gap-1 truncate text-xs leading-4 text-text-muted">
+          <span className="truncate">{item.brand_name}</span>
+          {item.brand_verified && <BadgeCheckIcon className="size-3 shrink-0 text-forest" aria-label="verificada" />}
+          {item.min_price != null && (
+            <>
+              <span aria-hidden>·</span>
+              <Price min={item.min_price} max={item.max_price} className="font-semibold text-text-muted" />
+            </>
+          )}
         </p>
-        <Price min={item.min_price} max={item.max_price} className="text-sm" />
       </Link>
     </article>
   );

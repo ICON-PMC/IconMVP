@@ -182,7 +182,7 @@ export default async function FeedPage({ searchParams }: { searchParams: SearchP
         {rows.length === 0 ? (
           <EmptyState text="Ninguna prenda parecida cumple esos filtros." clearHref={`/feed?similar=${sp.similar}`} />
         ) : (
-          <div className="columns-2 gap-4 md:columns-3">
+          <div className="columns-2 gap-3 md:columns-3 md:gap-4 lg:columns-4">
             {rows.map((item) => (
               <FeedCard
                 key={item.id}
@@ -492,7 +492,7 @@ function Shell({
 }) {
   return (
     <>
-      <div className="mx-auto w-full max-w-5xl px-4 py-5">
+      <div className="mx-auto w-full max-w-7xl px-3 py-5 md:px-6">
         <Suspense>
           <FlashToast messages={FEED_FLASH} />
         </Suspense>

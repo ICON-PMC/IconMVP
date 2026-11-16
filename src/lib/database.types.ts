@@ -84,9 +84,9 @@ export type Database = {
         Relationships: [];
       };
       garment_images: {
-        Row: { id: string; garment_id: string; cf_image_id: string; position: number; bytes: number; variants_ready: boolean; alt: string | null; created_at: string };
-        Insert: { id?: string; garment_id: string; cf_image_id: string; position?: number; bytes?: number; variants_ready?: boolean; alt?: string | null; created_at?: string };
-        Update: { id?: string; garment_id?: string; cf_image_id?: string; position?: number; bytes?: number; variants_ready?: boolean; alt?: string | null; created_at?: string };
+        Row: { id: string; garment_id: string; cf_image_id: string; position: number; bytes: number; variants_ready: boolean; width: number | null; height: number | null; alt: string | null; created_at: string };
+        Insert: { id?: string; garment_id: string; cf_image_id: string; position?: number; bytes?: number; variants_ready?: boolean; width?: number | null; height?: number | null; alt?: string | null; created_at?: string };
+        Update: { id?: string; garment_id?: string; cf_image_id?: string; position?: number; bytes?: number; variants_ready?: boolean; width?: number | null; height?: number | null; alt?: string | null; created_at?: string };
         Relationships: [];
       };
       garment_tags: {

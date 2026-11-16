@@ -2,6 +2,9 @@ import { notFound } from "next/navigation";
 import { cityLabel } from "@/lib/cities";
 import { createClient } from "@/lib/supabase/server";
 import { GlassCard } from "@/components/glass-card";
+import { Avatar } from "@/components/avatar";
+import { Badge } from "@/components/ui/badge";
+import { BadgeCheckIcon } from "lucide-react";
 import { PostCard } from "@/components/post-card";
 import { BrandGarments } from "@/components/brand-garments";
 import { FollowButton } from "@/components/follow-button";
@@ -20,7 +23,7 @@ export default async function BrandPage({
 
   const { data: brand } = await supabase
     .from("brands")
-    .select("id, name, slug, city_id, store_url, instagram, bio, is_verified, is_sustainable")
+    .select("id, name, slug, city_id, store_url, instagram, bio, is_verified, is_sustainable, logo_url")
     .eq("slug", slug)
     .eq("is_active", true)
     .maybeSingle();
@@ -85,22 +88,23 @@ export default async function BrandPage({
 
         {/* Cabecera de marca */}
         <GlassCard className="mt-6 p-6">
-          <div className="flex items-center gap-2">
-            <h1 className="text-3xl font-medium tracking-tight text-forest">
-              {brand.name}
-            </h1>
-            {brand.is_verified && (
-              <span aria-label="verificada" title="Verificada por el equipo">
-                ✓
-              </span>
-            )}
-            {brand.is_sustainable && (
-              <span className="rounded-full bg-leaf-soft px-2.5 py-0.5 text-xs font-medium text-forest-deep">
-                sostenible
-              </span>
-            )}
+          {/* Logo de la tienda (ajuste de la dueña, 2026-11-16): la imagen que la marca subió como
+              portada, en círculo. Sin imagen, iniciales sobre un color de acento. */}
+          <div className="flex items-center gap-4">
+            <Avatar image={brand.logo_url} name={brand.name} seed={brand.id} size={96} className="border border-line bg-surface-raised" />
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <h1 className="text-h1 text-text">{brand.name}</h1>
+                {brand.is_verified && (
+                  <Badge variant="verified">
+                    <BadgeCheckIcon data-icon="inline-start" /> Verificada
+                  </Badge>
+                )}
+                {brand.is_sustainable && <Badge variant="neutral">Sostenible</Badge>}
+              </div>
+              {cityName && <p className="mt-1 text-sm text-text-muted">{cityName}</p>}
+            </div>
           </div>
-          {cityName && <p className="mt-1 text-sm text-ink/50">{cityName}</p>}
           {brand.bio && <p className="mt-3 max-w-xl text-ink/70">{brand.bio}</p>}
           {styles.length > 0 && (
             <ul aria-label="Estilos" className="mt-3 flex flex-wrap gap-1.5">

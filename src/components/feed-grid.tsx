@@ -17,15 +17,17 @@ function itemKey(item: FeedItem) {
 // Columnas reales (no CSS `columns`): el multicolumn de iOS Safari a veces no pinta el
 // contenido de una tarjeta con backdrop-filter. Cada ítem va a la columna más corta
 // según su proporción; es estable al añadir ítems al final (scroll infinito).
+// Board: 2 columnas en celular, 3 en tableta y 4 (máximo) desde 1024 px.
+const COL_QUERIES = ["(min-width: 1024px)", "(min-width: 768px)"] as const;
 function subscribeCols(cb: () => void) {
-  const mq = window.matchMedia("(min-width: 768px)");
-  mq.addEventListener("change", cb);
-  return () => mq.removeEventListener("change", cb);
+  const mqs = COL_QUERIES.map((q) => window.matchMedia(q));
+  mqs.forEach((mq) => mq.addEventListener("change", cb));
+  return () => mqs.forEach((mq) => mq.removeEventListener("change", cb));
 }
 function useColumnCount() {
   return useSyncExternalStore(
     subscribeCols,
-    () => (window.matchMedia("(min-width: 768px)").matches ? 3 : 2),
+    () => (window.matchMedia(COL_QUERIES[0]).matches ? 4 : window.matchMedia(COL_QUERIES[1]).matches ? 3 : 2),
     () => 2,
   );
 }
@@ -38,7 +40,7 @@ function splitColumns(items: FeedItem[], count: number): FeedItem[][] {
     let target = 0;
     for (let i = 1; i < count; i++) if (heights[i] < heights[target]) target = i;
     cols[target].push(it);
-    heights[target] += ratio + 0.2; // + alto aproximado del título
+    heights[target] += ratio + 0.15; // + alto aproximado del texto bajo la foto
   }
   return cols;
 }
@@ -268,7 +270,7 @@ export function FeedGrid({
 
   return (
     <div>
-      <div className="flex items-start gap-4">
+      <div className="flex items-start gap-3 md:gap-4">
         {columns.map((col, i) => (
           <div key={i} className="min-w-0 flex-1">
             {col.map((item, row) => (

@@ -13,7 +13,7 @@ export function TopBar({ ctx }: { ctx: NavContext }) {
   const link = "rounded-full px-3 py-2 text-sm font-semibold text-text hover:bg-surface-sunken";
   return (
     <header className="bar-blur sticky top-0 z-40 border-b border-line">
-      <div className="mx-auto flex h-14 w-full max-w-5xl items-center justify-between gap-3 px-4 md:h-16">
+      <div className="mx-auto flex h-14 w-full max-w-7xl items-center justify-between gap-3 px-4 md:h-16 md:px-6">
         <Link href="/feed" className="wordmark text-[28px] leading-none text-text" aria-label="Icon, ir al inicio">
           ICON
         </Link>
