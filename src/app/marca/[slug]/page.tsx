@@ -5,7 +5,7 @@ import { SiteHeader } from "@/components/site-header";
 import { Aurora } from "@/components/aurora";
 import { GlassCard } from "@/components/glass-card";
 import { PostCard } from "@/components/post-card";
-import { GarmentCard } from "@/components/garment-card";
+import { BrandGarments } from "@/components/brand-garments";
 import { FollowButton } from "@/components/follow-button";
 import { getMySavedIds } from "@/lib/saves";
 import { getGarmentLikeCounts, getMyFollowedBrandIds, getMyLikedGarmentIds, getMyLikedPostIds } from "@/lib/social";
@@ -174,22 +174,19 @@ export default async function BrandPage({
           Items de la tienda
         </h2>
         {garments && garments.length > 0 ? (
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-            {garments.map((g) => (
-              <GarmentCard
-                key={g.id}
-                id={g.id}
-                title={g.title}
-                price_cop={g.price_cop}
-                image={imageOf(g.id)}
-                saved={saved.garments.has(g.id)}
-                liked={likedGarmentIds.has(g.id)}
-                likeCount={garmentLikeCounts.get(g.id) ?? 0}
-                isLoggedIn={isLoggedIn}
-                path={path}
-              />
-            ))}
-          </div>
+          <BrandGarments
+            garments={garments.map((g) => ({
+              id: g.id,
+              title: g.title,
+              price_cop: g.price_cop,
+              image: imageOf(g.id),
+              likeCount: garmentLikeCounts.get(g.id) ?? 0,
+            }))}
+            savedIds={[...saved.garments]}
+            likedIds={[...likedGarmentIds]}
+            isLoggedIn={isLoggedIn}
+            path={path}
+          />
         ) : (
           <p className="text-sm text-ink/50">Aún no hay items.</p>
         )}
