@@ -54,7 +54,7 @@ export function SearchSection() {
           <span className="text-xs font-semibold tracking-[0.16em] text-forest uppercase">Busca</span>
           <h2
             id="busca-title"
-            className="font-display text-[clamp(2.1rem,5.2vw,3.6rem)] leading-[1.02] text-balance [&_em]:text-coral"
+            className="font-wordmark text-[clamp(2.1rem,5.2vw,3.6rem)] leading-[1.02] text-balance [&_em]:text-coral"
           >
             Busca todo lo que <em>necesites</em>.
           </h2>

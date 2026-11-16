@@ -39,7 +39,7 @@ export function NominationSection() {
             }
             success={
               <>
-                <b className="font-display text-[26px] leading-tight font-normal text-forest">¡Gracias por postularla!</b>
+                <b className="font-wordmark text-[26px] leading-tight font-normal text-forest">¡Gracias por postularla!</b>
                 <span className="text-sm">Envía el mensaje en WhatsApp. El equipo revisa cada postulación y contacta a la marca.</span>
               </>
             }

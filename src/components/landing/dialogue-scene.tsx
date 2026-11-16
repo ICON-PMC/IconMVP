@@ -27,7 +27,7 @@ export function DialogueScene({
           className="order-3 w-[clamp(4.5rem,11vw,8rem)] origin-bottom transition-transform duration-300 hover:-rotate-6 motion-reduce:transition-none md:order-none"
         />
         <div className="relative order-1 col-span-2 self-start rounded-[26px] bg-cream p-5 text-ink after:absolute after:-bottom-3 after:left-6 after:size-6 after:rotate-45 after:rounded-[4px] after:bg-cream sm:p-6 md:order-none md:col-span-1">
-          <p className="font-display text-[clamp(1.5rem,3.2vw,2.4rem)] leading-[1.08] [&_em]:text-coral">
+          <p className="font-wordmark text-[clamp(1.5rem,3.2vw,2.4rem)] leading-[1.08] [&_em]:text-coral">
             {question}
           </p>
         </div>

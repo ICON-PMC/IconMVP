@@ -51,7 +51,7 @@ export function Hero({
           >
             <span
               aria-hidden
-              className="font-display absolute top-[-0.55em] left-[0.12em] text-[clamp(2.4rem,6.4vw,4.9rem)] leading-none text-ink transition-colors duration-300 group-hover:text-coral"
+              className="font-wordmark absolute top-[-0.55em] left-[0.12em] text-[clamp(2.4rem,6.4vw,4.9rem)] leading-none text-ink transition-colors duration-300 group-hover:text-coral"
             >
               {i + 1}
             </span>

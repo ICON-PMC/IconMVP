@@ -20,6 +20,8 @@ export function AdminTabs({ active, pendingCount }: { active: AdminTab; pendingC
         { id: "marcas", label: "Marcas", href: "/admin?tab=marcas" },
         { id: "usuarios", label: "Usuarios", href: "/admin?tab=usuarios" },
         { id: "etiquetas", label: "Etiquetas", href: "/admin?tab=etiquetas" },
+        // Página aparte (spec 007): nunca queda activa desde el panel.
+        { id: "estilo", label: "Guía de estilo", href: "/admin/estilo" },
       ]}
     />
   );

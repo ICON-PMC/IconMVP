@@ -142,7 +142,7 @@ export function SavedSection() {
 export function CityCta({ href, label }: { href: string; label: string }) {
   return (
     <section aria-labelledby="ciudad-title" className="flex flex-col items-center gap-6 py-12 text-center sm:py-20">
-      <h2 id="ciudad-title" className="font-display max-w-[16ch] text-[clamp(2.1rem,5.2vw,3.6rem)] leading-[1.05] text-balance">
+      <h2 id="ciudad-title" className="font-wordmark max-w-[16ch] text-[clamp(2.1rem,5.2vw,3.6rem)] leading-[1.05] text-balance">
         Mejora tu estilo con ropa de{" "}
         <span className="text-forest italic [background:linear-gradient(transparent_62%,var(--color-honey)_62%,var(--color-honey)_92%,transparent_92%)]">
           tu ciudad

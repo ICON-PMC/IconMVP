@@ -32,7 +32,7 @@ export function AssistedRequest() {
           ref={panel}
           className="mt-1 rounded-[22px] border-[1.5px] border-ink bg-cream p-4 shadow-[8px_10px_0_var(--color-coral-soft)] sm:p-5"
         >
-          <h4 className="font-display text-[28px] leading-tight">Solicita la subida asistida</h4>
+          <h4 className="font-wordmark text-[28px] leading-tight">Solicita la subida asistida</h4>
           <p className="mt-1 mb-4 text-sm text-ink/70">Te escribimos el mismo día hábil para coordinar.</p>
           <WhatsappForm
             intro="Hola, Icon 👋 Quiero la subida asistida de mi catálogo."
@@ -57,7 +57,7 @@ export function AssistedRequest() {
             }
             success={
               <>
-                <b className="font-display text-[26px] leading-tight font-normal text-forest">
+                <b className="font-wordmark text-[26px] leading-tight font-normal text-forest">
                   Envía el mensaje en WhatsApp y listo.
                 </b>
                 <span className="text-sm">

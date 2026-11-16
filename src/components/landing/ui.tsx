@@ -38,7 +38,7 @@ export function DisplayTitle({
   return (
     <Tag
       id={id}
-      className={`font-display text-[clamp(2.1rem,5.2vw,3.6rem)] leading-[1.02] font-normal tracking-tight text-balance text-ink [&_em]:text-coral ${className}`}
+      className={`font-wordmark text-[clamp(2.1rem,5.2vw,3.6rem)] leading-[1.02] font-normal tracking-tight text-balance text-ink [&_em]:text-coral ${className}`}
     >
       {children}
     </Tag>
