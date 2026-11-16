@@ -33,7 +33,7 @@ export async function getLandingPhotos(n = 12): Promise<LandingPhoto[]> {
     photos.push({
       id: it.id,
       title: it.title ?? "Prenda",
-      brand: it.brand_name,
+      brand: it.brand_name ?? "",
       city: it.city_name,
       price: it.min_price,
       src,

@@ -2,7 +2,8 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/auth";
 import { getGarmentLikeCounts, getMyFollowedBrands, getMyLikedGarmentIds, getMyLikedPostIds } from "@/lib/social";
-import { PostCard } from "@/components/post-card";
+import { FeedCard } from "@/components/feed-card";
+import type { FeedItem } from "@/lib/feed";
 import { GarmentCard } from "@/components/garment-card";
 import { BrandCard } from "@/components/brand-card";
 import { SavedTabs } from "./saved-tabs";
@@ -86,9 +87,16 @@ export default async function SavedPage({
   const garmentIds = (sg ?? []).map((r) => r.garment_id);
   const garmentLikeCounts = await getGarmentLikeCounts(garmentIds);
 
-  const posts = postIds.length
-    ? ((await supabase.from("post_feed").select("*").in("id", postIds)).data ?? [])
+  // Looks guardados desde feed_items (spec 008): incluye looks de marca y de usuarios, con autor.
+  const postRows = postIds.length
+    ? (((await supabase.from("feed_items").select("*").eq("kind", "post").in("id", postIds)).data ?? []) as FeedItem[])
     : [];
+  const postOrder = new Map(postIds.map((id, i) => [id, i]));
+  const posts = [...postRows].sort((a, b) => (postOrder.get(a.id) ?? 0) - (postOrder.get(b.id) ?? 0));
+  const tagSlugs = [...new Set(posts.flatMap((p) => [...p.occasions, ...p.styles]))];
+  const tagNames: Record<string, string> = Object.fromEntries(
+    (tagSlugs.length ? ((await supabase.from("tags").select("slug, name").in("slug", tagSlugs)).data ?? []) : []).map((t) => [t.slug, t.name]),
+  );
   const garments = garmentIds.length
     ? ((
         await supabase
@@ -133,7 +141,7 @@ export default async function SavedPage({
             <h2 className="mb-4 text-h3 text-text">Looks</h2>
             <div className="columns-2 gap-3 md:columns-3 md:gap-4 lg:columns-4">
               {posts.map((p) => (
-                <PostCard key={p.id} post={p} saved liked={likedPostIds.has(p.id)} isLoggedIn={true} path="/saved" />
+                <FeedCard key={p.id} item={p} tagNames={tagNames} saved liked={likedPostIds.has(p.id)} isLoggedIn path="/saved" />
               ))}
             </div>
           </>

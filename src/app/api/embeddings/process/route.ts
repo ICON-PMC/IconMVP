@@ -6,6 +6,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { getCurrentUser, isStaff } from "@/lib/auth";
 import { processPendingVariants } from "@/lib/image-variants";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { deleteFromR2 } from "@/lib/r2";
 import { markPending, processPending } from "@/lib/visual/index-garments";
 
 export const runtime = "nodejs";
@@ -33,7 +34,24 @@ async function run(garmentIds?: string[], all = false) {
     remaining: -1,
     error: e instanceof Error ? e.message : String(e),
   }));
-  return { ...result, variants };
+  const drafts = await cleanStaleDrafts(admin).catch((e) => ({
+    deleted: 0,
+    error: e instanceof Error ? e.message : String(e),
+  }));
+  return { ...result, variants, drafts };
+}
+
+// Spec 008 (R13): borradores de looks de usuarios sin cambios en 30 días, con sus fotos.
+async function cleanStaleDrafts(admin: ReturnType<typeof createAdminClient>): Promise<{ deleted: number }> {
+  const { data, error } = await admin.rpc("stale_user_drafts", { p_days: 30 });
+  if (error) throw new Error(error.message);
+  const postIds = [...new Set((data ?? []).map((r) => r.post_id))];
+  if (!postIds.length) return { deleted: 0 };
+  const keys = (data ?? []).map((r) => r.image_key);
+  const { error: delErr } = await admin.from("posts").delete().in("id", postIds).eq("status", "draft").eq("author_type", "user");
+  if (delErr) throw new Error(delErr.message);
+  await deleteFromR2(keys);
+  return { deleted: postIds.length };
 }
 
 export async function GET(req: NextRequest) {

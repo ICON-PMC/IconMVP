@@ -6,7 +6,7 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { BookmarkIcon, HomeIcon, PlusIcon, SearchIcon, UserIcon } from "lucide-react";
 import { Avatar } from "@/components/avatar";
 import { CameraButton } from "@/components/visual/camera-button";
-import { CENTRAL_ACTION, activeNavKey, navItems, type NavContext, type NavKey } from "@/lib/nav";
+import { activeNavKey, centralAction, navItems, type NavContext, type NavKey } from "@/lib/nav";
 import { cn } from "@/lib/utils";
 
 // Con el teclado abierto el viewport visible se encoge: la barra se oculta para no tapar el campo.
@@ -55,7 +55,7 @@ export function BottomNav({ ctx }: { ctx: NavContext }) {
             const central = "flex size-14 -translate-y-3 items-center justify-center rounded-full bg-action text-action-ink shadow-[var(--shadow-float)] outline-none focus-visible:ring-2 focus-visible:ring-text-inverse";
             return (
               <li key={item.key}>
-                {CENTRAL_ACTION === "photo-search" ? (
+                {centralAction(ctx) === "photo-search" ? (
                   <CameraButton isLoggedIn={ctx.isLoggedIn} className={central} />
                 ) : (
                   <Link href={item.href} aria-label={item.label} className={central}>

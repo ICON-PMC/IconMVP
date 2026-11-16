@@ -6,7 +6,8 @@ import { toast } from "sonner";
 import { EmptyState } from "@/components/empty-state";
 import { NativeSelect } from "@/components/native-select";
 import { Input } from "@/components/ui/input";
-import { setUserRole } from "../actions";
+import { Button } from "@/components/ui/button";
+import { setUserPostingBlock, setUserRole } from "../actions";
 
 export type AdminUser = {
   id: string;
@@ -35,11 +36,14 @@ export function UsersTab({
   q,
   canEdit,
   myId,
+  blockedIds = [],
 }: {
   users: AdminUser[];
   q: string;
   canEdit: boolean;
   myId: string;
+  /** Cuentas que no pueden publicar looks (spec 008). */
+  blockedIds?: string[];
 }) {
   const router = useRouter();
   const [pending, start] = useTransition();
@@ -49,6 +53,17 @@ export function UsersTab({
       const r = await setUserRole(u.id, role);
       if (!r.ok) return void toast.error(r.error);
       toast.success(`${u.email ?? "Usuario"} ahora es ${ROLE_LABEL[role as AdminUser["role"]]}.`);
+      router.refresh();
+    });
+  }
+
+  function toggleBlock(u: AdminUser, blocked: boolean) {
+    const reason = blocked ? window.prompt(`Motivo para bloquear a ${u.email ?? "esta cuenta"} (lo ve el equipo):`) : null;
+    if (blocked && reason === null) return;
+    start(async () => {
+      const r = await setUserPostingBlock(u.id, blocked, reason ?? undefined);
+      if (!r.ok) return void toast.error(r.error);
+      toast.success(blocked ? "La cuenta ya no puede publicar." : "La cuenta puede publicar de nuevo.");
       router.refresh();
     });
   }
@@ -80,6 +95,16 @@ export function UsersTab({
                     .join(" · ")}
                 </p>
               </div>
+              {u.role === "user" && (
+                <Button
+                  size="sm"
+                  variant={blockedIds.includes(u.id) ? "secondary" : "ghost"}
+                  disabled={pending}
+                  onClick={() => toggleBlock(u, !blockedIds.includes(u.id))}
+                >
+                  {blockedIds.includes(u.id) ? "Desbloquear publicación" : "Bloquear publicación"}
+                </Button>
+              )}
               {canEdit && u.id !== myId ? (
                 <NativeSelect
                   aria-label={`Rol de ${u.email ?? "usuario"}`}

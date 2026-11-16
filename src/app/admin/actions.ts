@@ -410,3 +410,68 @@ export async function setUserRole(userId: string, role: string): Promise<AdminRe
   revalidatePath("/admin");
   return { ok: true };
 }
+
+// ── Comunidad (spec 008, US5): moderación de looks de usuarios ─────────────────────────────
+// Todas exigen staff; la base vuelve a validarlo en cada función.
+
+function revalidateCommunity(postId?: string) {
+  revalidatePath("/admin");
+  revalidatePath("/feed");
+  if (postId) revalidatePath(`/post/${postId}`);
+}
+
+export async function moderatePost(
+  postId: string,
+  action: "hide" | "restore" | "dismiss",
+  reason?: string,
+): Promise<AdminResult> {
+  await requireStaff();
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("moderate_post", { p_post_id: postId, p_action: action, p_reason: reason ?? null });
+  if (error) return { ok: false, error: error.message };
+  revalidateCommunity(postId);
+  return { ok: true };
+}
+
+export async function setUserPostingBlock(userId: string, blocked: boolean, reason?: string): Promise<AdminResult> {
+  await requireStaff();
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("set_user_posting_block", { p_user_id: userId, p_blocked: blocked, p_reason: reason ?? null });
+  if (error) return { ok: false, error: error.message };
+  revalidateCommunity();
+  return { ok: true };
+}
+
+export async function setBrandStubBlocked(stubId: string, blocked: boolean): Promise<AdminResult> {
+  await requireStaff();
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("set_brand_stub_blocked", { p_stub_id: stubId, p_blocked: blocked });
+  if (error) return { ok: false, error: error.message };
+  revalidateCommunity();
+  return { ok: true };
+}
+
+/** Descarta una prenda propuesta. La reclamación completa (asociarla a una marca) es de la spec 010. */
+export async function rejectProposedGarment(id: string): Promise<AdminResult> {
+  await requireStaff();
+  const supabase = await createClient();
+  const { error } = await supabase.from("proposed_garments").update({ status: "rejected" }).eq("id", id);
+  if (error) return { ok: false, error: error.message };
+  revalidateCommunity();
+  return { ok: true };
+}
+
+/** Descarta los reportes abiertos de un objetivo que no es un look (perfiles, prendas). */
+export async function dismissReports(targetType: "profile" | "proposed_garment" | "brand_review", targetId: string): Promise<AdminResult> {
+  const me = await requireStaff();
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("content_reports")
+    .update({ status: "dismissed", resolved_by: me.id, resolved_at: new Date().toISOString() })
+    .eq("target_type", targetType)
+    .eq("target_id", targetId)
+    .eq("status", "open");
+  if (error) return { ok: false, error: error.message };
+  revalidateCommunity();
+  return { ok: true };
+}

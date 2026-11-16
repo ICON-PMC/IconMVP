@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { BottomNav } from "@/components/nav/bottom-nav";
 import { TopBar } from "@/components/nav/top-bar";
 import { getCurrentUser } from "@/lib/auth";
+import { userLooksEnabled } from "@/lib/features";
 import type { NavContext, NavRole } from "@/lib/nav";
 
 // Rutas públicas de la app (spec 007, US2): barra superior y barra inferior (móvil) una sola vez.
@@ -16,6 +17,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     avatar: null,
     displayName: profile?.display_name ?? session?.email ?? null,
     seed: profile?.id ?? "anon",
+    userLooks: userLooksEnabled(),
   };
   return (
     <div className="flex min-h-dvh flex-col bg-surface">

@@ -56,6 +56,15 @@ const nextConfig: NextConfig = {
       "./node_modules/@img/sharp-libvips-linux-x64/**/*",
       "./node_modules/@img/sharp-linux-x64/**/*",
     ],
+    // Looks de usuarios (spec 008): la primera foto se sube en /crear y las demás en el editor.
+    "/crear": [
+      "./node_modules/@img/sharp-libvips-linux-x64/**/*",
+      "./node_modules/@img/sharp-linux-x64/**/*",
+    ],
+    "/crear/[id]": [
+      "./node_modules/@img/sharp-libvips-linux-x64/**/*",
+      "./node_modules/@img/sharp-linux-x64/**/*",
+    ],
     "/marca/panel/import": [
       "./node_modules/@img/sharp-libvips-linux-x64/**/*",
       "./node_modules/@img/sharp-linux-x64/**/*",

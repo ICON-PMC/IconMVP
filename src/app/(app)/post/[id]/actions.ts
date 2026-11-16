@@ -55,3 +55,34 @@ export async function unlikePost(postId: string, path: string): Promise<LikeResu
   revalidatePath("/saved");
   return { ok: true };
 }
+
+// ── Reportes (spec 008, contracts §5) ──────────────────────────────────────────────────────
+// La base valida todo (no reportar lo propio, duplicados, ocultamiento al tercer reporte).
+
+export type ReportTarget = "post" | "profile" | "brand_review" | "proposed_garment";
+export type ReportReason = "not_fashion" | "offensive" | "spam" | "stolen_photo" | "other";
+
+export async function reportContent(input: {
+  targetType: ReportTarget;
+  targetId: string;
+  reason: ReportReason;
+  note?: string;
+}): Promise<{ ok: true; already: boolean } | { ok: false; error: string }> {
+  const session = await getCurrentUser();
+  if (!session?.profile) return { ok: false, error: "Inicia sesión para reportar." };
+  const note = input.note?.trim() ?? "";
+  if (note.length > 500) return { ok: false, error: "La nota puede tener hasta 500 caracteres." };
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("report_content", {
+    p_target_type: input.targetType,
+    p_target_id: input.targetId,
+    p_reason: input.reason,
+    p_note: note || null,
+  });
+  if (error) {
+    return { ok: false, error: /permission|security/i.test(error.message) ? "No pudimos enviar el reporte." : error.message };
+  }
+  const already = Boolean((data as { already?: boolean } | null)?.already);
+  if (input.targetType === "post") revalidatePath(`/post/${input.targetId}`);
+  return { ok: true, already };
+}

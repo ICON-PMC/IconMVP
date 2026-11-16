@@ -3,6 +3,7 @@ import { Avatar } from "@/components/avatar";
 import { LikeButton } from "@/components/like-button";
 import { R2Image, SIZES } from "@/components/r2-image";
 import { SaveButton } from "@/components/save-button";
+import { feedItemAuthor } from "@/lib/feed-author";
 import { cardHref, type FeedCardProps } from "./card-props";
 
 /**
@@ -22,7 +23,8 @@ export function LookCard({
   ratio,
 }: FeedCardProps & { ratio: number }) {
   const href = cardHref(item, from);
-  const author = item.brand_name ?? "Icon";
+  // Looks de usuario muestran a su autor; los de marca, la marca (spec 008, regla de tolerancia).
+  const author = feedItemAuthor(item);
   const tags = [...item.occasions, ...item.styles].map((slug) => tagNames[slug] ?? slug).slice(0, 2);
   return (
     <article className="mb-4 break-inside-avoid">
@@ -30,14 +32,14 @@ export function LookCard({
         className="relative w-full overflow-hidden rounded-[var(--radius-card)] bg-surface-inverse"
         style={{ aspectRatio: `1 / ${ratio}` }}
       >
-        <Link href={href} prefetch={prefetch} aria-label={item.title ?? `Look de ${author}`} className="absolute inset-0 block">
+        <Link href={href} prefetch={prefetch} aria-label={item.title ?? `Look de ${author.name}`} className="absolute inset-0 block">
           {item.image && (
-            <R2Image image={item.image} alt={item.title ?? `Look de ${author}`} sizes={SIZES.card} priority={priority} className="block size-full object-cover" />
+            <R2Image image={item.image} alt={item.title ?? `Look de ${author.name}`} sizes={SIZES.card} priority={priority} className="block size-full object-cover" />
           )}
           <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink/75 via-ink/30 to-transparent px-3 pt-14 pb-3 text-text-inverse">
             <span className="flex items-center gap-2">
-              <Avatar image={null} name={author} seed={item.brand_id ?? item.id} size={24} />
-              <span className="truncate text-[13px] font-semibold">{author}</span>
+              <Avatar image={author.avatar} name={author.name} seed={author.seed} size={24} />
+              <span className="truncate text-[13px] font-semibold">{author.name}</span>
             </span>
             {tags.length > 0 && (
               <span className="mt-2 flex flex-wrap gap-1.5">

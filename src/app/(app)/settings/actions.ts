@@ -48,8 +48,13 @@ export async function deleteMyAccount(confirm: string): Promise<{ ok: false; err
     .from("brands")
     .select("id")
     .eq("owner_user_id", session.profile.id);
+  // Fotos de sus marcas y, desde la spec 008, de sus looks y su foto de perfil. Se leen antes de
+  // borrar (la cascada se lleva las filas) y se borran de R2 si el borrado salió bien.
   const keys = (
-    await Promise.all((brands ?? []).map((b) => imageKeysFor(supabase, { brandId: b.id })))
+    await Promise.all([
+      ...(brands ?? []).map((b) => imageKeysFor(supabase, { brandId: b.id })),
+      imageKeysFor(supabase, { userId: session.profile.id }),
+    ])
   ).flat();
 
   const { error } = await supabase.rpc("delete_my_account");
