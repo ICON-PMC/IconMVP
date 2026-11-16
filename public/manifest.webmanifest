@@ -2,17 +2,15 @@
   "name": "Icon — moda colombiana independiente",
   "short_name": "Icon",
   "description": "Descubre moda colombiana independiente con intención: por ocasión, ciudad, precio y estilo.",
-  "start_url": "/",
+  "start_url": "/feed",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#111111",
+  "background_color": "#faf7ef",
+  "theme_color": "#143b27",
   "lang": "es-CO",
   "icons": [
-    {
-      "src": "/icon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
-    }
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
   ]
 }

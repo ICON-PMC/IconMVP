@@ -30,7 +30,7 @@ export function Hero({
   steps: [Step, Step, Step];
   title: ReactNode;
   lead: ReactNode;
-  actions: { href: string; label: string; variant?: "primary" | "glass" }[];
+  actions: { href: string; label: string; variant?: "primary" | "outline" }[];
 }) {
   return (
     <section aria-labelledby="hero-title" className="pt-5 sm:pt-9">

@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { GlassCard } from "@/components/glass-card";
 import { SectionHeader } from "@/components/page-shell";
 import { Button } from "@/components/ui/button";
 import { disconnectInstagram } from "../actions";
@@ -43,7 +42,7 @@ export function OverviewTab({
           <li key={t.label}>
             <Link
               href={t.href}
-              className="glass block rounded-2xl px-3 py-4 text-center transition-colors hover:bg-white/40"
+              className="bg-surface-raised border border-line block rounded-2xl px-3 py-4 text-center transition-colors hover:bg-surface-sunken"
             >
               <span className="block text-2xl font-medium text-forest">{t.value}</span>
               <span className="block text-[11px] uppercase tracking-wide text-ink/60">
@@ -57,7 +56,7 @@ export function OverviewTab({
       {storage && <StorageMeter storage={storage} />}
 
       {instagramEnabled && (
-        <GlassCard className="p-5">
+        <div className="surface p-5">
           <SectionHeader title="Instagram" />
           {connection ? (
             <div className="mt-3 space-y-4">
@@ -112,7 +111,7 @@ export function OverviewTab({
               </Button>
             </div>
           )}
-        </GlassCard>
+        </div>
       )}
     </div>
   );
@@ -124,7 +123,7 @@ function StorageMeter({ storage }: { storage: NonNullable<Storage> }) {
   const full = storage.used_bytes >= storage.limit_bytes;
   const warn = !full && pct >= 80;
   return (
-    <GlassCard className="p-5">
+    <div className="surface p-5">
       <SectionHeader title="Almacenamiento" />
       <div
         role="meter"
@@ -147,6 +146,6 @@ function StorageMeter({ storage }: { storage: NonNullable<Storage> }) {
             ? " · Te queda poco espacio."
             : ""}
       </p>
-    </GlassCard>
+    </div>
   );
 }

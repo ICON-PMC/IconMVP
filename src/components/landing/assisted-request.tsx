@@ -21,7 +21,7 @@ export function AssistedRequest() {
             setOpen(true);
             requestAnimationFrame(() => panel.current?.querySelector("input")?.focus());
           }}
-          className="inline-flex min-h-12 items-center rounded-full bg-coral px-6 font-semibold text-white shadow-[0_8px_22px_color-mix(in_srgb,var(--color-coral)_35%,transparent)]"
+          className="inline-flex min-h-12 items-center rounded-full bg-action px-6 font-semibold text-action-ink shadow-[0_8px_22px_color-mix(in_srgb,var(--color-coral)_35%,transparent)]"
         >
           Solicitar
         </button>

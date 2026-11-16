@@ -55,7 +55,7 @@ export function WhatsappForm({
   }
 
   const input =
-    "glass-input w-full rounded-[14px] px-3.5 py-3 text-base font-normal text-ink placeholder:text-ink/40";
+    "field w-full px-3.5 py-3 text-base font-normal text-text placeholder:text-text-muted";
 
   return (
     <div>

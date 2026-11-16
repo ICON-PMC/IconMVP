@@ -90,7 +90,7 @@ export function LooksTab({
               <li key={p.id}>
                 <Link
                   href={`/marca/panel/post/${p.id}`}
-                  className="glass-input block rounded-2xl p-2 transition-colors hover:bg-white/70"
+                  className="bg-surface-raised border-[1.5px] border-line text-text focus:border-line-strong focus:outline-none block rounded-2xl p-2 transition-colors hover:bg-surface-sunken"
                 >
                   {img ? (
                     <R2Image

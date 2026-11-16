@@ -2,8 +2,6 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser, getMyBrand } from "@/lib/auth";
 import { imageUrl } from "@/lib/images";
-import { Aurora } from "@/components/aurora";
-import { GlassCard } from "@/components/glass-card";
 import { StickyActionBar } from "@/components/sticky-action-bar";
 import { Stepper } from "./stepper";
 import { ProfileForm } from "./profile-form";
@@ -35,9 +33,8 @@ export default async function BrandOnboardingPage({
   if (brand?.status === "pending" && brand.submitted_at) {
     return (
       <>
-        <Aurora />
         <main className="flex min-h-dvh items-center justify-center p-4 sm:p-6">
-          <GlassCard className="w-full max-w-md p-6 text-center sm:p-8">
+          <div className="surface w-full max-w-md p-6 text-center sm:p-8">
             <h1 className="text-2xl font-medium tracking-tight text-forest">
               Tu perfil está en revisión
             </h1>
@@ -51,7 +48,7 @@ export default async function BrandOnboardingPage({
             >
               Ir a mi panel
             </Button>
-          </GlassCard>
+          </div>
         </main>
       </>
     );
@@ -101,9 +98,8 @@ export default async function BrandOnboardingPage({
 
   return (
     <>
-      <Aurora />
       <main className={`flex min-h-dvh items-start justify-center p-4 sm:items-center sm:p-6 ${step === 3 ? "pb-safe-bar" : ""}`}>
-        <GlassCard className="w-full max-w-md p-5 sm:p-8">
+        <div className="surface w-full max-w-md p-5 sm:p-8">
           {resubmitting && (
             <div role="status" className="mb-5 rounded-xl bg-coral/15 px-3 py-2 text-sm text-coral">
               <p className="font-medium">Ajusta tu perfil y vuelve a enviarlo.</p>
@@ -142,7 +138,7 @@ export default async function BrandOnboardingPage({
               {saved.length > 0 && (
                 <ul className="mb-6 flex flex-col gap-2">
                   {saved.map((g) => (
-                    <li key={g.id} className="glass-input flex items-center gap-3 rounded-xl p-2">
+                    <li key={g.id} className="bg-surface-raised border-[1.5px] border-line text-text focus:border-line-strong focus:outline-none flex items-center gap-3 rounded-xl p-2">
                       <div className="relative size-12 shrink-0 overflow-hidden rounded-lg bg-ink/10">
                         {g.image && <Image src={g.image} alt="" fill unoptimized className="object-cover" />}
                       </div>
@@ -179,8 +175,8 @@ export default async function BrandOnboardingPage({
               <CoverForm currentUrl={imageUrl(brand?.logo_url)} />
             </>
           )}
-        </GlassCard>
-        {/* Fuera del GlassCard: su backdrop-filter convierte al card en el contenedor del `fixed`
+        </div>
+        {/* Fuera de la tarjeta: un backdrop-filter convertiría al card en el contenedor del `fixed`
             y la barra quedaba pegada al fondo del card, tapando "Guardar prenda". */}
         {step === 3 && (
           <StickyActionBar

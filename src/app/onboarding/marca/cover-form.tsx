@@ -25,7 +25,7 @@ export function CoverForm({ currentUrl }: { currentUrl: string | null }) {
 
       <label
         htmlFor="image"
-        className="glass-input relative flex aspect-[4/3] cursor-pointer items-center justify-center overflow-hidden rounded-2xl text-center text-sm text-ink/60"
+        className="bg-surface-raised border-[1.5px] border-line text-text focus:border-line-strong focus:outline-none relative flex aspect-[4/3] cursor-pointer items-center justify-center overflow-hidden rounded-2xl text-center text-sm text-ink/60"
       >
         {shown ? (
           <Image src={shown} alt="Vista previa de la portada" fill unoptimized className="object-cover" />

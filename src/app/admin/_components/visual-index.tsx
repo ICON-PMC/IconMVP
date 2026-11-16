@@ -1,5 +1,4 @@
 import { createClient } from "@/lib/supabase/server";
-import { GlassCard } from "@/components/glass-card";
 import { SectionHeader } from "@/components/page-shell";
 import { RetryVisualIndex } from "./retry-visual-index";
 
@@ -30,7 +29,7 @@ export async function VisualIndexCard() {
   const clicksSimilar = (clicks ?? []).filter((c) => c.source === "similar").length;
 
   const stat = (label: string, value: string, hint?: string) => (
-    <div className="glass-input rounded-xl p-3">
+    <div className="bg-surface-raised border-[1.5px] border-line text-text focus:border-line-strong focus:outline-none rounded-xl p-3">
       <p className="text-xs text-ink/55">{label}</p>
       <p className="text-xl font-medium text-forest">{value}</p>
       {hint && <p className="text-xs text-ink/45">{hint}</p>}
@@ -40,7 +39,7 @@ export async function VisualIndexCard() {
   return (
     <section className="mt-8">
       <SectionHeader title="Búsqueda por foto" />
-      <GlassCard className="mt-3 space-y-4 p-5">
+      <div className="surface mt-3 space-y-4 p-5">
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           {stat("Prendas buscables", total ? `${Math.round((100 * ready) / total)} %` : "—", `${ready} de ${total}`)}
           {stat("Pendientes / con error", `${count("pending")} / ${count("failed")}`, count("sin_foto") ? `${count("sin_foto")} sin foto` : undefined)}
@@ -60,7 +59,7 @@ export async function VisualIndexCard() {
           </ul>
         )}
         <RetryVisualIndex />
-      </GlassCard>
+      </div>
     </section>
   );
 }

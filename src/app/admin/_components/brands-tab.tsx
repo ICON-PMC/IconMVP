@@ -114,7 +114,7 @@ export function BrandsTab({ brands }: { brands: AdminBrand[] }) {
       {visible.length ? (
         <ul className="flex flex-col gap-2">
           {visible.map((b) => (
-            <li key={b.id} className="glass-input rounded-2xl p-4">
+            <li key={b.id} className="bg-surface-raised border-[1.5px] border-line text-text focus:border-line-strong focus:outline-none rounded-2xl p-4">
               <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
                 <Link href={`/marca/${b.slug}`} className="font-medium text-forest hover:underline">
                   {b.name}

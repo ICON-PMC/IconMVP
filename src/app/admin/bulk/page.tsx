@@ -2,8 +2,6 @@ import Link from "next/link";
 import { ChevronLeftIcon } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { requireStaff } from "@/lib/auth";
-import { Aurora } from "@/components/aurora";
-import { GlassCard } from "@/components/glass-card";
 import { PageShell, SectionHeader } from "@/components/page-shell";
 import { SiteHeader } from "@/components/site-header";
 import { formatCop } from "@/lib/taxonomy";
@@ -122,7 +120,6 @@ export default async function BulkPage() {
 
   return (
     <>
-      <Aurora />
       <PageShell width="4xl">
         <SiteHeader />
         <Link
@@ -136,7 +133,7 @@ export default async function BulkPage() {
         </h1>
 
         {/* Leer el catálogo de una tienda → paquete (Excel + fotos) */}
-        <GlassCard className="mt-6 p-5">
+        <div className="surface mt-6 p-5">
           <SectionHeader
             title="Leer el catálogo de una tienda"
             description="Opcional. Genera el Excel y las fotos de una marca desde su tienda Shopify o su CSV, para revisarlos y subirlos abajo. Esto no crea prendas en Icon."
@@ -148,10 +145,10 @@ export default async function BulkPage() {
               resumable={resumable}
             />
           </div>
-        </GlassCard>
+        </div>
 
         {/* Paso 1: plantilla + importar */}
-        <GlassCard className="mt-6 p-5">
+        <div className="surface mt-6 p-5">
           <SectionHeader
             title="Paso 1 de 2 · Sube el Excel y la carpeta de fotos"
             description="Elige el Excel (la plantilla completada o el catalogo.xlsx del paquete ya revisado) y la carpeta de fotos, y súbelos de una sola vez. Las fotos se emparejan con las prendas por la columna «foto». Una prenda con foto se publica sola; sin foto queda pendiente. Si una prenda ya existe (misma marca y enlace de compra), no se duplica."
@@ -159,10 +156,10 @@ export default async function BulkPage() {
           <div className="mt-4">
             <ImportPackageForm />
           </div>
-        </GlassCard>
+        </div>
 
         {/* Paso 2: montar fotos */}
-        <GlassCard className="mt-6 p-5">
+        <div className="surface mt-6 p-5">
           <SectionHeader
             title={`Paso 2 de 2 · Prendas sin foto (${items.length})`}
             description="Las prendas que quedaron sin foto (por ejemplo, porque su archivo no estaba en la carpeta). Elige la foto de cada una y pulsa Subir: al subirla, la prenda pasa a publicada y aparece en el feed. Selecciona las que importaste por error para eliminarlas."
@@ -170,10 +167,10 @@ export default async function BulkPage() {
           <div className="mt-4">
             <PendingGarments items={items} />
           </div>
-        </GlassCard>
+        </div>
 
         {/* Historial de lecturas de catálogo (procedencia y consentimiento) */}
-        <GlassCard className="mt-6 p-5">
+        <div className="surface mt-6 p-5">
           <SectionHeader
             title="Historial de lecturas de catálogo"
             description="Quién leyó el catálogo de qué marca, de dónde y cuándo, con la confirmación de consentimiento. Los paquetes se conservan 7 días."
@@ -181,7 +178,7 @@ export default async function BulkPage() {
           <div className="mt-4">
             <RunsList runs={runs} />
           </div>
-        </GlassCard>
+        </div>
       </PageShell>
     </>
   );

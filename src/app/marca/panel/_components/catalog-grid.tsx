@@ -280,7 +280,7 @@ function GarmentTile({
           aria-label={g.title}
           onClick={onToggle}
           className={cn(
-            "glass-input block w-full rounded-2xl border-2 p-2 text-left focus-visible:ring-3 focus-visible:ring-ring/50",
+            "bg-surface-raised border-[1.5px] border-line text-text focus:border-line-strong focus:outline-none block w-full rounded-2xl border-2 p-2 text-left focus-visible:ring-3 focus-visible:ring-ring/50",
             selected ? "!border-forest" : "border-transparent",
           )}
         >
@@ -291,7 +291,7 @@ function GarmentTile({
           type="button"
           aria-label={`Editar ${g.title}`}
           onClick={onEdit}
-          className="glass-input block w-full rounded-2xl p-2 text-left hover:bg-white/70 focus-visible:ring-3 focus-visible:ring-ring/50"
+          className="bg-surface-raised border-[1.5px] border-line text-text focus:border-line-strong focus:outline-none block w-full rounded-2xl p-2 text-left hover:bg-surface-sunken focus-visible:ring-3 focus-visible:ring-ring/50"
         >
           {body}
           <span className="mt-1.5 block text-xs text-forest">Editar</span>

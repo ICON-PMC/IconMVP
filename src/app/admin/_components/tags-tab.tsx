@@ -1,4 +1,3 @@
-import { GlassCard } from "@/components/glass-card";
 import { FormField } from "@/components/form-field";
 import { NativeSelect } from "@/components/native-select";
 import { SectionHeader } from "@/components/page-shell";
@@ -36,7 +35,7 @@ export function TagsTab({
 }) {
   return (
     <div className="space-y-6">
-      <GlassCard className="p-5">
+      <div className="surface p-5">
         <form action={createTag} className="flex flex-col gap-4 sm:flex-row sm:items-end">
           <FormField label="Tipo" htmlFor="t-type" className="sm:w-48">
             <NativeSelect id="t-type" name="type" defaultValue="style">
@@ -54,7 +53,7 @@ export function TagsTab({
             Crear etiqueta
           </Button>
         </form>
-      </GlassCard>
+      </div>
 
       {TYPES.map((type) => {
         const list = tags.filter((t) => t.type === type);
@@ -63,7 +62,7 @@ export function TagsTab({
             <SectionHeader title={`${TAG_LABELS[type]} (${list.length})`} />
             <ul className="mt-3 flex flex-col gap-2">
               {list.map((t) => (
-                <li key={t.id} className="glass-input flex flex-wrap items-center gap-2 rounded-xl p-2">
+                <li key={t.id} className="bg-surface-raised border-[1.5px] border-line text-text focus:border-line-strong focus:outline-none flex flex-wrap items-center gap-2 rounded-xl p-2">
                   <form action={renameTag} className="flex flex-1 items-center gap-2">
                     <input type="hidden" name="id" value={t.id} />
                     <Input
@@ -127,7 +126,7 @@ function SearchVocabulary({
         />
         <ul className="mt-3 flex flex-col gap-2">
           {synonyms.map((g) => (
-            <li key={g.id} className="glass-input flex flex-wrap items-start gap-2 rounded-xl p-2">
+            <li key={g.id} className="bg-surface-raised border-[1.5px] border-line text-text focus:border-line-strong focus:outline-none flex flex-wrap items-start gap-2 rounded-xl p-2">
               <form action={saveSynonymGroup} className="flex min-w-0 flex-1 flex-col gap-2 sm:flex-row">
                 <input type="hidden" name="id" value={g.id} />
                 <Textarea
@@ -168,7 +167,7 @@ function SearchVocabulary({
         <ul className="mt-3 flex flex-wrap gap-1.5">
           {stopwords.map((w) => (
             <li key={w}>
-              <form action={deleteStopword} className="glass-input flex items-center gap-1 rounded-full py-0.5 pr-1 pl-3 text-sm">
+              <form action={deleteStopword} className="bg-surface-raised border-[1.5px] border-line text-text focus:border-line-strong focus:outline-none flex items-center gap-1 rounded-full py-0.5 pr-1 pl-3 text-sm">
                 <input type="hidden" name="word" value={w} />
                 {w}
                 <button

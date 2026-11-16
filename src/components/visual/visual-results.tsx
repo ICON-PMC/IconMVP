@@ -106,7 +106,7 @@ export function VisualResults({
 
   if (!session)
     return (
-      <div className="glass flex flex-col items-center gap-3 rounded-2xl px-6 py-14 text-center">
+      <div className="bg-surface-raised border border-line flex flex-col items-center gap-3 rounded-2xl px-6 py-14 text-center">
         <p className="text-sm text-ink/60">Toma o sube una foto de una prenda para ver las más parecidas.</p>
         <CameraButton isLoggedIn />
       </div>
@@ -140,7 +140,7 @@ export function VisualResults({
           <CameraButton
             isLoggedIn
             label="Otra foto"
-            className="glass-input flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium text-ink/80 hover:bg-white/70"
+            className="bg-surface-raised border-[1.5px] border-line text-text focus:border-line-strong focus:outline-none flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium text-ink/80 hover:bg-surface-sunken"
           />
         </div>
         {cropError && (
@@ -153,11 +153,11 @@ export function VisualResults({
       {/* Coincidencias (derecha / abajo en móvil) */}
       <div>
         {current?.error ? (
-          <p className="glass rounded-2xl px-6 py-14 text-center text-sm text-coral">{current.error}</p>
+          <p className="bg-surface-raised border border-line rounded-2xl px-6 py-14 text-center text-sm text-coral">{current.error}</p>
         ) : !current ? (
           <Loading />
         ) : current.items.length === 0 ? (
-          <div className="glass rounded-2xl px-6 py-14 text-center">
+          <div className="bg-surface-raised border border-line rounded-2xl px-6 py-14 text-center">
             <p className="text-sm text-ink/60">Ninguna prenda cumple esos filtros.</p>
             {hasFilters && (
               <Link href="/feed?visual=1" className="mt-3 inline-block text-sm font-medium text-coral hover:underline">

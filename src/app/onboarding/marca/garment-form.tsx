@@ -9,7 +9,7 @@ import { GarmentTagFields } from "@/components/garment-tag-fields";
 import type { TagOptions } from "@/lib/tags";
 import { addOnboardingGarment, type GarmentFormState } from "./actions";
 
-const field = "glass-input h-11 rounded-xl px-4 text-base md:h-10 md:text-sm";
+const field = "bg-surface-raised border-[1.5px] border-line text-text focus:border-line-strong focus:outline-none h-11 rounded-xl px-4 text-base md:h-10 md:text-sm";
 
 function FieldError({ id, msg }: { id: string; msg?: string }) {
   return msg ? (
@@ -85,7 +85,7 @@ export function GarmentForm({
 
       <div>
         <Label htmlFor="image" className="mb-1 text-ink/60">Foto</Label>
-        <Input id="image" name="image" type="file" accept="image/*" className="glass-input h-auto rounded-xl py-2"
+        <Input id="image" name="image" type="file" accept="image/*" className="bg-surface-raised border-[1.5px] border-line text-text focus:border-line-strong focus:outline-none h-auto rounded-xl py-2"
           aria-invalid={!!e.photo} aria-describedby="photo-err"
           onChange={(ev) => {
             const f = ev.target.files?.[0];

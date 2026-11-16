@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Aurora } from "@/components/aurora";
 import { getCurrentUser } from "@/lib/auth";
 import { getLandingPhotos } from "@/lib/landing";
 import { Hero } from "@/components/landing/hero";
@@ -33,7 +32,6 @@ export default async function MarcasPage() {
 
   return (
     <>
-      <Aurora />
       <div className="mx-auto w-full max-w-6xl px-4 sm:px-8">
         <LandingHeader audience="marcas" />
 

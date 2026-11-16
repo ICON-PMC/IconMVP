@@ -71,36 +71,6 @@ body {
   min-height: 100dvh;
 }
 
-/* ── Frosted glass ("liquid glass") ───────────────────────────── */
-.glass {
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.3),
-    rgba(255, 255, 255, 0.12)
-  );
-  backdrop-filter: blur(22px) saturate(180%);
-  -webkit-backdrop-filter: blur(22px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  box-shadow:
-    0 10px 36px rgba(20, 40, 30, 0.18),
-    inset 0 1px 0 rgba(255, 255, 255, 0.6);
-}
-
-.glass-input {
-  background: rgba(255, 255, 255, 0.45);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  transition:
-    border-color 0.15s ease,
-    background 0.15s ease;
-}
-.glass-input:focus {
-  outline: none;
-  background: rgba(255, 255, 255, 0.65);
-  border-color: var(--color-forest);
-}
-
 /* ── shadcn/ui ────────────────────────────────────────────────────
    Los tokens de shadcn se mapean a los tokens de uso de Icon (no hay sistema de color
    paralelo). primary = acción (coral), destructive = peligro (coral-deep), etc. */
@@ -196,14 +166,6 @@ body {
   padding-bottom: calc(6rem + env(safe-area-inset-bottom));
 }
 
-/* Inputs `glass-input` de 16px en móvil: evita el zoom automático de iOS al enfocar. */
-@media (max-width: 767px) {
-  input.glass-input,
-  select.glass-input,
-  textarea.glass-input {
-    font-size: 16px;
-  }
-}
 
 /* ── Sistema "tropical plano" (spec 007) ───────────────────────────────────────── */
 @utility surface {
