@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Chip } from "@/components/chip";
 import { cn } from "@/lib/utils";
 
 export type ChipOption = { id: string; name: string };
@@ -41,34 +42,23 @@ export function ChipSelect({
 
   return (
     <fieldset className={cn("min-w-0", className)}>
-      <legend className="mb-1.5 text-xs font-medium uppercase tracking-wide text-ink/60">
+      <legend className="mb-1 text-label text-text">
         {legend}
         {selected.size > 0 && (
-          <span className="ml-1.5 text-forest">
+          <span className="ml-1.5 text-text-muted">
             · {selected.size}
             {max != null && ` de ${max}`}
           </span>
         )}
       </legend>
-      <div className="flex flex-wrap gap-2">
+      {/* Chips del sistema (spec 007): activo = coral con texto tinta. */}
+      <div className="flex flex-wrap gap-x-2">
         {options.map((o) => {
           const on = selected.has(o.id);
           return (
-            <button
-              key={o.id}
-              type="button"
-              aria-pressed={on}
-              disabled={full && !on}
-              onClick={() => toggle(o.id)}
-              className={cn(
-                "glass-input inline-flex min-h-11 items-center rounded-full px-4 text-sm transition-colors md:min-h-8 md:px-3 md:text-xs",
-                "focus-visible:ring-3 focus-visible:ring-ring/50",
-                on ? "!border-forest !bg-forest text-white" : "text-ink/80 hover:bg-white/70",
-                "disabled:cursor-not-allowed disabled:opacity-40",
-              )}
-            >
+            <Chip key={o.id} selected={on} disabled={full && !on} onClick={() => toggle(o.id)}>
               {o.name}
-            </button>
+            </Chip>
           );
         })}
       </div>

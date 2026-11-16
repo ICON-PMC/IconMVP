@@ -6,16 +6,28 @@ import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { authErrorMessage } from "@/lib/auth-errors";
 
+// Destino tras iniciar sesión: solo rutas internas ("/algo", nunca "//dominio" ni URLs absolutas),
+// para no convertir el login en un redirector abierto.
+function safeNext(raw: FormDataEntryValue | null): string | null {
+  const v = typeof raw === "string" ? raw.trim() : "";
+  return v.startsWith("/") && !v.startsWith("//") && !v.startsWith("/\\") ? v : null;
+}
+
 export async function signIn(formData: FormData) {
   const email = String(formData.get("email") ?? "");
   const password = String(formData.get("password") ?? "");
+  const next = safeNext(formData.get("next"));
 
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword({ email, password });
-  if (error) redirect(`/login?error=${encodeURIComponent(authErrorMessage(error))}`);
+  if (error) {
+    const keep = next ? `&next=${encodeURIComponent(next)}` : "";
+    redirect(`/login?error=${encodeURIComponent(authErrorMessage(error))}${keep}`);
+  }
 
   revalidatePath("/", "layout");
-  redirect("/");
+  // Vuelve a donde estaba (barra de navegación, "Guardar" sin sesión…) o al inicio.
+  redirect(next ?? "/");
 }
 
 export async function signUp(formData: FormData) {

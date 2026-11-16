@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 
 // Botón de Google. Requiere configurar el proveedor en supabase/config.toml + credenciales
@@ -14,12 +15,8 @@ export function GoogleButton() {
   }
 
   return (
-    <button
-      type="button"
-      onClick={handleClick}
-      className="glass-input flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium text-ink hover:bg-white/70"
-    >
+    <Button type="button" variant="secondary" size="lg" onClick={handleClick} className="w-full">
       Continuar con Google
-    </button>
+    </Button>
   );
 }

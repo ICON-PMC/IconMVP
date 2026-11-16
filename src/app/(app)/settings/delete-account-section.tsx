@@ -12,17 +12,17 @@ export function DeleteAccountSection({ brandName }: { brandName: string | null }
   const [pending, start] = useTransition();
 
   return (
-    <section className="mt-6 rounded-2xl border border-coral/30 p-5">
-      <h2 className="text-base font-medium text-coral">Eliminar mi cuenta</h2>
-      <p className="mt-1 text-sm text-ink/70">
+    <section className="mt-6 rounded-[var(--radius-card)] border-[1.5px] border-danger/40 p-5">
+      <h2 className="text-h3 text-danger">Eliminar mi cuenta</h2>
+      <p className="mt-1 text-sm text-text">
         Borra tu cuenta y no podrás volver a entrar con ella.
         {brandName && ` También se borra ${brandName} con todo su contenido.`} No se puede deshacer.
       </p>
       <Button
         type="button"
-        variant="destructive"
+        variant="danger"
         onClick={() => setOpen(true)}
-        className="mt-4 rounded-full"
+        className="mt-4"
       >
         Eliminar mi cuenta
       </Button>

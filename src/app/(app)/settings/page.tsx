@@ -6,7 +6,10 @@ import { CityCombobox } from "@/components/city-combobox";
 import { getCityOptions } from "@/lib/cities";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser, getMyBrand } from "@/lib/auth";
-import { GlassCard } from "@/components/glass-card";
+import { ChipSelect } from "@/components/chip-select";
+import { FormField } from "@/components/form-field";
+import { SubmitButton } from "@/components/submit-button";
+import { Input } from "@/components/ui/input";
 import { updateSettings } from "./actions";
 
 export default async function SettingsPage({
@@ -29,85 +32,46 @@ export default async function SettingsPage({
   const myCity = session.profile.home_city_id;
   const myBrand = await getMyBrand();
 
+  // Ajustes (spec 007, US5): secciones en tarjetas, campos y chips del sistema.
   return (
-    <>
-      <div className="mx-auto w-full max-w-lg px-4 py-6">
+    <div className="mx-auto w-full max-w-lg px-4 py-5">
+      <h1 className="mt-2 text-h1 text-text">Ajustes</h1>
+      <p className="mt-1 text-sm text-text-muted">{session.email}</p>
 
-        <h1 className="mt-8 text-3xl font-medium tracking-tight text-forest">
-          Ajustes
-        </h1>
-        <p className="mt-1 text-sm text-ink/60">{session.email}</p>
+      {ok && (
+        <p role="status" className="mt-4 rounded-[var(--radius-field)] bg-surface-sunken px-3.5 py-2.5 text-sm font-medium text-text">
+          ✓ Cambios guardados.
+        </p>
+      )}
 
-        {ok && (
-          <p className="mt-4 rounded-xl bg-leaf-soft px-3 py-2 text-sm text-forest-deep">
-            ✓ Cambios guardados.
-          </p>
-        )}
-
-        <GlassCard className="mt-6 p-6">
-          <form action={updateSettings} className="flex flex-col gap-6">
-            <div>
-              <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-ink/50">
-                Nombre
-              </label>
-              <input
-                name="display_name"
-                defaultValue={session.profile.display_name ?? ""}
-                placeholder="Tu nombre"
-                className="glass-input w-full rounded-xl px-4 py-2.5 text-sm text-ink"
-              />
-            </div>
-
-            <div>
-              <label
-                htmlFor="city"
-                className="mb-2 block text-xs font-medium uppercase tracking-wide text-ink/50"
-              >
-                Tu ciudad
-              </label>
-              <CityCombobox id="city" name="city" options={cities} defaultValue={myCity} />
-            </div>
-
-            <div>
-              <p className="mb-2 text-xs font-medium uppercase tracking-wide text-ink/50">
-                Tus estilos
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {(styles ?? []).map((s) => (
-                  <label key={s.id} className="cursor-pointer">
-                    <input
-                      type="checkbox"
-                      name="styles"
-                      value={s.id}
-                      defaultChecked={myStyles.has(s.id)}
-                      className="peer sr-only"
-                    />
-                    <span className="glass-input inline-block rounded-full px-3 py-1 text-sm text-ink/80 peer-checked:bg-forest peer-checked:text-white">
-                      {s.name}
-                    </span>
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <button
-                type="submit"
-                className="rounded-full bg-forest px-6 py-2.5 text-sm font-medium text-white hover:bg-forest-deep"
-              >
-                Guardar cambios
-              </button>
-            </div>
-          </form>
-        </GlassCard>
-        {/* En móvil no hay menú de cuenta en la barra superior: salir vive aquí (spec 007). */}
-        <form action={signOut} className="mt-6">
-          <Button type="submit" variant="secondary" className="w-full sm:w-auto">
-            Cerrar sesión
-          </Button>
+      <section className="surface mt-6 p-5 md:p-6">
+        <h2 className="mb-4 text-h3 text-text">Tu perfil</h2>
+        <form action={updateSettings} className="flex flex-col gap-5">
+          <FormField label="Nombre" htmlFor="display_name">
+            <Input id="display_name" name="display_name" defaultValue={session.profile.display_name ?? ""} placeholder="Tu nombre" />
+          </FormField>
+          <FormField label="Tu ciudad" htmlFor="city">
+            <CityCombobox id="city" name="city" options={cities} defaultValue={myCity} />
+          </FormField>
+          <ChipSelect
+            name="styles"
+            legend="Tus estilos"
+            options={styles ?? []}
+            defaultSelected={[...myStyles]}
+          />
+          <SubmitButton pendingText="Guardando…" className="w-full sm:w-fit">
+            Guardar cambios
+          </SubmitButton>
         </form>
-        <DeleteAccountSection brandName={myBrand?.name ?? null} />
-      </div>
-    </>
+      </section>
+
+      {/* En móvil no hay menú de cuenta en la barra superior: salir vive aquí (spec 007). */}
+      <form action={signOut} className="mt-6">
+        <Button type="submit" variant="secondary" className="w-full sm:w-auto">
+          Cerrar sesión
+        </Button>
+      </form>
+      <DeleteAccountSection brandName={myBrand?.name ?? null} />
+    </div>
   );
 }
