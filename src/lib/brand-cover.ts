@@ -40,7 +40,7 @@ export async function saveBrandCoverImage(
 
   const { error } = await supabase
     .from("brands")
-    .update({ logo_url: img.key, logo_bytes: img.bytes })
+    .update({ logo_url: img.key, logo_bytes: img.bytes, logo_variants_ready: img.variantsReady })
     .eq("id", brandId);
   if (error) {
     console.error("[portada] guardar falló:", error.code, error.message);

@@ -1,5 +1,6 @@
 import { Aurora } from "@/components/aurora";
 import { SiteHeader } from "@/components/site-header";
+import { FeedSkeletonGrid } from "@/components/feed/feed-skeleton";
 
 // Esqueleto del feed mientras carga el server component (grupo 9).
 export default function FeedLoading() {
@@ -15,18 +16,7 @@ export default function FeedLoading() {
             <div key={i} className="h-8 w-20 shrink-0 animate-pulse rounded-full bg-white/50" />
           ))}
         </div>
-        <div className="columns-2 gap-4 md:columns-3">
-          {Array.from({ length: 12 }).map((_, i) => (
-            <div key={i} className="mb-4 break-inside-avoid">
-              <div
-                className="animate-pulse rounded-2xl bg-white/50"
-                style={{ aspectRatio: "4 / 5" }}
-              />
-              <div className="mt-2 h-3 w-2/3 animate-pulse rounded bg-white/50" />
-              <div className="mt-1.5 h-3 w-1/3 animate-pulse rounded bg-white/40" />
-            </div>
-          ))}
-        </div>
+        <FeedSkeletonGrid />
       </div>
     </>
   );

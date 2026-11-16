@@ -461,7 +461,7 @@ export async function uploadGarmentImageAction(
 
   const { error: imgErr } = await supabase
     .from("garment_images")
-    .insert({ garment_id: garmentId, cf_image_id: img.key, bytes: img.bytes, position: 0 });
+    .insert({ garment_id: garmentId, cf_image_id: img.key, bytes: img.bytes, variants_ready: img.variantsReady, position: 0 });
   if (imgErr) {
     console.error("[uploadGarmentImage] insert garment_images falló:", imgErr.message);
     return { ok: false, error: imgErr.message };

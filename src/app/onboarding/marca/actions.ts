@@ -216,7 +216,7 @@ export async function addOnboardingGarment(
     ? (
         await supabase
           .from("garment_images")
-          .insert({ garment_id: garment.id, cf_image_id: img.key, bytes: img.bytes, position: 0 })
+          .insert({ garment_id: garment.id, cf_image_id: img.key, bytes: img.bytes, variants_ready: img.variantsReady, position: 0 })
       ).error
     : true;
 

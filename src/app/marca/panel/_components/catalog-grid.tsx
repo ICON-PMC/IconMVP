@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
+import { R2Image } from "@/components/r2-image";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { CheckIcon, SearchIcon } from "lucide-react";
@@ -11,7 +12,6 @@ import { ConfirmDialog } from "@/components/confirm-dialog";
 import { EmptyState } from "@/components/empty-state";
 import { StatusBadge } from "@/components/status-badge";
 import { StickyActionBar } from "@/components/sticky-action-bar";
-import { imageUrl } from "@/lib/images";
 import { formatCop } from "@/lib/taxonomy";
 import type { TagOptions } from "@/lib/tags";
 import { useSelection } from "@/lib/use-selection";
@@ -239,13 +239,12 @@ function GarmentTile({
   onToggle: () => void;
   onEdit: () => void;
 }) {
-  const img = imageUrl(g.cf_image_id);
+  const img = g.cf_image_id;
   const body = (
     <>
       <div className="relative mb-2">
         {img ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={img} alt="" className="aspect-square w-full rounded-xl object-cover" />
+          <R2Image image={img} alt="" sizes="(min-width: 768px) 25vw, 50vw" className="aspect-square w-full rounded-xl object-cover" />
         ) : (
           <div className="aspect-square w-full rounded-xl bg-ink/5" aria-hidden />
         )}

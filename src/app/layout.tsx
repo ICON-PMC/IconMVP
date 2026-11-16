@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
@@ -21,6 +22,14 @@ const instrumentSerif = Instrument_Serif({
   weight: "400",
   style: ["normal", "italic"],
 });
+
+const R2_ORIGIN = (() => {
+  try {
+    return new URL(process.env.NEXT_PUBLIC_R2_PUBLIC_BASE ?? "").origin;
+  } catch {
+    return null;
+  }
+})();
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://iconcolombia.com"),
@@ -46,10 +55,15 @@ export default function RootLayout({
       lang="es"
       className={`${geistSans.variable} ${geistMono.variable} ${instrumentSerif.variable} h-full antialiased`}
     >
+      <head>
+        {/* Conexión anticipada al host de las fotos (spec 006): ahorra la negociación TLS de la primera imagen. */}
+        {R2_ORIGIN && <link rel="preconnect" href={R2_ORIGIN} crossOrigin="" />}
+      </head>
       <body className="min-h-full flex flex-col">
         {children}
         <Toaster position="top-center" />
         <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );

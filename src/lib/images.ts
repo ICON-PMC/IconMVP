@@ -12,3 +12,31 @@ export function imageUrl(
   if (!R2_BASE) return null;
   return `${R2_BASE}/${idOrUrl.replace(/^\//, "")}`;
 }
+
+// ── Variantes (spec 006) ─────────────────────────────────────────────
+// Cada foto en R2 existe en 1280 px (la clave principal) y en dos tamaños menores nombrados por
+// convención: `a/b/x.webp` → `a/b/x.w320.webp` y `a/b/x.w640.webp`. La base solo guarda la principal.
+export const IMAGE_VARIANT_WIDTHS = [320, 640] as const;
+export const IMAGE_MAIN_WIDTH = 1280;
+export type VariantWidth = (typeof IMAGE_VARIANT_WIDTHS)[number];
+
+/** Clave de una variante, o null si el valor es una URL http o no es un .webp de R2. */
+export function variantKey(key: string, width: VariantWidth): string | null {
+  if (/^https?:\/\//.test(key) || !/\.webp$/.test(key) || /\.w\d+\.webp$/.test(key)) return null;
+  return key.replace(/\.webp$/, `.w${width}.webp`);
+}
+
+/** `srcset` con las dos variantes y la principal; undefined si el valor no es una clave de R2. */
+export function imageSrcSet(idOrUrl: string | null | undefined): string | undefined {
+  if (!idOrUrl) return undefined;
+  const main = imageUrl(idOrUrl);
+  if (!main) return undefined;
+  const parts: string[] = [];
+  for (const w of IMAGE_VARIANT_WIDTHS) {
+    const k = variantKey(idOrUrl, w);
+    if (!k) return undefined;
+    parts.push(`${imageUrl(k)} ${w}w`);
+  }
+  parts.push(`${main} ${IMAGE_MAIN_WIDTH}w`);
+  return parts.join(", ");
+}

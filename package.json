@@ -13,13 +13,16 @@
     "db:backfill-image-bytes": "tsx scripts/backfill-image-bytes.ts",
     "catalog:excel": "tsx scripts/catalog-to-excel.ts",
     "db:embed": "tsx scripts/embed-catalog.ts",
-    "visual:eval": "tsx scripts/visual-eval.ts"
+    "visual:eval": "tsx scripts/visual-eval.ts",
+    "perf:measure": "tsx scripts/perf-measure.ts",
+    "db:image-variants": "tsx scripts/backfill-image-variants.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",
     "@supabase/ssr": "^0.12.0",
     "@supabase/supabase-js": "^2.108.1",
     "@vercel/analytics": "^2.0.1",
+    "@vercel/speed-insights": "^1.3.1",
     "aws4fetch": "^1.0.20",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -44,6 +47,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.2.9",
+    "lighthouse": "^12.8.2",
     "tailwindcss": "^4",
     "tsx": "^4.22.4",
     "typescript": "^5"

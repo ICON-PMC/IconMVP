@@ -3,8 +3,9 @@ import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { FlashToast } from "@/components/flash-toast";
 import { getBrandStyleNames } from "@/lib/tags";
-import { getCityFilterOptions } from "@/lib/cities";
 import { createClient } from "@/lib/supabase/server";
+import { EMPTY_FEED_OPTIONS, getFeedOptions } from "@/lib/feed-options";
+import { FeedSkeletonGrid } from "@/components/feed/feed-skeleton";
 import { SiteHeader } from "@/components/site-header";
 import { Aurora } from "@/components/aurora";
 import { FeedTopBar } from "@/components/feed/top-bar";
@@ -19,7 +20,7 @@ import { getMySavedIds } from "@/lib/saves";
 import { getMyLikedGarmentIds, getMyLikedPostIds } from "@/lib/social";
 import { getCurrentUser } from "@/lib/auth";
 import { getSuggestionChips } from "@/lib/suggestions";
-import { parseFeedParams, getFeedPage, type FeedItem } from "@/lib/feed";
+import { FEED_PAGE_SIZE, parseFeedParams, getFeedPage, type FeedItem } from "@/lib/feed";
 import type { FilterGroup } from "@/components/feed/filter-panel";
 
 type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
@@ -81,14 +82,11 @@ export default async function FeedPage({ searchParams }: { searchParams: SearchP
 
   const supabase = await createClient();
 
-  const [catsRes, occsRes, stylesRes, cityOptions, colorsRes, styleUseRes] = await Promise.all([
-    supabase.from("tags").select("slug, name").eq("type", "category").order("name"),
-    supabase.from("tags").select("slug, name").eq("type", "occasion").order("name"),
-    supabase.from("tags").select("slug, name").eq("type", "style").eq("is_hidden", false).order("name"),
-    getCityFilterOptions(supabase),
-    supabase.rpc("color_filter_options"),
-    supabase.from("feed_items").select("styles"),
-  ]);
+  // Opciones de filtros en caché compartida de 60 s (spec 006); si fallan, el feed funciona sin ellas.
+  const options = await getFeedOptions().catch((e) => {
+    console.error(e instanceof Error ? e.message : e);
+    return EMPTY_FEED_OPTIONS;
+  });
   const toOpts = (rows: { slug: string; name: string }[] | null) =>
     (rows ?? []).map((r) => ({ value: r.slug, label: r.name }));
 
@@ -96,41 +94,35 @@ export default async function FeedPage({ searchParams }: { searchParams: SearchP
   const cityGroup: FilterGroup = {
     param: "city",
     label: "Ciudad",
-    options: cityOptions,
-    searchable: cityOptions.length > CITY_CHIPS_MAX,
+    options: options.cities,
+    searchable: options.cities.length > CITY_CHIPS_MAX,
   };
   const priceGroup: FilterGroup = {
     param: "price",
     label: "Precio",
     options: PRICE_BUCKETS.map((b) => ({ value: b.value, label: b.label })),
   };
-  const categoryGroup: FilterGroup = { param: "category", label: "Categoría", options: toOpts(catsRes.data) };
-  const occasionGroup: FilterGroup = { param: "occasion", label: "Ocasión", options: toOpts(occsRes.data) };
+  const categoryGroup: FilterGroup = { param: "category", label: "Categoría", options: toOpts(options.categories) };
+  const occasionGroup: FilterGroup = { param: "occasion", label: "Ocasión", options: toOpts(options.occasions) };
   // Estilos: solo los que tienen contenido publicado. Vocabulario abierto (spec 004): con muchos,
   // los STYLE_CHIPS más usados van como chips y el resto se encuentra con el buscador.
-  const styleUses = new Map<string, number>();
-  for (const row of styleUseRes.data ?? [])
-    for (const slug of row.styles ?? []) styleUses.set(slug, (styleUses.get(slug) ?? 0) + 1);
-  const styleOptions = toOpts((stylesRes.data ?? []).filter((t) => styleUses.has(t.slug)));
+  const styleOptions = toOpts(options.styles);
   const styleGroup: FilterGroup = {
     param: "style",
     label: "Estilo",
     options: styleOptions,
     searchable: styleOptions.length > STYLE_CHIPS,
-    featured: [...styleUses.entries()]
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, STYLE_CHIPS)
-      .map(([slug]) => slug),
+    featured: options.popularStyles.slice(0, STYLE_CHIPS),
   };
   const colorGroup: FilterGroup = {
     param: "color",
     label: "Color",
-    options: (colorsRes.data ?? []).map((c) => ({ value: c.slug, label: c.name, swatch: c.hex })),
+    options: options.colors.map((c) => ({ value: c.slug, label: c.name, swatch: c.hex })),
   };
   const allGroups = [occasionGroup, cityGroup, priceGroup, categoryGroup, styleGroup, colorGroup];
 
   const tagNames: Record<string, string> = {};
-  for (const t of [...(occsRes.data ?? []), ...(stylesRes.data ?? [])]) tagNames[t.slug] = t.name;
+  for (const t of [...options.occasions, ...options.styles]) tagNames[t.slug] = t.name;
 
   // Una sola tanda: la sesión se reusa en los dos modos y en los FeedCard.
   const [saved, likedPosts, likedGarments, session] = await Promise.all([
@@ -270,6 +262,8 @@ export default async function FeedPage({ searchParams }: { searchParams: SearchP
       return `/feed?${params}`;
     })();
 
+    const gridKey = JSON.stringify({ q, type, f, sort });
+
     if (type === "brands") {
       groups = [styleGroup];
       const { data, error } = await supabase.rpc("search_brands", {
@@ -334,19 +328,7 @@ export default async function FeedPage({ searchParams }: { searchParams: SearchP
         rows.length === 0 ? (
           <EmptyState text={`No encontramos outfits para «${q}». Prueba con otro término o quita filtros.`} clearHref={clearFiltersHref} />
         ) : (
-          <div className="columns-2 gap-4 md:columns-3">
-            {rows.map((item) => (
-              <FeedCard
-                key={`${item.kind}:${item.id}`}
-                item={item}
-                tagNames={tagNames}
-                saved={saved.posts.has(item.id)}
-                liked={liked.posts.has(item.id)}
-                isLoggedIn={isLoggedIn}
-                path="/feed"
-              />
-            ))}
-          </div>
+          <SearchResults rows={rows} gridKey={gridKey} saved={saved} liked={liked} isLoggedIn={isLoggedIn} tagNames={tagNames} />
         );
     } else if (type === "garments") {
       groups = [cityGroup, priceGroup, categoryGroup, styleGroup, colorGroup];
@@ -365,19 +347,7 @@ export default async function FeedPage({ searchParams }: { searchParams: SearchP
         rows.length === 0 ? (
           <EmptyState text={`No encontramos prendas para «${q}». Prueba con otro término o quita filtros.`} clearHref={clearFiltersHref} />
         ) : (
-          <div className="columns-2 gap-4 md:columns-3">
-            {rows.map((item) => (
-              <FeedCard
-                key={`${item.kind}:${item.id}`}
-                item={item}
-                tagNames={tagNames}
-                saved={saved.garments.has(item.id)}
-                liked={liked.garments.has(item.id)}
-                isLoggedIn={isLoggedIn}
-                path="/feed"
-              />
-            ))}
-          </div>
+          <SearchResults rows={rows} gridKey={gridKey} saved={saved} liked={liked} isLoggedIn={isLoggedIn} tagNames={tagNames} />
         );
     } else {
       // "all" (Todo, por defecto): mezcla prendas + outfits ya encontrados para los contadores.
@@ -396,19 +366,7 @@ export default async function FeedPage({ searchParams }: { searchParams: SearchP
         rows.length === 0 ? (
           <EmptyState text={`No encontramos nada para «${q}». Prueba con otro término o quita filtros.`} clearHref={clearFiltersHref} />
         ) : (
-          <div className="columns-2 gap-4 md:columns-3">
-            {rows.map((item) => (
-              <FeedCard
-                key={`${item.kind}:${item.id}`}
-                item={item}
-                tagNames={tagNames}
-                saved={item.kind === "post" ? saved.posts.has(item.id) : saved.garments.has(item.id)}
-                liked={item.kind === "post" ? liked.posts.has(item.id) : liked.garments.has(item.id)}
-                isLoggedIn={isLoggedIn}
-                path="/feed"
-              />
-            ))}
-          </div>
+          <SearchResults rows={rows} gridKey={gridKey} saved={saved} liked={liked} isLoggedIn={isLoggedIn} tagNames={tagNames} />
         );
     }
 
@@ -421,29 +379,92 @@ export default async function FeedPage({ searchParams }: { searchParams: SearchP
   }
 
   // ===================== Modo browse: feed mixto (outfits + prendas) =====================
-  const [{ items, nextOffset, error }, chips] = await Promise.all([
-    getFeedPage(f, sort),
-    getSuggestionChips(),
-  ]);
+  // La barra y los filtros se envían primero; los resultados llegan en su propio Suspense, con
+  // `key` por filtros + orden para que el esqueleto aparezca también al cambiar un filtro (spec 006).
+  const chips = await getSuggestionChips();
+  const resultsKey = JSON.stringify({ f, sort });
 
   return (
     <Shell isLoggedIn={isLoggedIn} groups={allGroups} sort={sort} suggestions={chips}>
-      {error ? (
-        <p className="glass rounded-2xl px-6 py-16 text-center text-sm text-ink/60">
-          No pudimos cargar el feed en este momento. Intenta de nuevo en un momento.
-        </p>
-      ) : (
-        <FeedGrid
-          key={JSON.stringify({ f, sort })}
-          initialItems={items}
-          initialNextOffset={nextOffset}
-          initialSaved={saved}
-          initialLiked={liked}
+      <Suspense key={resultsKey} fallback={<FeedSkeletonGrid />}>
+        <BrowseResults
+          gridKey={resultsKey}
+          filters={f}
+          sort={sort}
+          saved={saved}
+          liked={liked}
           isLoggedIn={isLoggedIn}
           tagNames={tagNames}
         />
-      )}
+      </Suspense>
     </Shell>
+  );
+}
+
+async function BrowseResults({
+  gridKey,
+  filters,
+  sort,
+  saved,
+  liked,
+  isLoggedIn,
+  tagNames,
+}: {
+  gridKey: string;
+  filters: ReturnType<typeof parseFeedParams>["filters"];
+  sort: string;
+  saved: Awaited<ReturnType<typeof getMySavedIds>>;
+  liked: { posts: Set<string>; garments: Set<string> };
+  isLoggedIn: boolean;
+  tagNames: Record<string, string>;
+}) {
+  const { items, nextOffset, error } = await getFeedPage(filters, sort);
+  if (error)
+    return (
+      <p className="glass rounded-2xl px-6 py-16 text-center text-sm text-ink/60">
+        No pudimos cargar el feed en este momento. Intenta de nuevo en un momento.
+      </p>
+    );
+  return (
+    <FeedGrid
+      key={gridKey}
+      initialItems={items}
+      initialNextOffset={nextOffset}
+      initialSaved={saved}
+      initialLiked={liked}
+      isLoggedIn={isLoggedIn}
+      tagNames={tagNames}
+    />
+  );
+}
+
+// Resultados de búsqueda ya ordenados: la página manda las primeras 24 tarjetas y FeedGrid pide el
+// resto por tandas al bajar (spec 006, FR-019).
+function SearchResults({
+  rows,
+  gridKey,
+  saved,
+  liked,
+  isLoggedIn,
+  tagNames,
+}: {
+  rows: FeedItem[];
+  gridKey: string;
+  saved: Awaited<ReturnType<typeof getMySavedIds>>;
+  liked: { posts: Set<string>; garments: Set<string> };
+  isLoggedIn: boolean;
+  tagNames: Record<string, string>;
+}) {
+  return (
+    <FeedGrid
+      key={gridKey}
+      initialItems={rows.slice(0, FEED_PAGE_SIZE)}
+      pendingIds={rows.slice(FEED_PAGE_SIZE).map((r) => r.id)}
+      initialSaved={saved}
+      initialLiked={liked}
+      isLoggedIn={isLoggedIn}
+      tagNames={tagNames}
+    />
   );
 }
 

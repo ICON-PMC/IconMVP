@@ -1,4 +1,5 @@
 import { AwsV4Signer } from "aws4fetch";
+import { IMAGE_VARIANT_WIDTHS, variantKey } from "@/lib/images";
 
 function r2Config() {
   const endpoint = process.env.R2_S3_ENDPOINT;
@@ -19,6 +20,9 @@ export async function uploadToR2(
   key: string,
   body: Uint8Array | Buffer | ArrayBuffer | string,
   contentType: string,
+  // `immutable`: caché de un año en navegador y CDN (spec 006). Solo para claves que nunca se
+  // reutilizan (fotos publicadas); nunca para artefactos temporales ni el modelo visual.
+  opts: { immutable?: boolean } = {},
 ): Promise<string> {
   const { endpoint, bucket, accessKeyId, secretAccessKey } = r2Config();
 
@@ -42,7 +46,10 @@ export async function uploadToR2(
   const signer = new AwsV4Signer({
     url,
     method: "PUT",
-    headers: { "Content-Type": contentType },
+    headers: {
+      "Content-Type": contentType,
+      ...(opts.immutable ? { "Cache-Control": "public, max-age=31536000, immutable" } : {}),
+    },
     body: bytes,
     accessKeyId,
     secretAccessKey,
@@ -67,12 +74,17 @@ export async function uploadToR2(
 /**
  * Borra objetos de R2. Nunca lanza: un archivo huérfano es mejor que un borrado que falla a la
  * mitad (la fila ya se borró). Devuelve las claves que no se pudieron borrar y las registra.
- * Ignora valores que son URLs (datos de muestra que no viven en el bucket).
+ * Ignora valores que son URLs (datos de muestra que no viven en el bucket). Borra también las
+ * variantes de 320 y 640 px de cada imagen .webp.
  */
 export async function deleteFromR2(keys: (string | null | undefined)[]): Promise<string[]> {
-  const clean = [...new Set(keys.filter((k): k is string => !!k && !/^https?:\/\//.test(k)))].map(
-    (k) => k.replace(/^\//, ""),
-  );
+  const main = keys.filter((k): k is string => !!k && !/^https?:\/\//.test(k)).map((k) => k.replace(/^\//, ""));
+  // Cada imagen arrastra sus variantes (spec 006). Borrar una clave inexistente también responde 204.
+  const withVariants = main.flatMap((k) => [
+    k,
+    ...IMAGE_VARIANT_WIDTHS.map((w) => variantKey(k, w)).filter((v): v is string => !!v),
+  ]);
+  const clean = [...new Set(withVariants)];
   if (!clean.length) return [];
   let config: ReturnType<typeof r2Config>;
   try {

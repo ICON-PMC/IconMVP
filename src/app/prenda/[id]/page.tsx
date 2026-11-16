@@ -4,9 +4,9 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { SiteHeader } from "@/components/site-header";
 import { Aurora } from "@/components/aurora";
+import { R2Image, SIZES } from "@/components/r2-image";
 import { GlassCard } from "@/components/glass-card";
 import { formatCop } from "@/lib/taxonomy";
-import { imageUrl } from "@/lib/images";
 import { getMySavedIds } from "@/lib/saves";
 import { getGarmentLikeCounts, getMyLikedGarmentIds } from "@/lib/social";
 import { getCurrentUser } from "@/lib/auth";
@@ -37,70 +37,66 @@ export default async function GarmentPage({
     .maybeSingle();
   if (!g) notFound();
 
-  const { data: images } = await supabase
-    .from("garment_images")
-    .select("cf_image_id, position")
-    .eq("garment_id", id)
-    .order("position");
-
-  const { data: brand } = await supabase
-    .from("brands")
-    .select("id, name, slug, city_id, is_verified, is_sustainable, is_active")
-    .eq("id", g.brand_id)
-    .maybeSingle();
+  // Todo lo que solo depende de la prenda va en paralelo (spec 006, US4); antes eran ~8 consultas
+  // una detrás de otra.
+  const [
+    { data: images },
+    { data: brand },
+    { data: gs },
+    { data: gt },
+    saved,
+    likedGarmentIds,
+    session,
+    garmentLikeCounts,
+  ] = await Promise.all([
+    supabase.from("garment_images").select("cf_image_id, position").eq("garment_id", id).order("position"),
+    supabase
+      .from("brands")
+      .select("id, name, slug, city_id, is_verified, is_sustainable, is_active")
+      .eq("id", g.brand_id)
+      .maybeSingle(),
+    supabase.from("garment_sizes").select("size_id").eq("garment_id", id),
+    supabase.from("garment_tags").select("tag_id").eq("garment_id", id),
+    getMySavedIds(),
+    getMyLikedGarmentIds(),
+    getCurrentUser(),
+    getGarmentLikeCounts([g.id]),
+  ]);
   // La prenda puede seguir "published" mientras su marca queda desactivada (p.ej. una
   // marca con acceso propio que aún no pasa la revisión de staff, is_active=false por
   // defecto) — sin esto, la prenda seguiría visible por URL directa aunque /marca/[slug]
   // ya dé 404 para esa marca.
   if (!brand || !brand.is_active) notFound();
 
-  let cityName: string | null = null;
-  if (brand?.city_id) {
-    const { data: city } = await supabase
-      .from("cities")
-      .select("name, department")
-      .eq("id", brand.city_id)
-      .maybeSingle();
-    cityName = city ? cityLabel(city.name, city.department) : null;
-  }
-
-  const { data: gs } = await supabase
-    .from("garment_sizes")
-    .select("size_id")
-    .eq("garment_id", id);
   const sizeIds = (gs ?? []).map((x) => x.size_id);
-  const sizes = sizeIds.length
-    ? ((
-        await supabase
+  const tagIds = (gt ?? []).map((x) => x.tag_id);
+  // Categoría primero; luego estilo, ocasión y clima.
+  const TAG_ORDER = ["category", "style", "occasion", "temperature"];
+  // Segunda tanda: lo que depende de la primera, también en paralelo.
+  const [city, sizes, tagRows] = await Promise.all([
+    brand.city_id
+      ? supabase.from("cities").select("name, department").eq("id", brand.city_id).maybeSingle().then((r) => r.data)
+      : Promise.resolve(null),
+    sizeIds.length
+      ? supabase
           .from("sizes")
           .select("label, sort_order")
           .in("id", sizeIds)
           .order("sort_order")
-      ).data ?? [])
-    : [];
-
-  const { data: gt } = await supabase
-    .from("garment_tags")
-    .select("tag_id")
-    .eq("garment_id", id);
-  const tagIds = (gt ?? []).map((x) => x.tag_id);
-  // Categoría primero; luego estilo, ocasión y clima.
-  const TAG_ORDER = ["category", "style", "occasion", "temperature"];
-  const categories = tagIds.length
-    ? ((await supabase.from("tags").select("name, type").in("id", tagIds)).data ?? []).sort(
-        (a, b) => TAG_ORDER.indexOf(a.type) - TAG_ORDER.indexOf(b.type) || a.name.localeCompare(b.name),
-      )
-    : [];
+          .then((r) => r.data ?? [])
+      : Promise.resolve([] as { label: string; sort_order: number }[]),
+    tagIds.length
+      ? supabase.from("tags").select("name, type").in("id", tagIds).then((r) => r.data ?? [])
+      : Promise.resolve([] as { name: string; type: string }[]),
+  ]);
+  const cityName = city ? cityLabel(city.name, city.department) : null;
+  const categories = [...tagRows].sort(
+    (a, b) => TAG_ORDER.indexOf(a.type) - TAG_ORDER.indexOf(b.type) || a.name.localeCompare(b.name),
+  );
 
   const gallery = images?.map((i) => i.cf_image_id) ?? [];
   const meta = [g.color, g.fabric].filter(Boolean).join(" · ");
-  const [saved, likedGarmentIds, session] = await Promise.all([
-    getMySavedIds(),
-    getMyLikedGarmentIds(),
-    getCurrentUser(),
-  ]);
   const isLoggedIn = Boolean(session?.profile);
-  const garmentLikeCounts = await getGarmentLikeCounts([g.id]);
 
   return (
     <>
@@ -119,8 +115,15 @@ export default async function GarmentPage({
           {/* Galería */}
           <div className="flex flex-col gap-4">
             {gallery.map((src, idx) => (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img key={idx} src={imageUrl(src) ?? ""} alt={g.title} className="w-full rounded-2xl" />
+              <R2Image
+                key={idx}
+                image={src}
+                alt={g.title}
+                sizes={SIZES.detail}
+                priority={idx === 0}
+                // Espacio reservado antes de que llegue la foto (CLS, spec 006); contain para no recortar la prenda.
+                className="aspect-[4/5] w-full rounded-2xl bg-white/40 object-contain"
+              />
             ))}
           </div>
 

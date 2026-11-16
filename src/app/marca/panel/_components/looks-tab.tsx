@@ -1,13 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import { R2Image } from "@/components/r2-image";
 import Link from "next/link";
 import { EmptyState } from "@/components/empty-state";
 import { SectionHeader } from "@/components/page-shell";
 import { StatusBadge } from "@/components/status-badge";
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { imageUrl } from "@/lib/images";
 import { NewLookSheet } from "./new-look-sheet";
 
 export type LookRow = {
@@ -85,7 +85,7 @@ export function LooksTab({
       {visible.length ? (
         <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
           {visible.map((p) => {
-            const img = imageUrl(p.cf_image_id);
+            const img = p.cf_image_id;
             return (
               <li key={p.id}>
                 <Link
@@ -93,10 +93,10 @@ export function LooksTab({
                   className="glass-input block rounded-2xl p-2 transition-colors hover:bg-white/70"
                 >
                   {img ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={img}
+                    <R2Image
+                      image={img}
                       alt={p.caption ?? "Look"}
+                      sizes="(min-width: 768px) 25vw, 50vw"
                       className="mb-2 aspect-[3/4] w-full rounded-xl object-cover"
                     />
                   ) : (
