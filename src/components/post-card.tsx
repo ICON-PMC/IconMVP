@@ -27,59 +27,33 @@ export function PostCard({
     .map((slug) => tagNames[slug] ?? slug)
     .slice(0, 4);
 
+  // Spec 007: mismo aspecto que la tarjeta de look del feed (foto a todo el alto, datos encima).
   return (
-    <article className="mb-4 break-inside-avoid">
-      <div className="glass transform-gpu overflow-hidden rounded-2xl">
-        <Link
-          href={`/post/${post.id}`}
-          className="block"
-        >
+    <article className="mb-5 break-inside-avoid">
+      <div className="relative overflow-hidden rounded-[var(--radius-card)] bg-surface-inverse">
+        <Link href={`/post/${post.id}`} className="block" aria-label={post.caption ?? `Look de ${post.brand_name ?? "Icon"}`}>
           <R2Image image={post.image} alt={post.caption ?? post.brand_name ?? ""} sizes={SIZES.card} className="block aspect-[4/5] w-full object-cover" />
-          <div className="p-3 pb-1">
-            <div className="flex items-center justify-between gap-2">
-              <span className="flex items-center gap-1 text-sm font-medium text-forest">
-                {post.brand_name}
-                {post.brand_verified && (
-                  <span title="Verificada por el equipo" aria-label="verificada">
-                    ✓
-                  </span>
-                )}
-              </span>
-              {price && <span className="text-sm text-ink/70">{price}</span>}
-            </div>
-            {post.city_name && (
-              <p className="mt-0.5 text-xs text-ink/50">{post.city_name}</p>
-            )}
+          <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink/75 via-ink/30 to-transparent px-3 pt-14 pb-3 text-text-inverse">
+            <span className="flex items-center justify-between gap-2">
+              <span className="truncate text-[13px] font-semibold">{post.brand_name}</span>
+              {price && <span className="text-[13px] font-semibold">{price}</span>}
+            </span>
             {chips.length > 0 && (
-              <div className="mt-2 flex flex-wrap gap-1">
-                {chips.map((s) => (
-                  <span
-                    key={s}
-                    className="rounded-full bg-white/50 px-2 py-0.5 text-[11px] text-forest-deep"
-                  >
-                    {s}
+              <span className="mt-2 flex flex-wrap gap-1.5">
+                {chips.slice(0, 2).map((c) => (
+                  <span key={c} className="rounded-full border border-text-inverse/70 px-2.5 py-1 text-[11px] font-semibold">
+                    {c}
                   </span>
                 ))}
-              </div>
+              </span>
             )}
-          </div>
+          </span>
         </Link>
-        {/* Fila de acciones al pie: guardar y like juntos, y FUERA del <Link> (un
-            <button> dentro de un <a> es HTML inválido y el clic navegaría). Con
-            justify-between + gap quedan separados en los extremos; al no haber ya
-            botón flotante sobre la imagen, no pueden superponerse. */}
-        <div className="flex items-center justify-between gap-2 px-3 pb-3">
-          <SaveButton kind="post" id={post.id} saved={saved} path={path} />
-          <LikeButton
-            itemId={post.id}
-            initialLiked={liked}
-            initialCount={likeCount ?? post.like_count}
-            path={path}
-            isLoggedIn={isLoggedIn}
-          />
+        <div className="absolute top-2 right-2 flex items-center gap-1.5">
+          <SaveButton kind="post" id={post.id} saved={saved} path={path} compact />
+          <LikeButton itemId={post.id} initialLiked={liked} initialCount={likeCount ?? post.like_count} path={path} isLoggedIn={isLoggedIn} compact />
         </div>
       </div>
     </article>
   );
 }
-

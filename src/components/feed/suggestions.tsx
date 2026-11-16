@@ -1,5 +1,7 @@
 "use client";
 
+import { Chip } from "@/components/chip";
+
 import { useFeedUrl } from "@/components/feed/use-feed-url";
 import type { SuggestionChip } from "@/lib/suggestions";
 
@@ -12,24 +14,16 @@ export function FeedSuggestions({ chips }: { chips: SuggestionChip[] }) {
   if (chips.length === 0) return null;
 
   return (
-    <div className="mb-4 flex gap-1.5 overflow-x-auto pb-1">
-      {chips.map((chip) => {
-        const active = selected(chip.param).includes(chip.value);
-        return (
-          <button
-            key={`${chip.param}:${chip.value}`}
-            type="button"
-            onClick={() => toggle(chip.param, chip.value)}
-            className={
-              active
-                ? "shrink-0 rounded-full bg-forest px-3 py-1.5 text-sm font-medium text-white"
-                : "glass-input shrink-0 rounded-full px-3 py-1.5 text-sm text-ink/80 hover:bg-white/70"
-            }
-          >
-            {chip.label}
-          </button>
-        );
-      })}
+    <div className="mb-2 flex gap-2 overflow-x-auto">
+      {chips.map((chip) => (
+        <Chip
+          key={`${chip.param}:${chip.value}`}
+          selected={selected(chip.param).includes(chip.value)}
+          onClick={() => toggle(chip.param, chip.value)}
+        >
+          {chip.label}
+        </Chip>
+      ))}
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { formatCop } from "@/lib/taxonomy";
+import { Price } from "@/components/price";
 import { R2Image, SIZES } from "@/components/r2-image";
 import { SaveButton } from "@/components/save-button";
 import { LikeButton } from "@/components/like-button";
@@ -27,43 +27,30 @@ export function GarmentCard({
   path?: string;
   sourcePostId?: string;
 }) {
+  // Spec 007: mismo aspecto que la tarjeta de prenda del feed (foto 20 px, datos debajo).
   return (
     <article className="break-inside-avoid">
-      <div className="glass transform-gpu overflow-hidden rounded-2xl">
-        <Link
-          href={`/prenda/${id}`}
-          className="block"
-        >
-          <R2Image image={image} alt={title} sizes={SIZES.card} className="block aspect-[3/4] w-full object-cover" />
-          <div className="p-3 pb-1">
-            <p className="text-sm font-medium text-forest">{title}</p>
-            {price_cop != null && (
-              <p className="text-sm text-ink/70">{formatCop(price_cop)}</p>
-            )}
-          </div>
+      <div className="relative overflow-hidden rounded-[var(--radius-photo)] bg-surface-sunken">
+        <Link href={`/prenda/${id}`} className="block" aria-label={title}>
+          {image ? (
+            <R2Image image={image} alt={title} sizes={SIZES.card} className="block aspect-[3/4] w-full object-cover" />
+          ) : (
+            <span className="flex aspect-[3/4] w-full items-end bg-leaf-soft p-3 text-h3 text-text">{title}</span>
+          )}
         </Link>
-        {/* Fila de acciones al pie: fuera del <Link> (un <button> dentro de un <a> es HTML
-            inválido) y sin flotante, para que guardar y like no se superpongan. Mismo
-            patrón que PostCard y FeedCard. */}
-        <div className="flex items-center justify-between gap-2 px-3 pb-3">
-          <SaveButton
-            kind="garment"
-            id={id}
-            saved={saved}
-            path={path}
-            sourcePostId={sourcePostId}
-          />
-          <LikeButton
-            kind="garment"
-            itemId={id}
-            initialLiked={liked}
-            initialCount={likeCount}
-            path={path}
-            isLoggedIn={isLoggedIn}
-          />
+        <div className="pointer-events-none absolute inset-x-2 bottom-2 flex items-center justify-between">
+          <div className="pointer-events-auto">
+            <SaveButton kind="garment" id={id} saved={saved} path={path} sourcePostId={sourcePostId} compact />
+          </div>
+          <div className="pointer-events-auto">
+            <LikeButton kind="garment" itemId={id} initialLiked={liked} initialCount={likeCount} path={path} isLoggedIn={isLoggedIn} compact />
+          </div>
         </div>
       </div>
+      <Link href={`/prenda/${id}`} className="mt-2 block px-0.5">
+        <p className="truncate text-sm font-semibold text-text">{title}</p>
+        <Price min={price_cop} className="text-sm" />
+      </Link>
     </article>
   );
 }
-

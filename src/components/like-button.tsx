@@ -37,15 +37,15 @@ export function LikeButton({
   const [count, setCount] = useState(initialCount);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
-  // Sobre la imagen: más pequeño y con fondo más opaco para que se lea.
-  const size = compact ? "min-h-8 px-2.5 text-xs bg-white/75!" : "min-h-11 px-3 text-sm";
+  // Spec 007: píldora sólida; sobre la foto un poco más pequeña.
+  const size = compact ? "min-h-10 px-3 text-xs" : "min-h-11 px-3.5 text-sm";
 
   if (!isLoggedIn) {
     return (
       <Link
         href={`/login?next=${encodeURIComponent(path)}`}
         aria-label={`${count} me gusta — inicia sesión para dar like`}
-        className={`glass inline-flex ${size} items-center gap-1.5 rounded-full text-ink/70 hover:bg-white/70`}
+        className={`inline-flex ${size} items-center gap-1.5 rounded-full bg-surface-raised/95 font-semibold text-text shadow-sm hover:bg-surface-raised`}
       >
         <Heart className="h-4 w-4" aria-hidden />
         <span className="tabular-nums">{count}</span>
@@ -76,8 +76,8 @@ export function LikeButton({
         disabled={pending}
         aria-pressed={liked}
         aria-label={liked ? "Quitar me gusta" : "Me gusta"}
-        className={`glass inline-flex ${size} items-center gap-1.5 rounded-full transition disabled:opacity-60 hover:bg-white/70 ${
-          liked ? "text-coral" : "text-ink/70"
+        className={`inline-flex ${size} items-center gap-1.5 rounded-full font-semibold shadow-sm transition-colors outline-none focus-visible:ring-2 focus-visible:ring-line-strong disabled:opacity-60 ${
+          liked ? "bg-action text-action-ink" : "bg-surface-raised/95 text-text hover:bg-surface-raised"
         }`}
       >
         <Heart
@@ -87,7 +87,7 @@ export function LikeButton({
         <span className="tabular-nums">{count}</span>
       </button>
       {error && (
-        <p role="alert" className="text-xs text-coral">
+        <p role="alert" className="text-xs text-danger">
           {error}
         </p>
       )}

@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
-import Link from "next/link";
+import { SearchXIcon } from "lucide-react";
+import { EmptyState } from "@/components/empty-state";
 import { usePathname, useSearchParams } from "next/navigation";
 import { FeedCard, cardRatio } from "@/components/feed-card";
 import type { FeedItem } from "@/lib/feed";
@@ -256,14 +257,12 @@ export function FeedGrid({
   if (items.length === 0) {
     if (emptyState) return <>{emptyState}</>;
     return (
-      <div className="glass rounded-2xl px-6 py-16 text-center">
-        <p className="text-sm text-ink/60">
-          No hay outfits ni prendas con esos filtros. Prueba quitar alguno.
-        </p>
-        <Link href="/feed" className="mt-3 inline-block text-sm font-medium text-coral hover:underline">
-          Limpiar filtros
-        </Link>
-      </div>
+      <EmptyState
+        icon={SearchXIcon}
+        title="No hay resultados con esos filtros"
+        description="Prueba quitar alguno."
+        action={{ label: "Limpiar filtros", href: "/feed" }}
+      />
     );
   }
 
@@ -291,12 +290,12 @@ export function FeedGrid({
       </div>
       {nextOffset != null && (
         <div ref={sentinelRef} className="flex flex-col items-center gap-2 py-8" aria-live="polite">
-          <p className="text-sm text-ink/40">{error ?? (loading ? "Cargando más…" : "")}</p>
+          <p className="text-sm text-text-muted">{error ?? (loading ? "Cargando más…" : "")}</p>
           {error && (
             <button
               type="button"
               onClick={() => loadMore()}
-              className="glass-input min-h-11 rounded-full px-4 text-sm font-medium text-ink/80 hover:bg-white/70"
+              className="min-h-11 rounded-full border-[1.5px] border-line-strong px-4 text-sm font-semibold text-text hover:bg-surface-sunken"
             >
               Reintentar
             </button>
@@ -304,7 +303,7 @@ export function FeedGrid({
         </div>
       )}
       {nextOffset == null && (
-        <p className="py-8 text-center text-sm text-ink/40">Eso es todo por ahora.</p>
+        <p className="py-8 text-center text-sm text-text-muted">Eso es todo por ahora.</p>
       )}
     </div>
   );
