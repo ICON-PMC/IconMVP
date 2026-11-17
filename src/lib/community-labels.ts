@@ -36,5 +36,28 @@ export type CommunityData = {
   blocked: { id: string; label: string; reason: string | null; since: string }[];
   /** Perfiles ocultos por el equipo (spec 009). */
   hiddenProfiles: { id: string; handle: string; label: string; reason: string | null; since: string }[];
+  /** Spec 010: marcas activas (para asignar), solicitudes por prendas sin marca, enlaces recientes y registro. */
+  brands: { id: string; name: string }[];
+  requests: { id: string; name: string; brand: string; at: string }[];
+  recentLinks: { id: string; name: string; brand: string | null; at: string }[];
+  events: { id: string; action: string; label: string; actor: string | null; at: string }[];
+};
+
+export const CLAIM_ACTION_LABEL: Record<string, string> = {
+  review_accept: "Confirmó un look",
+  review_decline: "Rechazó un look",
+  link_proposed: "Enlazó una prenda propuesta",
+  convert_proposed: "Empezó a agregar una prenda propuesta",
+  converted_published: "Publicó una prenda propuesta",
+  disown_proposed: "Dijo que una prenda no es suya",
+  request_proposed: "Pidió una prenda sin marca",
+  approve_request: "Aprobó una solicitud",
+  reject_request: "Rechazó una solicitud",
+  assign_proposed: "Asignó una prenda a una marca",
+  merge_proposed: "Unificó prendas propuestas",
+  discard_proposed: "Descartó una prenda propuesta",
+  unlink_proposed: "Deshizo un enlace",
+  claim_stub: "Asignó una marca mencionada",
+  merge_stubs: "Unificó marcas mencionadas",
 };
 

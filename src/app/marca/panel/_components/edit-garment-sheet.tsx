@@ -41,6 +41,12 @@ export function EditGarmentSheet({
     <ResponsiveSheet open={!!garment} onOpenChange={onOpenChange} title="Editar prenda" description={garment?.title}>
       {garment && (
         <form key={garment.id} action={submit} className="flex flex-col gap-4 pb-2">
+          {garment.source === "user_proposed" && (
+            <p role="note" className="rounded-[var(--radius-field)] bg-surface-sunken px-3.5 py-2.5 text-sm text-text">
+              Creada a partir de una prenda propuesta por un usuario. Completa precio, enlace y foto, y publícala: los looks
+              que la usan pasan a mostrar tu prenda con el botón a tu tienda.
+            </p>
+          )}
           <GarmentFields
             idPrefix="eg"
             tagOptions={tagOptions}

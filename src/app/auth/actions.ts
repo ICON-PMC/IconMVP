@@ -35,7 +35,11 @@ export async function signUp(formData: FormData) {
   const password = String(formData.get("password") ?? "");
   const displayName = String(formData.get("display_name") ?? "");
   const isBrand = formData.get("account_type") === "brand";
-  const signupPath = isBrand ? "/signup?tipo=marca" : "/signup";
+  // Spec 010: la marca mencionada desde la que llegó ("¿Es tu marca?") se conserva hasta el onboarding.
+  const stubRaw = String(formData.get("stub") ?? "");
+  const stub = isBrand && /^[0-9a-f-]{36}$/i.test(stubRaw) ? stubRaw : null;
+  const signupPath = isBrand ? `/signup?tipo=marca${stub ? `&stub=${stub}` : ""}` : "/signup";
+  const brandOnboarding = `/onboarding/marca${stub ? `?stub=${stub}` : ""}`;
 
   const h = await headers();
   const origin = `${h.get("x-forwarded-proto") ?? "http"}://${h.get("host")}`;
@@ -63,7 +67,7 @@ export async function signUp(formData: FormData) {
     if (!signedIn.session)
       redirect(`${signupPath}${sep}error=${encodeURIComponent("Este correo ya está registrado. Inicia sesión.")}`);
     revalidatePath("/", "layout");
-    redirect(isBrand ? "/onboarding/marca" : "/onboarding");
+    redirect(isBrand ? brandOnboarding : "/onboarding");
   }
   if (error) redirect(`${signupPath}${sep}error=${encodeURIComponent(authErrorMessage(error))}`);
   // Sin sesión = hay que confirmar el correo antes de entrar al onboarding.
@@ -71,7 +75,7 @@ export async function signUp(formData: FormData) {
     redirect(`/login?aviso=${encodeURIComponent("Te enviamos un correo para confirmar tu cuenta. Ábrelo y luego inicia sesión.")}`);
 
   revalidatePath("/", "layout");
-  redirect(isBrand ? "/onboarding/marca" : "/onboarding");
+  redirect(isBrand ? brandOnboarding : "/onboarding");
 }
 
 export async function signOut() {

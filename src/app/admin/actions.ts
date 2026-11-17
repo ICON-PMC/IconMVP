@@ -462,13 +462,56 @@ export async function setBrandStubBlocked(stubId: string, blocked: boolean): Pro
   return { ok: true };
 }
 
-/** Descarta una prenda propuesta. La reclamación completa (asociarla a una marca) es de la spec 010. */
-export async function rejectProposedGarment(id: string): Promise<AdminResult> {
+/** Descarta una prenda propuesta: se quita de sus looks y el autor ve un aviso (spec 010). */
+export async function rejectProposedGarment(id: string, note?: string): Promise<AdminResult> {
+  return claimRpc("discard_proposed_garment", { p_proposed_id: id, p_note: note ?? null });
+}
+
+// ── Spec 010: reclamos de marcas y prendas (contracts §3) ────────────────────────
+type ClaimRpc =
+  | "claim_brand_stub"
+  | "merge_brand_stubs"
+  | "assign_proposed_garment_brand"
+  | "merge_proposed_garments"
+  | "discard_proposed_garment"
+  | "unlink_proposed_garment"
+  | "resolve_proposed_claim";
+
+async function claimRpc(fn: ClaimRpc, args: Record<string, unknown>): Promise<AdminResult> {
   await requireStaff();
   const supabase = await createClient();
-  const { error } = await supabase.from("proposed_garments").update({ status: "rejected" }).eq("id", id);
+  // Las funciones validan staff y los estados; aquí solo se pasa el error al usuario.
+  const { error } = await supabase.rpc(fn, args as never);
   if (error) return { ok: false, error: error.message };
   revalidateCommunity();
+  return { ok: true };
+}
+
+export async function claimBrandStub(stubId: string, brandId: string): Promise<AdminResult> {
+  return claimRpc("claim_brand_stub", { p_stub_id: stubId, p_brand_id: brandId });
+}
+export async function mergeBrandStubs(fromId: string, intoId: string): Promise<AdminResult> {
+  return claimRpc("merge_brand_stubs", { p_from: fromId, p_into: intoId });
+}
+export async function assignProposedBrand(proposedId: string, brandId: string): Promise<AdminResult> {
+  return claimRpc("assign_proposed_garment_brand", { p_proposed_id: proposedId, p_brand_id: brandId });
+}
+export async function mergeProposed(fromId: string, intoId: string): Promise<AdminResult> {
+  return claimRpc("merge_proposed_garments", { p_from: fromId, p_into: intoId });
+}
+export async function unlinkProposed(proposedId: string): Promise<AdminResult> {
+  return claimRpc("unlink_proposed_garment", { p_proposed_id: proposedId });
+}
+export async function resolveProposedClaim(proposedId: string, approve: boolean): Promise<AdminResult> {
+  return claimRpc("resolve_proposed_claim", { p_proposed_id: proposedId, p_approve: approve });
+}
+/** Cambia o quita la marca mencionada que indicó una solicitud pendiente. */
+export async function setPendingBrandStub(brandId: string, stubId: string | null): Promise<AdminResult> {
+  await requireStaff();
+  const supabase = await createClient();
+  const { error } = await supabase.from("brands").update({ claimed_stub_id: stubId }).eq("id", brandId).eq("status", "pending");
+  if (error) return { ok: false, error: error.message.includes("brands_claimed_stub_pending_idx") ? "Otra solicitud ya indicó esa marca." : error.message };
+  revalidatePath("/admin");
   return { ok: true };
 }
 

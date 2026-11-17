@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { PhotoUploader } from "@/components/looks/photo-uploader";
 import { StyleOccasionFields } from "@/components/looks/style-occasion-fields";
 import { LookItems } from "@/components/looks/look-items";
+import { getLookTagStatus } from "@/lib/claims";
 import { CaptionField, PublishActions, TagButton } from "./look-editor-parts";
 
 export const metadata = { title: "Editar look · Icon" };
@@ -29,10 +30,11 @@ export default async function LookEditorPage({ params }: { params: Promise<{ id:
   if (!look) notFound();
 
   const supabase = await createClient();
-  const [{ data: tags }, { data: colors }, { data: counts }] = await Promise.all([
+  const [{ data: tags }, { data: colors }, { data: counts }, tagStatus] = await Promise.all([
     supabase.from("tags").select("id, name, slug, type").eq("is_hidden", false).in("type", ["style", "occasion", "category"]).order("name"),
     supabase.from("colors").select("id, name, hex").eq("is_hidden", false).order("position").order("name"),
     supabase.rpc("feed_style_counts"),
+    getLookTagStatus(id),
   ]);
   const uses = new Map((counts ?? []).map((c) => [c.slug, c.uses]));
   const byType = (t: string) => (tags ?? []).filter((x) => x.type === t);
@@ -88,7 +90,24 @@ export default async function LookEditorPage({ params }: { params: Promise<{ id:
               {tagCount} de {LOOK_LIMITS.items}
             </span>
           </div>
-          <LookItems postId={look.id} garments={look.garments} proposed={look.proposed} mentions={look.mentions} mode={locked ? "view" : "edit"} />
+          {tagStatus.notes.length > 0 && (
+            <div role="status" className="flex flex-col gap-1.5 rounded-[var(--radius-card)] bg-surface-sunken p-4 text-sm text-text">
+              <p className="font-semibold">Avisos</p>
+              <ul className="flex list-disc flex-col gap-1 pl-5">
+                {tagStatus.notes.slice(0, 5).map((n, i) => (
+                  <li key={i}>{n.text}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+          <LookItems
+            postId={look.id}
+            garments={look.garments}
+            proposed={look.proposed}
+            mentions={look.mentions}
+            mode={locked ? "view" : "edit"}
+            tagStatus={look.status === "published" ? tagStatus : undefined}
+          />
           {!locked && (
             <div>
               <TagButton

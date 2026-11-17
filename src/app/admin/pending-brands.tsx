@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { imageUrl } from "@/lib/images";
 import { normalizeUrl } from "@/lib/links";
 import { ReviewActions } from "./review-actions";
+import { PendingStub } from "./pending-stub";
 
 // Marcas que ya se enviaron a revisión (los registros a medias no tienen `submitted_at`).
 export async function pendingBrandsCount(): Promise<number> {
@@ -19,7 +20,7 @@ export async function PendingBrands() {
   const supabase = await createClient();
   const { data: brands } = await supabase
     .from("brands")
-    .select("id, name, bio, logo_url, store_url, city_id, submitted_at")
+    .select("id, name, bio, logo_url, store_url, city_id, submitted_at, claimed_stub_id")
     .eq("status", "pending")
     .not("submitted_at", "is", null)
     .order("submitted_at");
@@ -50,6 +51,19 @@ export async function PendingBrands() {
     : { data: [] };
 
   const cityName = new Map((cities ?? []).map((c) => [c.id, c.name]));
+  // Spec 010: marca mencionada que dice ser cada solicitud.
+  const stubIds = [...new Set(brands.flatMap((b) => (b.claimed_stub_id ? [b.claimed_stub_id] : [])))];
+  const { data: stubs } = stubIds.length
+    ? await supabase.from("brand_stubs").select("id, name, status").in("id", stubIds)
+    : { data: [] as { id: string; name: string; status: string }[] };
+  const stubInfo = new Map(
+    await Promise.all(
+      (stubs ?? []).map(async (st) => {
+        const { data: n } = await supabase.rpc("brand_stub_mentions", { p_stub_id: st.id });
+        return [st.id, { name: st.name, status: st.status, mentions: n ?? 0 }] as const;
+      }),
+    ),
+  );
   const imageOf = new Map((images ?? []).map((i) => [i.garment_id, i.cf_image_id]));
 
   return (
@@ -102,6 +116,10 @@ export async function PendingBrands() {
                   })}
                 </ul>
               </div>
+
+              {b.claimed_stub_id && stubInfo.get(b.claimed_stub_id) && (
+                <PendingStub brandId={b.id} stub={stubInfo.get(b.claimed_stub_id)!} />
+              )}
 
               <div className="mt-4 flex border-t border-ink/10 pt-4 sm:justify-end">
                 <ReviewActions brandId={b.id} brandName={b.name} />

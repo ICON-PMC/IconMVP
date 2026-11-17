@@ -4,6 +4,7 @@ export const PANEL_TABS = [
   { id: "resumen", label: "Resumen" },
   { id: "catalogo", label: "Catálogo" },
   { id: "looks", label: "Looks" },
+  { id: "menciones", label: "Menciones" },
   { id: "perfil", label: "Perfil" },
 ] as const;
 

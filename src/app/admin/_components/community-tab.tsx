@@ -1,15 +1,61 @@
 "use client";
 
 import Link from "next/link";
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import type { CommunityData } from "@/lib/community-labels";
-import { rejectProposedGarment, setBrandStubBlocked, setUserPostingBlock, setProfileHidden } from "../actions";
+import { NativeSelect } from "@/components/native-select";
+import {
+  assignProposedBrand,
+  claimBrandStub,
+  mergeBrandStubs,
+  mergeProposed,
+  rejectProposedGarment,
+  resolveProposedClaim,
+  setBrandStubBlocked,
+  setProfileHidden,
+  setUserPostingBlock,
+  unlinkProposed,
+} from "../actions";
 
-/** Marcas mencionadas, prendas propuestas y cuentas bloqueadas (spec 008, US5). */
+const dateFmt = new Intl.DateTimeFormat("es-CO", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+
+/** Elegir un destino de una lista y aplicar una acción (asignar, unificar). */
+function PickAction({
+  label,
+  placeholder,
+  options,
+  disabled,
+  onApply,
+}: {
+  label: string;
+  placeholder: string;
+  options: { id: string; name: string }[];
+  disabled: boolean;
+  onApply: (id: string) => void;
+}) {
+  const [value, setValue] = useState("");
+  return (
+    <div className="flex min-w-56 flex-1 items-center gap-2">
+      <NativeSelect aria-label={placeholder} value={value} onChange={(e) => setValue(e.target.value)} className="h-10 text-sm">
+        <option value="">{placeholder}</option>
+        {options.map((o) => (
+          <option key={o.id} value={o.id}>
+            {o.name}
+          </option>
+        ))}
+      </NativeSelect>
+      <Button size="sm" variant="secondary" disabled={disabled || !value} onClick={() => onApply(value)}>
+        {label}
+      </Button>
+    </div>
+  );
+}
+
+/** Marcas mencionadas, prendas propuestas, solicitudes, registro y cuentas bloqueadas (specs 008, 009 y 010). */
 export function CommunityTab({ data }: { data: CommunityData }) {
   const router = useRouter();
   const [pending, start] = useTransition();
@@ -42,6 +88,24 @@ export function CommunityTab({ data }: { data: CommunityData }) {
                   </p>
                 </div>
                 {s.status === "blocked" && <Badge variant="warning">Bloqueada</Badge>}
+                {s.status === "open" && (
+                  <>
+                    <PickAction
+                      label="Asignar"
+                      placeholder="Asignar a marca…"
+                      options={data.brands}
+                      disabled={pending}
+                      onApply={(id) => run(() => claimBrandStub(s.id, id), "Menciones asignadas a la marca.")}
+                    />
+                    <PickAction
+                      label="Unificar"
+                      placeholder="Unificar con…"
+                      options={data.stubs.filter((x) => x.id !== s.id && x.status === "open")}
+                      disabled={pending}
+                      onApply={(id) => run(() => mergeBrandStubs(s.id, id), "Marcas unificadas.")}
+                    />
+                  </>
+                )}
                 <Button
                   size="sm"
                   variant={s.status === "blocked" ? "secondary" : "ghost"}
@@ -80,7 +144,21 @@ export function CommunityTab({ data }: { data: CommunityData }) {
                     Ver look
                   </Button>
                 )}
-                <Button size="sm" variant="ghost" disabled={pending} onClick={() => run(() => rejectProposedGarment(p.id), "Prenda descartada.")}>
+                <PickAction
+                  label="Asignar"
+                  placeholder="Asignar marca…"
+                  options={data.brands}
+                  disabled={pending}
+                  onApply={(id) => run(() => assignProposedBrand(p.id, id), "Prenda asignada a la marca.")}
+                />
+                <PickAction
+                  label="Unificar"
+                  placeholder="Unificar con…"
+                  options={data.proposed.filter((x) => x.id !== p.id).map((x) => ({ id: x.id, name: [x.name, x.brand].filter(Boolean).join(" · ") }))}
+                  disabled={pending}
+                  onApply={(id) => run(() => mergeProposed(p.id, id), "Prendas unificadas.")}
+                />
+                <Button size="sm" variant="ghost" disabled={pending} onClick={() => run(() => rejectProposedGarment(p.id), "Prenda descartada; sus autores verán un aviso.")}>
                   Descartar
                 </Button>
               </li>
@@ -88,6 +166,56 @@ export function CommunityTab({ data }: { data: CommunityData }) {
           </ul>
         ) : (
           <p className="text-sm text-text-muted">No hay prendas propuestas abiertas.</p>
+        )}
+      </section>
+
+      <section aria-labelledby="c-requests" className="flex flex-col gap-3">
+        <h2 id="c-requests" className="text-h3 text-text">
+          Solicitudes de prendas sin marca
+        </h2>
+        {data.requests.length ? (
+          <ul className="flex flex-col gap-2">
+            {data.requests.map((r) => (
+              <li key={r.id} className="flex flex-wrap items-center gap-3 rounded-[var(--radius-card)] border-[1.5px] border-line bg-surface-raised p-3">
+                <p className="min-w-0 flex-1 text-sm text-text">
+                  <strong className="font-semibold">{r.brand}</strong> dice que «{r.name}» es suya.
+                </p>
+                <Button size="sm" disabled={pending} onClick={() => run(() => resolveProposedClaim(r.id, true), "Solicitud aprobada.")}>
+                  Aprobar
+                </Button>
+                <Button size="sm" variant="ghost" disabled={pending} onClick={() => run(() => resolveProposedClaim(r.id, false), "Solicitud rechazada.")}>
+                  Rechazar
+                </Button>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-sm text-text-muted">No hay solicitudes.</p>
+        )}
+      </section>
+
+      <section aria-labelledby="c-links" className="flex flex-col gap-3">
+        <div>
+          <h2 id="c-links" className="text-h3 text-text">
+            Prendas reclamadas (últimos 30 días)
+          </h2>
+          <p className="text-sm text-text-muted">Si una marca enlazó mal una prenda, deshazlo: los looks vuelven a mostrar la prenda propuesta.</p>
+        </div>
+        {data.recentLinks.length ? (
+          <ul className="flex flex-col gap-2">
+            {data.recentLinks.map((r) => (
+              <li key={r.id} className="flex flex-wrap items-center gap-3 rounded-[var(--radius-card)] border-[1.5px] border-line bg-surface-raised p-3">
+                <p className="min-w-0 flex-1 truncate text-sm text-text">
+                  «{r.name}» {r.brand && <span className="text-text-muted">→ {r.brand}</span>}
+                </p>
+                <Button size="sm" variant="ghost" disabled={pending} onClick={() => run(() => unlinkProposed(r.id), "Enlace deshecho.")}>
+                  Deshacer enlace
+                </Button>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-sm text-text-muted">Ninguna prenda reclamada en los últimos 30 días.</p>
         )}
       </section>
 
@@ -134,6 +262,25 @@ export function CommunityTab({ data }: { data: CommunityData }) {
           </ul>
         ) : (
           <p className="text-sm text-text-muted">Ningún perfil está oculto.</p>
+        )}
+      </section>
+      <section aria-labelledby="c-events" className="flex flex-col gap-3">
+        <h2 id="c-events" className="text-h3 text-text">
+          Registro de acciones
+        </h2>
+        {data.events.length ? (
+          <ul className="flex flex-col divide-y divide-line rounded-[var(--radius-card)] border-[1.5px] border-line bg-surface-raised px-3">
+            {data.events.map((e) => (
+              <li key={e.id} className="flex flex-wrap items-baseline justify-between gap-2 py-2 text-sm">
+                <span className="text-text">{e.label}</span>
+                <span className="text-[13px] text-text-muted">
+                  {e.actor ?? "Sistema"} · {dateFmt.format(new Date(e.at))}
+                </span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-sm text-text-muted">Sin acciones todavía.</p>
         )}
       </section>
     </div>

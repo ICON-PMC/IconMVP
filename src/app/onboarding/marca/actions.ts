@@ -59,11 +59,15 @@ export async function saveBrandProfile(
   const errors = validateBrandProfile(values);
   if (Object.keys(errors).length) return { errors, values };
 
+  // Spec 010: la marca mencionada que dice ser (vacío = ninguna).
+  const stubRaw = text(formData, "claimed_stub");
+  const claimedStub = /^[0-9a-f-]{36}$/i.test(stubRaw) ? stubRaw : null;
   const fields = {
     name: values.name,
     bio: values.bio,
     city_id: values.city,
     store_url: normalizeBrandLink(values.link),
+    claimed_stub_id: claimedStub,
   };
 
   const supabase = await createClient();
@@ -72,6 +76,8 @@ export async function saveBrandProfile(
 
   if (existing) {
     const { error } = await supabase.from("brands").update(fields).eq("id", existing.id);
+    if (error?.message.includes("brands_claimed_stub_pending_idx"))
+      return { message: "Otra solicitud ya dice ser esa marca. Elige «Ninguna» y escríbenos si es un error.", values };
     if (error) {
       console.error("[onboarding/marca] actualizar marca falló:", error.code, error.message);
       return { message: "No pudimos guardar tu perfil. Intenta de nuevo.", values };
@@ -92,7 +98,8 @@ export async function saveBrandProfile(
       if (!error) {
         created = true;
         brandId = data.id;
-      }
+      } else if (error.message.includes("brands_claimed_stub_pending_idx"))
+        return { message: "Otra solicitud ya dice ser esa marca. Elige «Ninguna» y escríbenos si es un error.", values };
       else if (error.code !== "23505") {
         console.error("[onboarding/marca] crear marca falló:", error.code, error.message);
         return { message: "No pudimos crear tu marca. Intenta de nuevo.", values };
@@ -282,4 +289,13 @@ export async function submitBrandForReview() {
 
   revalidatePath("/", "layout");
   redirect("/onboarding/marca");
+}
+
+// Spec 010: marcas mencionadas por usuarios que se parecen al nombre que se escribe.
+export async function suggestStubs(name: string): Promise<{ id: string; name: string; mentions: number }[]> {
+  const q = String(name ?? "").trim();
+  if (q.length < 2) return [];
+  const supabase = await createClient();
+  const { data } = await supabase.rpc("suggest_brand_stubs", { p_name: q.slice(0, 60) });
+  return data ?? [];
 }

@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatCop } from "@/lib/taxonomy";
 import type { LookGarment, LookMention, LookProposed } from "@/lib/look-rules";
+import type { LookTagStatus } from "@/lib/claims";
 import { removeMention, removeProposedGarment, untagGarment } from "@/app/(app)/crear/actions";
 
 /**
@@ -25,6 +26,7 @@ export function LookItems({
   mode,
   savedGarmentIds = [],
   path,
+  tagStatus,
 }: {
   postId: string;
   garments: LookGarment[];
@@ -34,6 +36,8 @@ export function LookItems({
   /** Ficha: prendas ya guardadas por quien mira y ruta a revalidar. */
   savedGarmentIds?: string[];
   path?: string;
+  /** Editor del autor (spec 010, US5): estado de cada etiqueta según la marca. */
+  tagStatus?: LookTagStatus;
 }) {
   const [pending, startTransition] = useTransition();
   const run = (fn: () => Promise<{ ok: boolean; error?: string }>) =>
@@ -50,6 +54,18 @@ export function LookItems({
     ) : null;
 
   if (!garments.length && !proposed.length && !mentions.length) return null;
+
+  // Estado por etiqueta para el autor: verificada, ahora en el catálogo de la marca o pendiente.
+  const statusBadge = (opts: { brandId?: string; brandName?: string | null; verified?: boolean; garmentId?: string }) => {
+    if (mode !== "edit" || !tagStatus) return null;
+    if (opts.garmentId && tagStatus.convertedGarments.includes(opts.garmentId))
+      return <Badge variant="new" className="mt-1">Ahora en el catálogo de {opts.brandName ?? "la marca"}</Badge>;
+    if (opts.verified) return <Badge variant="verified" className="mt-1">Verificada</Badge>;
+    const review = tagStatus.reviews.find((r) => (opts.brandId ? r.brandId === opts.brandId : r.brandName === opts.brandName));
+    if (review?.status === "pending") return <Badge variant="neutral" className="mt-1">Pendiente de la marca</Badge>;
+    if (review?.status === "accepted" && opts.brandId) return <Badge variant="verified" className="mt-1">Verificada</Badge>;
+    return null;
+  };
 
   return (
     <ul className="flex flex-col gap-2">
@@ -70,9 +86,10 @@ export function LookItems({
               <p className="truncate text-xs text-text-muted">{[g.color, g.size ? `Talla ${g.size}` : null].filter(Boolean).join(" · ")}</p>
             )}
             {!g.available && <p className="text-[13px] font-medium text-danger">Ya no está publicada</p>}
+            {statusBadge({ brandName: g.brandName, verified: g.verified, garmentId: g.garmentId })}
             {mode === "view" && g.verified && (
               <Badge variant="verified" className="mt-1">
-                <BadgeCheckIcon data-icon="inline-start" /> Confirmada por la marca
+                <BadgeCheckIcon data-icon="inline-start" /> {g.brandName ? `Verificada por ${g.brandName}` : "Verificada por la marca"}
               </Badge>
             )}
           </div>
@@ -132,14 +149,17 @@ export function LookItems({
                 {mode === "view" && (
                   <>
                     {" · "}
-                    <Link href={`/signup?marca=${m.targetId}`} className="font-medium text-action-text hover:underline">
+                    <Link href={`/signup?tipo=marca&stub=${m.targetId}`} className="font-medium text-action-text hover:underline">
                       ¿Es tu marca? Regístrala
                     </Link>
                   </>
                 )}
               </p>
             ) : (
-              <p className="text-[13px] text-text-muted">Marca mencionada</p>
+              <>
+                <p className="text-[13px] text-text-muted">Marca mencionada</p>
+                {statusBadge({ brandId: m.targetId })}
+              </>
             )}
           </div>
           {removeBtn(m.name, () => run(() => removeMention(postId, m.id)))}
