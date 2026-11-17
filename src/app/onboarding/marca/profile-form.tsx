@@ -10,12 +10,15 @@ import { ChipSelect } from "@/components/chip-select";
 import { MAX_BRAND_STYLES, type TagOption } from "@/lib/tags";
 import type { CityOption } from "@/lib/cities";
 import { saveBrandProfile, type BrandFormState } from "./actions";
+import { StubPicker } from "./stub-picker";
 import { BRAND_BIO_MAX, BRAND_NAME_MAX } from "@/lib/brand-registration";
 
 type Props = {
   cities: CityOption[];
   styles: TagOption[];
   defaults: { name: string; bio: string; city: string; link: string; styles: string[] };
+  /** Marca mencionada que ya indicó (o la del enlace "¿Es tu marca?"). */
+  stub: { id: string; name: string; mentions: number } | null;
 };
 
 const field = "bg-surface-raised border-[1.5px] border-line text-text focus:border-line-strong focus:outline-none h-11 rounded-xl px-4 text-base md:h-10 md:text-sm";
@@ -28,7 +31,7 @@ function FieldError({ id, msg }: { id: string; msg?: string }) {
   ) : null;
 }
 
-export function ProfileForm({ cities, styles, defaults }: Props) {
+export function ProfileForm({ cities, styles, defaults, stub }: Props) {
   const [state, action, pending] = useActionState<BrandFormState, FormData>(
     saveBrandProfile,
     {},
@@ -36,6 +39,7 @@ export function ProfileForm({ cities, styles, defaults }: Props) {
   const v = { ...defaults, ...state.values };
   const e = state.errors ?? {};
   const [bioLen, setBioLen] = useState(v.bio.length);
+  const [name, setName] = useState(v.name);
 
   return (
     <form action={action} className="flex flex-col gap-4" noValidate>
@@ -52,11 +56,13 @@ export function ProfileForm({ cities, styles, defaults }: Props) {
           name="name"
           className={field}
           defaultValue={v.name}
+          onChange={(ev) => setName(ev.target.value)}
           maxLength={BRAND_NAME_MAX}
           aria-invalid={!!e.name}
           aria-describedby="name-err"
         />
         <FieldError id="name-err" msg={e.name} />
+        <StubPicker name={name} initial={stub} />
       </div>
 
       <div>

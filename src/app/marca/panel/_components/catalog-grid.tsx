@@ -29,6 +29,8 @@ export type CatalogGarment = {
   product_url: string | null;
   color: string | null;
   fabric: string | null;
+  /** 'user_proposed' si nació de una prenda propuesta por un usuario (spec 010). */
+  source?: string | null;
   tagIds: string[];
   sizeIds: string[];
 };
@@ -48,11 +50,13 @@ export function CatalogGrid({
   tagOptions,
   sizes,
   canPublish,
+  initialEditId,
 }: {
   garments: CatalogGarment[];
   tagOptions: TagOptions;
   sizes: { id: string; label: string }[];
   canPublish: boolean;
+  initialEditId?: string;
 }) {
   const router = useRouter();
   const [pending, start] = useTransition();
@@ -60,7 +64,7 @@ export function CatalogGrid({
   const [filter, setFilter] = useState<Filter>("all");
   const [selecting, setSelecting] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
-  const [editing, setEditing] = useState<CatalogGarment | null>(null);
+  const [editing, setEditing] = useState<CatalogGarment | null>(() => garments.find((g) => g.id === initialEditId) ?? null);
 
   const visible = useMemo(() => {
     const q = norm(query.trim());

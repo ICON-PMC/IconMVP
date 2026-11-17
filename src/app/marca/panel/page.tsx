@@ -10,6 +10,8 @@ import { OverviewTab } from "./_components/overview-tab";
 import { CatalogTab } from "./_components/catalog-tab";
 import { LooksTab } from "./_components/looks-tab";
 import { ProfileTab } from "./_components/profile-tab";
+import { MentionsTab, parseMentionsView } from "./_components/mentions-tab";
+import { getInboxCounts } from "@/lib/claims";
 import { checkStorageQuota } from "@/lib/storage-quota";
 import { instagramImportEnabled } from "@/lib/instagram";
 import { EMPTY_TAG_OPTIONS, getGarmentColorIds, getTagOptions } from "@/lib/tags";
@@ -25,10 +27,11 @@ const FLASH = {
 export default async function BrandPanelPage({
   searchParams,
 }: {
-  searchParams: Promise<{ ok?: string; error?: string; tab?: string }>;
+  searchParams: Promise<{ ok?: string; error?: string; tab?: string; ver?: string; estado?: string; desde?: string; cat?: string; editar?: string }>;
 }) {
   const { brand } = await requireBrandOwner();
-  const { error, tab: tabParam } = await searchParams;
+  const sp = await searchParams;
+  const { error, tab: tabParam } = sp;
   const tab = parseTab(tabParam);
   const igEnabled = instagramImportEnabled();
 
@@ -64,6 +67,7 @@ export default async function BrandPanelPage({
   }
 
   const supabase = await createClient();
+  const inbox = brand.status === "active" ? await getInboxCounts(brand.id) : null;
   const [{ data: connection }, { data: garments }, { data: posts }] = await Promise.all([
     igEnabled
       ? supabase
@@ -74,7 +78,7 @@ export default async function BrandPanelPage({
       : { data: null },
     supabase
       .from("garments")
-      .select("id, title, price_cop, status, description, product_url, color, fabric")
+      .select("id, title, price_cop, status, description, product_url, color, fabric, source")
       .eq("brand_id", brand.id)
       .order("created_at", { ascending: false }),
     supabase
@@ -168,7 +172,14 @@ export default async function BrandPanelPage({
           <BrandStatusBanner brand={brand} />
         </div>
 
-        <PanelTabs active={tab} counts={{ catalogo: catalog.length, looks: looks.length }} />
+        <PanelTabs
+          active={tab}
+          counts={{
+            catalogo: catalog.length,
+            looks: looks.length,
+            menciones: inbox ? inbox.reviewsPending + inbox.proposedPending || undefined : undefined,
+          }}
+        />
 
         <div className="mt-6">
           {tab === "resumen" && (
@@ -189,6 +200,28 @@ export default async function BrandPanelPage({
               tagOptions={tagOptions}
               sizes={sizes ?? []}
               canPublish={brand.status === "active"}
+              initialEditId={sp.editar}
+            />
+          )}
+          {tab === "menciones" && inbox && (
+            <MentionsTab
+              brand={brand}
+              counts={inbox}
+              view={parseMentionsView(sp.ver)}
+              estado={sp.estado === "revisadas" ? "reviewed" : "pending"}
+              offset={Math.max(0, Number(sp.desde) || 0)}
+              categoryId={sp.cat && /^[0-9a-f-]{36}$/i.test(sp.cat) ? sp.cat : undefined}
+              categories={sp.ver === "sin-marca" ? (await getTagOptions(supabase)).category.map((c) => ({ id: c.id, name: c.name })) : []}
+            />
+          )}
+          {tab === "menciones" && !inbox && (
+            <MentionsTab
+              brand={brand}
+              counts={{ reviewsPending: 0, proposedPending: 0, unbrandedOpen: 0 }}
+              view="looks"
+              estado="pending"
+              offset={0}
+              categories={[]}
             />
           )}
           {tab === "looks" && <LooksTab looks={looks} canImport={!!connection} instagramEnabled={igEnabled} />}

@@ -19,7 +19,7 @@ const STEPS = ["Perfil", "Portada", "Prenda"];
 export default async function BrandOnboardingPage({
   searchParams,
 }: {
-  searchParams: Promise<{ paso?: string }>;
+  searchParams: Promise<{ paso?: string; stub?: string }>;
 }) {
   const session = await getCurrentUser();
   if (!session?.profile) redirect("/login?next=/onboarding/marca");
@@ -56,7 +56,7 @@ export default async function BrandOnboardingPage({
 
   // Sin marca solo existe el paso 1; con marca, ?paso permite volver a editar. Por defecto
   // se continúa donde se quedó: sin portada → 2, con portada → 3.
-  const { paso } = await searchParams;
+  const { paso, stub: stubParam } = await searchParams;
   const step = !brand
     ? 1
     : paso === "1" || (resubmitting && !paso)
@@ -75,6 +75,17 @@ export default async function BrandOnboardingPage({
       : Promise.resolve({ data: [] as { tag_id: string }[] }),
   ]);
   const categories = tagOptions.category;
+
+  // Spec 010: marca mencionada que ya indicó, o la que trae el enlace "¿Es tu marca? Regístrala".
+  const stubId = brand?.claimed_stub_id ?? (stubParam && /^[0-9a-f-]{36}$/i.test(stubParam) ? stubParam : null);
+  let stub: { id: string; name: string; mentions: number } | null = null;
+  if (stubId && step === 1) {
+    const [{ data: s }, { data: n }] = await Promise.all([
+      supabase.from("brand_stubs").select("id, name, status").eq("id", stubId).maybeSingle(),
+      supabase.rpc("brand_stub_mentions", { p_stub_id: stubId }),
+    ]);
+    if (s && s.status === "open") stub = { id: s.id, name: s.name, mentions: n ?? 0 };
+  }
 
   const saved: { id: string; title: string; price: number | null; image: string | null }[] = [];
   if (brand && step === 3) {
@@ -116,16 +127,23 @@ export default async function BrandOnboardingPage({
               <p className="mt-1 mb-6 text-sm text-ink/70">
                 Icon es para marcas colombianas independientes. Revisamos cada perfil antes de publicarlo.
               </p>
+              {stub && !brand && stub.mentions > 0 && (
+                <p role="status" className="mb-5 rounded-xl bg-surface-sunken px-3 py-2 text-sm text-text">
+                  {stub.mentions === 1 ? "1 look ya menciona" : `${stub.mentions} looks ya mencionan`} a <strong>{stub.name}</strong> en Icon.
+                  Cuando aprobemos tu marca, quedan conectados a tu página.
+                </p>
+              )}
               <ProfileForm
                 cities={cities}
                 styles={tagOptions.style}
                 defaults={{
                   styles: (brandTags ?? []).map((t) => t.tag_id),
-                  name: brand?.name ?? "",
+                  name: brand?.name ?? stub?.name ?? "",
                   bio: brand?.bio ?? "",
                   city: brand?.city_id ?? "",
                   link: brand?.store_url ?? "",
                 }}
+                stub={stub}
               />
             </>
           ) : step === 3 ? (

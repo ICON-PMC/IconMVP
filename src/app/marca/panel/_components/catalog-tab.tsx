@@ -11,11 +11,14 @@ export function CatalogTab({
   tagOptions,
   sizes,
   canPublish,
+  initialEditId,
 }: {
   garments: CatalogGarment[];
   tagOptions: TagOptions;
   sizes: { id: string; label: string }[];
   canPublish: boolean;
+  /** Abre el editor de esta prenda al cargar (prenda creada desde una propuesta, spec 010). */
+  initialEditId?: string;
 }) {
   return (
     <div className="space-y-6">
@@ -28,7 +31,7 @@ export function CatalogTab({
           </NewGarmentSheet>
         }
       />
-      <CatalogGrid garments={garments} tagOptions={tagOptions} sizes={sizes} canPublish={canPublish} />
+      <CatalogGrid garments={garments} tagOptions={tagOptions} sizes={sizes} canPublish={canPublish} initialEditId={initialEditId} />
     </div>
   );
 }

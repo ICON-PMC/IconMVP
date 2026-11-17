@@ -10,9 +10,11 @@ import { cn } from "@/lib/utils";
 export default async function SignupPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string; tipo?: string }>;
+  searchParams: Promise<{ error?: string; tipo?: string; stub?: string }>;
 }) {
-  const { error, tipo } = await searchParams;
+  const { error, tipo, stub: stubRaw } = await searchParams;
+  // Spec 010: viene de "¿Es tu marca? Regístrala" en un look.
+  const stub = stubRaw && /^[0-9a-f-]{36}$/i.test(stubRaw) ? stubRaw : null;
   const isBrand = tipo === "marca";
   const seg = "flex min-h-10 items-center justify-center rounded-full px-3 text-sm font-semibold transition-colors";
 
@@ -29,7 +31,7 @@ export default async function SignupPage({
         <Link href="/signup" aria-current={!isBrand ? "page" : undefined} className={cn(seg, !isBrand ? "bg-surface-inverse text-text-inverse" : "text-text")}>
           Soy usuario
         </Link>
-        <Link href="/signup?tipo=marca" aria-current={isBrand ? "page" : undefined} className={cn(seg, isBrand ? "bg-surface-inverse text-text-inverse" : "text-text")}>
+        <Link href={stub ? `/signup?tipo=marca&stub=${stub}` : "/signup?tipo=marca"} aria-current={isBrand ? "page" : undefined} className={cn(seg, isBrand ? "bg-surface-inverse text-text-inverse" : "text-text")}>
           Soy una marca
         </Link>
       </nav>
@@ -38,6 +40,7 @@ export default async function SignupPage({
 
       <form action={signUp} className="flex flex-col gap-4">
         {isBrand && <input type="hidden" name="account_type" value="brand" />}
+        {isBrand && stub && <input type="hidden" name="stub" value={stub} />}
         <FormField label={isBrand ? "Tu nombre" : "Nombre"} htmlFor="signup-name">
           <Input id="signup-name" type="text" name="display_name" autoComplete="name" />
         </FormField>
