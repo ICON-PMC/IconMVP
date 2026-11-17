@@ -17,7 +17,8 @@ export type UploadedImage = {
 // Si se pasa, la subida se bloquea cuando supera la cuota de esa marca (solo subidas de la
 // propia marca; el staff sube en su nombre sin bloqueo, pero el peso igual cuenta).
 // `enforceUserQuota` aplica la cuota de 50 MB de quien tiene la sesión (looks de usuarios, spec 008).
-export type UploadOptions = { enforceQuotaFor?: string; enforceUserQuota?: boolean };
+// `square` recorta al centro a un cuadrado de ese lado (foto de perfil, spec 009).
+export type UploadOptions = { enforceQuotaFor?: string; enforceUserQuota?: boolean; square?: number };
 
 // sharp se importa de forma perezosa a propósito: importarlo a nivel de módulo hacía que
 // el render de páginas que lo importan diera 500 en el runtime serverless de Vercel.
@@ -29,7 +30,11 @@ async function resizeAndUpload(
   const { default: sharp } = await import("sharp");
   const { data: out, info } = await sharp(buf)
     .rotate() // respeta la orientación EXIF antes de medir
-    .resize({ width: 1280, withoutEnlargement: true })
+    .resize(
+      opts.square
+        ? { width: opts.square, height: opts.square, fit: "cover", position: "attention" }
+        : { width: 1280, withoutEnlargement: true },
+    )
     .webp({ quality: 80 })
     .toBuffer({ resolveWithObject: true });
   if (opts.enforceQuotaFor) await assertStorageQuota(opts.enforceQuotaFor, out.length);

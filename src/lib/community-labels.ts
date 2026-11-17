@@ -26,11 +26,15 @@ export type ReportGroup = {
     authorUserId: string | null;
   } | null;
   label: string;
+  /** Reportes de perfil (spec 009): el @usuario para enlazar al perfil. */
+  profileHandle?: string | null;
 };
 
 export type CommunityData = {
   stubs: { id: string; name: string; status: string; mentions: number; createdAt: string }[];
   proposed: { id: string; name: string; category: string; brand: string | null; postId: string | null; createdAt: string }[];
   blocked: { id: string; label: string; reason: string | null; since: string }[];
+  /** Perfiles ocultos por el equipo (spec 009). */
+  hiddenProfiles: { id: string; handle: string; label: string; reason: string | null; since: string }[];
 };
 

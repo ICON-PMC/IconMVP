@@ -2,22 +2,32 @@ import { NextRequest, NextResponse } from "next/server";
 import { parseFeedParams, getFeedPage, FEED_PAGE_SIZE } from "@/lib/feed";
 import { getMySavedIds } from "@/lib/saves";
 import { getMyLikedGarmentIds, getMyLikedPostIds } from "@/lib/social";
+import { getFollowingFeedPage, getProfileTab, parseProfileTab } from "@/lib/profile";
+import { getCurrentUser } from "@/lib/auth";
+import { isUuid } from "@/lib/look-rules";
+
+// Fuente de la tanda: feed normal, pestaña de un perfil (spec 009) o vista "Siguiendo" (spec 009).
+async function loadPage(sp: Record<string, string>, offset: number) {
+  if (sp.profile && isUuid(sp.profile)) {
+    return { ...(await getProfileTab(sp.profile, parseProfileTab(sp.tab), offset)), error: null };
+  }
+  if (sp.ver === "siguiendo" && (await getCurrentUser())) {
+    return { ...(await getFollowingFeedPage(offset)), error: null };
+  }
+  const { filters, sort } = parseFeedParams(sp);
+  return getFeedPage(filters, sort, offset, FEED_PAGE_SIZE);
+}
 
 // Siguiente lote del feed mixto para el scroll infinito de <FeedGrid>.
 // Recibe los mismos parámetros que /feed (filtros + sort) más `offset`.
 export async function GET(req: NextRequest) {
   const sp = Object.fromEntries(req.nextUrl.searchParams);
-  const { filters, sort } = parseFeedParams(sp);
-  const offset = Number(sp.offset ?? 0);
+  const raw = Number(sp.offset ?? 0);
+  const offset = Number.isFinite(raw) && raw >= 0 ? raw : 0;
 
   const [{ items, nextOffset, error }, saved, liked, likedGarments] =
     await Promise.all([
-      getFeedPage(
-        filters,
-        sort,
-        Number.isFinite(offset) ? offset : 0,
-        FEED_PAGE_SIZE,
-      ),
+      loadPage(sp, offset),
       getMySavedIds(),
       getMyLikedPostIds(),
       getMyLikedGarmentIds(),

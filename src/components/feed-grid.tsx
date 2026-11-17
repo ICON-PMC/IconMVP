@@ -128,6 +128,7 @@ export function FeedGrid({
   isLoggedIn,
   tagNames,
   emptyState,
+  apiQuery,
 }: {
   initialItems: FeedItem[];
   initialNextOffset?: number | null;
@@ -139,6 +140,8 @@ export function FeedGrid({
   tagNames: Record<string, string>;
   /** Contenido cuando no hay resultados (por defecto, el aviso del feed). */
   emptyState?: React.ReactNode;
+  /** Parámetros extra para /api/feed (p. ej. el perfil cuyas pestañas se cargan). */
+  apiQuery?: Record<string, string>;
 }) {
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -185,6 +188,7 @@ export function FeedGrid({
         following = nextOffset + BATCH < pendingIds.length ? nextOffset + BATCH : null;
       } else {
         const params = new URLSearchParams(searchParams.toString());
+        for (const [k, v] of Object.entries(apiQuery ?? {})) params.set(k, v);
         params.set("offset", String(nextOffset));
         url = `/api/feed?${params}`;
         following = null;
@@ -211,7 +215,7 @@ export function FeedGrid({
     } finally {
       setLoading(false);
     }
-  }, [loading, nextOffset, searchParams, pendingIds]);
+  }, [loading, nextOffset, searchParams, pendingIds, apiQuery]);
 
   useEffect(() => {
     const el = sentinelRef.current;

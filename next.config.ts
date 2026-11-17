@@ -65,6 +65,23 @@ const nextConfig: NextConfig = {
       "./node_modules/@img/sharp-libvips-linux-x64/**/*",
       "./node_modules/@img/sharp-linux-x64/**/*",
     ],
+    // Perfil público (spec 009): foto de perfil (editar, ajustes, onboarding) y su imagen para compartir.
+    "/u/[handle]/editar": [
+      "./node_modules/@img/sharp-libvips-linux-x64/**/*",
+      "./node_modules/@img/sharp-linux-x64/**/*",
+    ],
+    "/u/[handle]/opengraph-image": [
+      "./node_modules/@img/sharp-libvips-linux-x64/**/*",
+      "./node_modules/@img/sharp-linux-x64/**/*",
+    ],
+    "/settings": [
+      "./node_modules/@img/sharp-libvips-linux-x64/**/*",
+      "./node_modules/@img/sharp-linux-x64/**/*",
+    ],
+    "/onboarding": [
+      "./node_modules/@img/sharp-libvips-linux-x64/**/*",
+      "./node_modules/@img/sharp-linux-x64/**/*",
+    ],
     "/marca/panel/import": [
       "./node_modules/@img/sharp-libvips-linux-x64/**/*",
       "./node_modules/@img/sharp-linux-x64/**/*",

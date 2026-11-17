@@ -36,11 +36,21 @@ export function LookCard({
           {item.image && (
             <R2Image image={item.image} alt={item.title ?? `Look de ${author.name}`} sizes={SIZES.card} priority={priority} className="block size-full object-cover" />
           )}
-          <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink/75 via-ink/30 to-transparent px-3 pt-14 pb-3 text-text-inverse">
-            <span className="flex items-center gap-2">
-              <Avatar image={author.avatar} name={author.name} seed={author.seed} size={24} />
-              <span className="truncate text-[13px] font-semibold">{author.name}</span>
-            </span>
+        </Link>
+        {/* Capa inferior sin clics propios (los toques pasan a la tarjeta), salvo el autor, que enlaza a
+            su perfil (spec 009). Un enlace no puede ir dentro de otro. */}
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink/75 via-ink/30 to-transparent px-3 pt-14 pb-3 text-text-inverse">
+            {author.href ? (
+              <Link href={author.href} prefetch={false} className="pointer-events-auto flex w-fit max-w-full items-center gap-2 rounded-full pr-2 hover:underline focus-visible:ring-2 focus-visible:ring-text-inverse focus-visible:outline-none">
+                <Avatar image={author.avatar} name={author.name} seed={author.seed} size={24} />
+                <span className="truncate text-[13px] font-semibold">{author.name}</span>
+              </Link>
+            ) : (
+              <span className="flex items-center gap-2">
+                <Avatar image={author.avatar} name={author.name} seed={author.seed} size={24} />
+                <span className="truncate text-[13px] font-semibold">{author.name}</span>
+              </span>
+            )}
             {tags.length > 0 && (
               <span className="mt-2 flex flex-wrap gap-1.5">
                 {tags.map((t) => (
@@ -50,8 +60,7 @@ export function LookCard({
                 ))}
               </span>
             )}
-          </span>
-        </Link>
+        </div>
         <div className="absolute top-2 right-2 flex items-center gap-1.5">
           <SaveButton kind="post" id={item.id} saved={saved} path={path} compact />
           <LikeButton kind="post" itemId={item.id} initialLiked={liked} initialCount={item.like_count} path={path} isLoggedIn={isLoggedIn} compact />

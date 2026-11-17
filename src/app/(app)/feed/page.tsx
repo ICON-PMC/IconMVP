@@ -23,6 +23,8 @@ import { getCurrentUser } from "@/lib/auth";
 import { getSuggestionChips } from "@/lib/suggestions";
 import { FEED_PAGE_SIZE, feedItemAuthor, parseFeedParams, getFeedPage, type FeedItem } from "@/lib/feed";
 import type { FilterGroup } from "@/components/feed/filter-panel";
+import { getFollowingFeedPage, getFollowSuggestions } from "@/lib/profile";
+import { FollowSuggestions } from "@/components/profile/follow-suggestions";
 
 type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
 
@@ -134,6 +136,18 @@ export default async function FeedPage({ searchParams }: { searchParams: SearchP
   ]);
   const liked = { posts: likedPosts, garments: likedGarments };
   const isLoggedIn = Boolean(session?.profile);
+
+  // ===================== Vista "Siguiendo" (spec 009, US4) =====================
+  // Cronológica, solo marcas y personas que sigo. Sin filtros ni buscador en esta versión.
+  if (sp.ver === "siguiendo" && isLoggedIn) {
+    return (
+      <Shell isLoggedIn={isLoggedIn} groups={[]} sort={sort} suggestions={null} view="siguiendo">
+        <Suspense fallback={<FeedSkeletonGrid />}>
+          <FollowingResults saved={saved} liked={liked} tagNames={tagNames} />
+        </Suspense>
+      </Shell>
+    );
+  }
 
   // ===================== Modo búsqueda por foto (spec 005) =====================
   // La foto vive en el navegador (sessionStorage); aquí solo van los filtros aplicables a prendas.
@@ -379,9 +393,10 @@ export default async function FeedPage({ searchParams }: { searchParams: SearchP
   // `key` por filtros + orden para que el esqueleto aparezca también al cambiar un filtro (spec 006).
   const chips = await getSuggestionChips();
   const resultsKey = JSON.stringify({ f, sort });
+  const hasFilters = Object.values(f).some((v) => v.length > 0);
 
   return (
-    <Shell isLoggedIn={isLoggedIn} groups={allGroups} sort={sort} suggestions={chips}>
+    <Shell isLoggedIn={isLoggedIn} groups={allGroups} sort={sort} suggestions={chips} view={hasFilters ? undefined : "para-ti"}>
       <Suspense key={resultsKey} fallback={<FeedSkeletonGrid />}>
         <BrowseResults
           gridKey={resultsKey}
@@ -394,6 +409,32 @@ export default async function FeedPage({ searchParams }: { searchParams: SearchP
         />
       </Suspense>
     </Shell>
+  );
+}
+
+async function FollowingResults({
+  saved,
+  liked,
+  tagNames,
+}: {
+  saved: Awaited<ReturnType<typeof getMySavedIds>>;
+  liked: { posts: Set<string>; garments: Set<string> };
+  tagNames: Record<string, string>;
+}) {
+  const { items, nextOffset } = await getFollowingFeedPage(0);
+  const suggestions = items.length ? [] : await getFollowSuggestions();
+  return (
+    <FeedGrid
+      key="siguiendo"
+      initialItems={items}
+      initialNextOffset={nextOffset}
+      initialSaved={saved}
+      initialLiked={liked}
+      isLoggedIn
+      tagNames={tagNames}
+      apiQuery={{ ver: "siguiendo" }}
+      emptyState={<FollowSuggestions rows={suggestions} />}
+    />
   );
 }
 
@@ -484,12 +525,15 @@ function Shell({
   sort,
   suggestions,
   isLoggedIn,
+  view,
   children,
 }: {
   groups: FilterGroup[];
   sort: string;
   isLoggedIn: boolean;
   suggestions: Awaited<ReturnType<typeof getSuggestionChips>> | null;
+  /** Con sesión, en el feed sin búsqueda: selector "Para ti" / "Siguiendo" (spec 009). */
+  view?: "para-ti" | "siguiendo";
   children: React.ReactNode;
 }) {
   return (
@@ -499,11 +543,26 @@ function Shell({
           <FlashToast messages={FEED_FLASH} />
         </Suspense>
         <h1 className="mt-2 mb-4 text-h1 text-text">Explorar</h1>
-        <div className="mb-4">
-          <FeedTopBar groups={groups} sort={sort} isLoggedIn={isLoggedIn} />
-        </div>
-        {suggestions && suggestions.length > 0 && <FeedSuggestions chips={suggestions} />}
-        <FeedActiveChips groups={groups} />
+        {isLoggedIn && view && (
+          <LinkTabs
+            label="Vista del feed"
+            active={view}
+            className="mb-4"
+            tabs={[
+              { id: "para-ti", label: "Para ti", href: "/feed" },
+              { id: "siguiendo", label: "Siguiendo", href: "/feed?ver=siguiendo" },
+            ]}
+          />
+        )}
+        {view !== "siguiendo" && (
+          <>
+            <div className="mb-4">
+              <FeedTopBar groups={groups} sort={sort} isLoggedIn={isLoggedIn} />
+            </div>
+            {suggestions && suggestions.length > 0 && <FeedSuggestions chips={suggestions} />}
+            <FeedActiveChips groups={groups} />
+          </>
+        )}
         {children}
       </div>
     </>

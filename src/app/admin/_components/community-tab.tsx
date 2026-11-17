@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import type { CommunityData } from "@/lib/community-labels";
-import { rejectProposedGarment, setBrandStubBlocked, setUserPostingBlock } from "../actions";
+import { rejectProposedGarment, setBrandStubBlocked, setUserPostingBlock, setProfileHidden } from "../actions";
 
 /** Marcas mencionadas, prendas propuestas y cuentas bloqueadas (spec 008, US5). */
 export function CommunityTab({ data }: { data: CommunityData }) {
@@ -111,6 +111,29 @@ export function CommunityTab({ data }: { data: CommunityData }) {
           </ul>
         ) : (
           <p className="text-sm text-text-muted">Ninguna cuenta está bloqueada.</p>
+        )}
+      </section>
+
+      <section aria-labelledby="c-hidden-profiles" className="flex flex-col gap-3">
+        <h2 id="c-hidden-profiles" className="text-h3 text-text">
+          Perfiles ocultos
+        </h2>
+        {data.hiddenProfiles.length ? (
+          <ul className="flex flex-col gap-2">
+            {data.hiddenProfiles.map((u) => (
+              <li key={u.id} className="flex flex-wrap items-center gap-3 rounded-[var(--radius-card)] border-[1.5px] border-line bg-surface-raised p-3">
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-semibold text-text">{u.label}</p>
+                  {u.reason && <p className="text-[13px] text-text-muted">{u.reason}</p>}
+                </div>
+                <Button size="sm" variant="secondary" disabled={pending} onClick={() => run(() => setProfileHidden(u.id, false), "Perfil restaurado.")}>
+                  Restaurar
+                </Button>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-sm text-text-muted">Ningún perfil está oculto.</p>
         )}
       </section>
     </div>

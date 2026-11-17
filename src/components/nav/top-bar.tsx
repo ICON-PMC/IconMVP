@@ -1,3 +1,4 @@
+import { SettingsIcon } from "lucide-react";
 import Link from "next/link";
 import { signOut } from "@/app/auth/actions";
 import { Avatar } from "@/components/avatar";
@@ -35,10 +36,18 @@ export function TopBar({ ctx }: { ctx: NavContext }) {
           )}
           {ctx.isLoggedIn ? (
             <span className="hidden items-center gap-2 md:flex">
-              <Link href="/settings" className="flex items-center gap-2 rounded-full py-1 pr-3 pl-1 hover:bg-surface-sunken">
+              <Link
+                href={ctx.handle ? `/u/${ctx.handle}` : "/settings"}
+                className="flex items-center gap-2 rounded-full py-1 pr-3 pl-1 hover:bg-surface-sunken"
+              >
                 <Avatar image={ctx.avatar} name={ctx.displayName} seed={ctx.seed} size={32} />
                 <span className="max-w-40 truncate text-sm font-semibold">{ctx.displayName ?? "Cuenta"}</span>
               </Link>
+              {ctx.handle && (
+                <Link href="/settings" aria-label="Ajustes" className="inline-flex size-9 items-center justify-center rounded-full hover:bg-surface-sunken">
+                  <SettingsIcon className="size-[18px]" aria-hidden />
+                </Link>
+              )}
               <form action={signOut}>
                 <Button variant="ghost" size="sm" type="submit">
                   Salir
