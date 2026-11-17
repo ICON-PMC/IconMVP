@@ -29,7 +29,12 @@ export default async function BrandPage({
   params: Promise<{ slug: string }>;
   searchParams: Promise<{ tab?: string; orden?: string; estrellas?: string }>;
 }) {
-  const { slug } = await params;
+  // Next entrega el segmento codificado ("fx-j%C3%B6er"): se decodifica para buscar el slug real.
+  const { slug: rawSlug } = await params;
+  let slug = rawSlug;
+  try {
+    slug = decodeURIComponent(rawSlug).normalize("NFC");
+  } catch {}
   const { tab: tabParam, orden, estrellas } = await searchParams;
   const tab = tabParam === "looks" ? "looks" : tabParam === "resenas" ? "resenas" : "prendas";
   const supabase = await createClient();
