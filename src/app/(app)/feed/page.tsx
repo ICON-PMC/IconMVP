@@ -21,7 +21,7 @@ import { getMySavedIds } from "@/lib/saves";
 import { getMyLikedGarmentIds, getMyLikedPostIds } from "@/lib/social";
 import { getCurrentUser } from "@/lib/auth";
 import { getSuggestionChips } from "@/lib/suggestions";
-import { FEED_PAGE_SIZE, feedItemAuthor, parseFeedParams, getFeedPage, type FeedItem } from "@/lib/feed";
+import { FEED_PAGE_SIZE, feedItemAuthor, parseFeedParams, getFeedPage, getFeedFacets, hasActiveFilters, type FeedItem, type PriceRangeInput } from "@/lib/feed";
 import type { FilterGroup } from "@/components/feed/filter-panel";
 import { getFollowingFeedPage, getFollowSuggestions } from "@/lib/profile";
 import { RATING_MIN_FOR_AVG } from "@/lib/rating-rules";
@@ -53,7 +53,8 @@ async function fetchFeedItemsByIds(
   supabase: Awaited<ReturnType<typeof createClient>>,
   kind: "post" | "garment",
   ids: string[],
-  f: { city: string[]; occasion: string[]; style: string[]; category: string[]; price: string[]; color: string[] },
+  f: { city: string[]; occasion: string[]; style: string[]; category: string[]; price: string[]; color: string[]; size?: string[]; brand?: string[] },
+  price?: PriceRangeInput,
 ): Promise<FeedItem[]> {
   if (ids.length === 0) return [];
   let q = supabase.from("feed_items").select("*").eq("kind", kind).in("id", ids);
@@ -63,6 +64,11 @@ async function fetchFeedItemsByIds(
   if (f.category.length) q = q.overlaps("categories", f.category);
   if (f.price.length) q = q.overlaps("price_ranges", f.price);
   if (f.color.length) q = q.overlaps("colors", f.color);
+  // Spec 003: talla, marca y precio libre.
+  if (f.size?.length) q = q.overlaps("sizes", f.size);
+  if (f.brand?.length) q = q.overlaps("brand_slugs", f.brand);
+  if (price?.min != null) q = q.gte("max_price", price.min);
+  if (price?.max != null) q = q.lte("min_price", price.max);
   const { data } = await q;
   return data ?? [];
 }
@@ -80,7 +86,7 @@ const STYLE_CHIPS = 10;
 
 export default async function FeedPage({ searchParams }: { searchParams: SearchParams }) {
   const sp = await searchParams;
-  const { filters: f, sort } = parseFeedParams(sp);
+  const { filters: f, sort, priceRange } = parseFeedParams(sp);
   const q = (sp.q ? String(sp.q) : "").trim();
   const typeRaw = sp.type ? String(sp.type) : "all";
   const type = TYPES.has(typeRaw) ? typeRaw : "all";
@@ -106,6 +112,7 @@ export default async function FeedPage({ searchParams }: { searchParams: SearchP
     param: "price",
     label: "Precio",
     options: PRICE_BUCKETS.map((b) => ({ value: b.value, label: b.label })),
+    priceInputs: true,
   };
   const categoryGroup: FilterGroup = { param: "category", label: "Categoría", options: toOpts(options.categories) };
   const occasionGroup: FilterGroup = { param: "occasion", label: "Ocasión", options: toOpts(options.occasions) };
@@ -124,7 +131,31 @@ export default async function FeedPage({ searchParams }: { searchParams: SearchP
     label: "Color",
     options: options.colors.map((c) => ({ value: c.slug, label: c.name, swatch: c.hex })),
   };
-  const allGroups = [occasionGroup, cityGroup, priceGroup, categoryGroup, styleGroup, colorGroup];
+  // Spec 003: talla y marca, y contadores por opción (cada grupo cuenta sin su propio filtro).
+  const [{ data: sizeRows }, { data: brandRows }, facets] = await Promise.all([
+    supabase.from("sizes").select("label, system, sort_order").order("sort_order"),
+    supabase.from("brands").select("slug, name").eq("is_active", true).order("name"),
+    getFeedFacets(f, priceRange),
+  ]);
+  const sizeGroup: FilterGroup = {
+    param: "size",
+    label: "Talla",
+    options: (sizeRows ?? [])
+      .filter((r) => (facets.size?.[r.label] ?? 0) > 0 || f.size.includes(r.label))
+      .map((r) => ({ value: r.label, label: r.label })),
+  };
+  const brandOptions = (brandRows ?? []).map((b) => ({ value: b.slug, label: b.name }));
+  const brandGroup: FilterGroup = { param: "brand", label: "Marca", options: brandOptions, searchable: brandOptions.length > 8 };
+  const facetGroups = { city: 1, occasion: 1, style: 1, category: 1, price: 1, color: 1, size: 1, brand: 1 };
+  const withCounts = (g: FilterGroup): FilterGroup => {
+    // Sin contadores (falló la consulta): el grupo se muestra sin números. Grupo ausente = todo en 0.
+    if (!Object.keys(facets).length || !(g.param in facetGroups)) return g;
+    const counts = facets[g.param as keyof typeof facets] ?? {};
+    return { ...g, options: g.options.map((o) => ({ ...o, count: counts[o.value] ?? 0 })) };
+  };
+  const allGroups = [occasionGroup, cityGroup, priceGroup, categoryGroup, styleGroup, colorGroup, sizeGroup, brandGroup]
+    .filter((g) => g.options.length > 0)
+    .map(withCounts);
 
   const tagNames: Record<string, string> = {};
   for (const t of [...options.occasions, ...options.styles]) tagNames[t.slug] = t.name;
@@ -181,7 +212,7 @@ export default async function FeedPage({ searchParams }: { searchParams: SearchP
     });
     const order = new Map((hits ?? []).map((h, i) => [h.id, i]));
     const rows = (
-      await fetchFeedItemsByIds(supabase, "garment", (hits ?? []).map((h) => h.id), f)
+      await fetchFeedItemsByIds(supabase, "garment", (hits ?? []).map((h) => h.id), f, priceRange)
     ).sort((a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0));
     return (
       <Shell isLoggedIn={isLoggedIn}
@@ -351,7 +382,7 @@ export default async function FeedPage({ searchParams }: { searchParams: SearchP
         supabase,
         "post",
         matches.map((m) => m.id),
-        f,
+        f, priceRange
       );
       sortFeedItems(rows, sort, meta);
       resultCount = rows.length;
@@ -362,7 +393,7 @@ export default async function FeedPage({ searchParams }: { searchParams: SearchP
           <SearchResults rows={rows} gridKey={gridKey} saved={saved} liked={liked} isLoggedIn={isLoggedIn} tagNames={tagNames} />
         );
     } else if (type === "garments") {
-      groups = [cityGroup, priceGroup, categoryGroup, styleGroup, colorGroup];
+      groups = [cityGroup, priceGroup, categoryGroup, styleGroup, colorGroup, sizeGroup, brandGroup].filter((g) => g.options.length > 0);
       const matches = gCount.data ?? [];
       const meta = new Map<string, Meta>(
         matches.map((m) => [`garment:${m.id}`, { sim: m.sim, same_city: false }]),
@@ -371,7 +402,7 @@ export default async function FeedPage({ searchParams }: { searchParams: SearchP
         supabase,
         "garment",
         matches.map((m) => m.id),
-        f,
+        f, priceRange
       );
       sortFeedItems(rows, sort, meta);
       resultCount = rows.length;
@@ -389,8 +420,8 @@ export default async function FeedPage({ searchParams }: { searchParams: SearchP
         ...(pCount.data ?? []).map((m) => [`post:${m.id}`, { sim: m.sim, same_city: m.same_city }] as const),
       ]);
       const [gRows, pRows] = await Promise.all([
-        fetchFeedItemsByIds(supabase, "garment", (gCount.data ?? []).map((m) => m.id), f),
-        fetchFeedItemsByIds(supabase, "post", (pCount.data ?? []).map((m) => m.id), f),
+        fetchFeedItemsByIds(supabase, "garment", (gCount.data ?? []).map((m) => m.id), f, priceRange),
+        fetchFeedItemsByIds(supabase, "post", (pCount.data ?? []).map((m) => m.id), f, priceRange),
       ]);
       const rows = [...gRows, ...pRows];
       sortFeedItems(rows, sort, meta);
@@ -422,8 +453,8 @@ export default async function FeedPage({ searchParams }: { searchParams: SearchP
   // La barra y los filtros se envían primero; los resultados llegan en su propio Suspense, con
   // `key` por filtros + orden para que el esqueleto aparezca también al cambiar un filtro (spec 006).
   const chips = await getSuggestionChips();
-  const resultsKey = JSON.stringify({ f, sort });
-  const hasFilters = Object.values(f).some((v) => v.length > 0);
+  const resultsKey = JSON.stringify({ f, sort, priceRange });
+  const hasFilters = hasActiveFilters(f, priceRange);
 
   return (
     <Shell isLoggedIn={isLoggedIn} groups={allGroups} sort={sort} suggestions={chips} view={hasFilters ? undefined : "para-ti"}>
@@ -431,6 +462,7 @@ export default async function FeedPage({ searchParams }: { searchParams: SearchP
         <BrowseResults
           gridKey={resultsKey}
           filters={f}
+          priceRange={priceRange}
           sort={sort}
           saved={saved}
           liked={liked}
@@ -472,6 +504,7 @@ async function FollowingResults({
 async function BrowseResults({
   gridKey,
   filters,
+  priceRange,
   sort,
   saved,
   liked,
@@ -480,13 +513,18 @@ async function BrowseResults({
 }: {
   gridKey: string;
   filters: ReturnType<typeof parseFeedParams>["filters"];
+  priceRange: PriceRangeInput;
   sort: string;
   saved: Awaited<ReturnType<typeof getMySavedIds>>;
   liked: { posts: Set<string>; garments: Set<string> };
   isLoggedIn: boolean;
   tagNames: Record<string, string>;
 }) {
-  const { items, nextOffset, error } = await getFeedPage(filters, sort);
+  // Spec 003: con sesión y "Relevante", orden "Para ti" fijado en `asOf` (lo reenvían las tandas).
+  const { items, nextOffset, error, personalized, asOf } = await getFeedPage(filters, sort, 0, FEED_PAGE_SIZE, {
+    price: priceRange,
+    signedIn: isLoggedIn,
+  });
   if (error)
     return (
       <SystemEmptyState
@@ -499,7 +537,8 @@ async function BrowseResults({
   return (
     <FeedGrid
       key={gridKey}
-      track={{ surface: "feed", sort }}
+      track={{ surface: "feed", sort, personalized }}
+      apiQuery={asOf ? { as_of: asOf } : undefined}
       initialItems={items}
       initialNextOffset={nextOffset}
       initialSaved={saved}

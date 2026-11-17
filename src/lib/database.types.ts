@@ -358,6 +358,9 @@ export type Database = {
           author_handle?: string | null;
           author_name?: string | null;
           author_avatar?: string | null;
+          // Spec 003: filtros de talla y marca.
+          sizes?: string[];
+          brand_slugs?: string[];
         };
         Relationships: [];
       };
@@ -387,6 +390,22 @@ export type Database = {
       };
       user_look_stats: { Args: Record<string, never>; Returns: Json };
       // Spec 003: recomendación
+      get_feed_for_me: {
+        Args: {
+          p_cities?: string[] | null; p_occasions?: string[] | null; p_styles?: string[] | null; p_categories?: string[] | null;
+          p_prices?: string[] | null; p_colors?: string[] | null; p_sizes?: string[] | null; p_brands?: string[] | null;
+          p_price_min?: number | null; p_price_max?: number | null; p_limit?: number; p_offset?: number; p_as_of?: string | null;
+        };
+        Returns: (Database["public"]["Functions"]["get_feed"]["Returns"][number] & { personalized: boolean })[];
+      };
+      feed_facets: {
+        Args: {
+          p_cities?: string[] | null; p_occasions?: string[] | null; p_styles?: string[] | null; p_categories?: string[] | null;
+          p_prices?: string[] | null; p_colors?: string[] | null; p_sizes?: string[] | null; p_brands?: string[] | null;
+          p_price_min?: number | null; p_price_max?: number | null;
+        };
+        Returns: { grp: string; value: string; n: number }[];
+      };
       log_events: { Args: { p: Json }; Returns: number };
       purge_old_events: { Args: { p_days: number }; Returns: number };
       // Spec 011: reseñas de marcas
@@ -523,6 +542,11 @@ export type Database = {
           p_limit?: number | null;
           p_offset?: number | null;
           p_colors?: string[] | null;
+          // Spec 003
+          p_sizes?: string[] | null;
+          p_brands?: string[] | null;
+          p_price_min?: number | null;
+          p_price_max?: number | null;
         };
         Returns: {
           kind: "post" | "garment";
@@ -555,6 +579,9 @@ export type Database = {
           author_handle?: string | null;
           author_name?: string | null;
           author_avatar?: string | null;
+          // Spec 003: filtros de talla y marca.
+          sizes?: string[];
+          brand_slugs?: string[];
         }[];
       };
       create_style_tag: {

@@ -19,6 +19,13 @@ export function FeedActiveChips({ groups }: { groups: FilterGroup[] }) {
     })),
   );
 
+  // Spec 003: precio libre.
+  const cop = new Intl.NumberFormat("es-CO");
+  for (const [param, prefix] of [["pmin", "Desde $"], ["pmax", "Hasta $"]] as const) {
+    const v = selected(param)[0];
+    if (v && groups.some((g) => g.priceInputs)) active.push({ param, value: v, label: `${prefix}${cop.format(Number(v))}` });
+  }
+
   if (active.length === 0) return null;
 
   return (
