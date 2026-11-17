@@ -72,7 +72,7 @@ export type Database = {
         Relationships: [];
       };
       brands: {
-        Row: { id: string; name: string; slug: string; city_id: string | null; store_url: string | null; instagram: string | null; price_range: Database["public"]["Enums"]["price_range"] | null; bio: string | null; logo_url: string | null; logo_bytes: number; logo_variants_ready: boolean; is_active: boolean; is_verified: boolean; is_sustainable: boolean; owner_user_id: string | null; status: Database["public"]["Enums"]["brand_status"]; rejection_note: string | null; submitted_at: string | null; claimed_stub_id: string | null; created_at: string; updated_at: string };
+        Row: { id: string; name: string; slug: string; city_id: string | null; store_url: string | null; instagram: string | null; price_range: Database["public"]["Enums"]["price_range"] | null; bio: string | null; logo_url: string | null; logo_bytes: number; logo_variants_ready: boolean; is_active: boolean; is_verified: boolean; is_sustainable: boolean; owner_user_id: string | null; status: Database["public"]["Enums"]["brand_status"]; rejection_note: string | null; submitted_at: string | null; claimed_stub_id: string | null; rating_avg: number | null; rating_count: number; rating_dist: number[]; created_at: string; updated_at: string };
         Insert: { id?: string; name: string; slug: string; city_id?: string | null; store_url?: string | null; instagram?: string | null; price_range?: Database["public"]["Enums"]["price_range"] | null; bio?: string | null; logo_url?: string | null; logo_bytes?: number; logo_variants_ready?: boolean; is_active?: boolean; is_verified?: boolean; is_sustainable?: boolean; owner_user_id?: string | null; status?: Database["public"]["Enums"]["brand_status"]; rejection_note?: string | null; submitted_at?: string | null; claimed_stub_id?: string | null; created_at?: string; updated_at?: string };
         Update: { id?: string; name?: string; slug?: string; city_id?: string | null; store_url?: string | null; instagram?: string | null; price_range?: Database["public"]["Enums"]["price_range"] | null; bio?: string | null; logo_url?: string | null; logo_bytes?: number; logo_variants_ready?: boolean; is_active?: boolean; is_verified?: boolean; is_sustainable?: boolean; owner_user_id?: string | null; status?: Database["public"]["Enums"]["brand_status"]; rejection_note?: string | null; submitted_at?: string | null; claimed_stub_id?: string | null; created_at?: string; updated_at?: string };
         Relationships: [];
@@ -153,6 +153,12 @@ export type Database = {
         Row: { id: string; post_id: string; brand_id: string; status: Database["public"]["Enums"]["brand_review_status"]; decided_at: string | null; decided_by: string | null; note: string | null; updated_at: string; created_at: string };
         Insert: { id?: string; post_id: string; brand_id: string; status?: Database["public"]["Enums"]["brand_review_status"]; decided_at?: string | null; decided_by?: string | null; note?: string | null; created_at?: string };
         Update: { id?: string; post_id?: string; brand_id?: string; status?: Database["public"]["Enums"]["brand_review_status"]; decided_at?: string | null; decided_by?: string | null; note?: string | null; created_at?: string };
+        Relationships: [];
+      };
+      brand_ratings: {
+        Row: { id: string; brand_id: string; user_id: string; stars: number; body: string; status: Database["public"]["Enums"]["rating_status"]; edited_at: string | null; reviewed_at: string | null; created_at: string; updated_at: string };
+        Insert: { id?: string; brand_id: string; user_id: string; stars: number; body: string };
+        Update: { stars?: number; body?: string };
         Relationships: [];
       };
       claim_events: {
@@ -362,6 +368,12 @@ export type Database = {
         Returns: { id: string; email: string | null; display_name: string | null; handle: string; posting_blocked_at: string; posting_blocked_reason: string | null }[];
       };
       user_look_stats: { Args: Record<string, never>; Returns: Json };
+      // Spec 011: reseñas de marcas
+      moderate_brand_rating: { Args: { p_rating_id: string; p_action: "remove" | "restore" }; Returns: undefined };
+      brand_ratings_page: {
+        Args: { p_brand_id: string; p_sort?: string; p_stars?: number | null; p_limit?: number; p_offset?: number };
+        Returns: { id: string; stars: number; body: string; created_at: string; edited_at: string | null; author_id: string; author_handle: string; author_name: string; author_avatar: string | null; author_public: boolean }[];
+      };
       // Spec 010: reclamar marcas y prendas
       review_post_tag: { Args: { p_post_id: string; p_brand_id: string; p_accept: boolean; p_note?: string | null }; Returns: undefined };
       link_proposed_garment: { Args: { p_proposed_id: string; p_garment_id: string }; Returns: undefined };
@@ -563,6 +575,7 @@ export type Database = {
       };
     };
     Enums: {
+      rating_status: "published" | "auto_hidden" | "removed";
       brand_status: "pending" | "active" | "rejected";
       user_role: "user" | "curator" | "admin" | "brand";
       price_range: "under_100k" | "100k_200k" | "200k_350k" | "350k_500k" | "over_500k";

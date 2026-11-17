@@ -11,14 +11,14 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { REASON_LABEL, type ReportGroup } from "@/lib/community-labels";
-import { dismissReports, moderatePost, setProfileHidden, setUserPostingBlock } from "../actions";
+import { dismissReports, moderateBrandRating, moderatePost, setProfileHidden, setUserPostingBlock } from "../actions";
 
 const dateFmt = new Intl.DateTimeFormat("es-CO", { day: "numeric", month: "short" });
 
 /** Cola de reportes abiertos, agrupados por objetivo (spec 008, US5). */
 export function ReportsTab({ groups }: { groups: ReportGroup[] }) {
   if (!groups.length)
-    return <EmptyState icon={FlagIcon} title="No hay reportes abiertos" description="Cuando alguien reporte un look o un perfil, aparecerá aquí." />;
+    return <EmptyState icon={FlagIcon} title="No hay reportes abiertos" description="Cuando alguien reporte un look, un perfil o una reseña, aparecerá aquí." />;
   return (
     <ul className="flex flex-col gap-3">
       {groups.map((g) => (
@@ -60,6 +60,22 @@ function ReportRow({ group: g }: { group: ReportGroup }) {
           <span className="text-[13px] text-text-muted">desde {dateFmt.format(new Date(g.firstAt))}</span>
         </div>
         {g.post && <p className="text-sm text-text-muted">{g.post.author}</p>}
+        {g.rating && (
+          <div className="flex flex-col gap-1 rounded-[var(--radius-field)] bg-surface-sunken p-3 text-sm text-text">
+            <p className="text-[13px] text-text-muted">
+              {"★".repeat(g.rating.stars)}
+              {"☆".repeat(5 - g.rating.stars)} · {g.rating.author}
+              {g.rating.status === "auto_hidden" && " · Oculta automáticamente"}
+              {g.rating.status === "removed" && " · Retirada"}
+            </p>
+            <p className="line-clamp-4 whitespace-pre-line">{g.rating.body}</p>
+            {g.rating.brandSlug && (
+              <Link href={`/marca/${g.rating.brandSlug}?tab=resenas`} target="_blank" className="w-fit text-[13px] font-semibold text-action-text hover:underline">
+                Ver en la página de {g.rating.brandName}
+              </Link>
+            )}
+          </div>
+        )}
         {g.targetType === "profile" && g.profileHandle && (
           <Link href={`/u/${g.profileHandle}`} target="_blank" className="w-fit text-sm font-semibold text-action-text hover:underline">
             Ver perfil
@@ -125,12 +141,38 @@ function ReportRow({ group: g }: { group: ReportGroup }) {
                 )}
               </>
             )}
-            {g.targetType === "profile" && g.profileHandle && (
+            {g.rating && (
+          <div className="flex flex-col gap-1 rounded-[var(--radius-field)] bg-surface-sunken p-3 text-sm text-text">
+            <p className="text-[13px] text-text-muted">
+              {"★".repeat(g.rating.stars)}
+              {"☆".repeat(5 - g.rating.stars)} · {g.rating.author}
+              {g.rating.status === "auto_hidden" && " · Oculta automáticamente"}
+              {g.rating.status === "removed" && " · Retirada"}
+            </p>
+            <p className="line-clamp-4 whitespace-pre-line">{g.rating.body}</p>
+            {g.rating.brandSlug && (
+              <Link href={`/marca/${g.rating.brandSlug}?tab=resenas`} target="_blank" className="w-fit text-[13px] font-semibold text-action-text hover:underline">
+                Ver en la página de {g.rating.brandName}
+              </Link>
+            )}
+          </div>
+        )}
+        {g.targetType === "profile" && g.profileHandle && (
               <Button variant="danger" size="sm" disabled={pending} onClick={() => setHiding(true)}>
                 Ocultar perfil
               </Button>
             )}
-            {g.targetType !== "post" && (
+            {g.targetType === "brand_review" && g.rating && (
+              <>
+                <Button variant="danger" size="sm" disabled={pending} onClick={() => run(() => moderateBrandRating(g.targetId, "remove"), "Reseña retirada.")}>
+                  Retirar
+                </Button>
+                <Button variant="secondary" size="sm" disabled={pending} onClick={() => run(() => moderateBrandRating(g.targetId, "restore"), "Reseña restaurada.")}>
+                  Restaurar
+                </Button>
+              </>
+            )}
+            {g.targetType !== "post" && g.targetType !== "brand_review" && (
               <Button variant="secondary" size="sm" disabled={pending} onClick={() => run(() => dismissReports(g.targetType as "profile", g.targetId), "Reportes descartados.")}>
                 Descartar
               </Button>

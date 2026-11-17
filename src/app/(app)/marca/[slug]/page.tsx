@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cityLabel } from "@/lib/cities";
 import { createClient } from "@/lib/supabase/server";
@@ -15,22 +16,32 @@ import { getMySavedIds } from "@/lib/saves";
 import { getGarmentLikeCounts, getMyFollowedBrandIds, getMyLikedGarmentIds, getMyLikedPostIds } from "@/lib/social";
 import { getCurrentUser } from "@/lib/auth";
 import { instagramUrl, normalizeInstagramHandle, normalizeUrl } from "@/lib/links";
+import { StarIcon } from "lucide-react";
+import { RatingSummary } from "@/components/ratings/rating-summary";
+import { RatingList } from "@/components/ratings/rating-list";
+import { RatingFormSheet } from "@/components/ratings/rating-form-sheet";
+import { formatRating, getMyRating, getRatings, showsAverage, summaryFrom, type RatingSort } from "@/lib/ratings";
 
 export default async function BrandPage({
   params,
   searchParams,
 }: {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ tab?: string }>;
+  searchParams: Promise<{ tab?: string; orden?: string; estrellas?: string }>;
 }) {
-  const { slug } = await params;
-  const { tab: tabParam } = await searchParams;
-  const tab = tabParam === "looks" ? "looks" : "prendas";
+  // Next entrega el segmento codificado ("fx-j%C3%B6er"): se decodifica para buscar el slug real.
+  const { slug: rawSlug } = await params;
+  let slug = rawSlug;
+  try {
+    slug = decodeURIComponent(rawSlug).normalize("NFC");
+  } catch {}
+  const { tab: tabParam, orden, estrellas } = await searchParams;
+  const tab = tabParam === "looks" ? "looks" : tabParam === "resenas" ? "resenas" : "prendas";
   const supabase = await createClient();
 
   const { data: brand } = await supabase
     .from("brands")
-    .select("id, name, slug, city_id, store_url, instagram, bio, is_verified, is_sustainable, logo_url")
+    .select("id, name, slug, city_id, store_url, instagram, bio, is_verified, is_sustainable, logo_url, owner_user_id, rating_avg, rating_count, rating_dist")
     .eq("slug", slug)
     .eq("is_active", true)
     .maybeSingle();
@@ -89,6 +100,21 @@ export default async function BrandPage({
   const isFollowing = followedBrandIds.has(brand.id);
   const isLoggedIn = Boolean(session?.profile);
 
+  // Reseñas (spec 011).
+  const ratingSummary = summaryFrom(brand);
+  const myId = session?.profile?.id ?? null;
+  const isOwner = !!myId && brand.owner_user_id === myId;
+  const canRate = isLoggedIn && !isOwner && session?.profile?.role !== "brand";
+  const ratingSort: RatingSort = orden === "altas" ? "high" : orden === "bajas" ? "low" : "recent";
+  const starsFilter = estrellas && /^[1-5]$/.test(estrellas) ? Number(estrellas) : null;
+  const [myRating, ratingPage] =
+    tab === "resenas"
+      ? await Promise.all([getMyRating(brand.id, myId), getRatings(brand.id, { sort: ratingSort, stars: starsFilter ?? undefined, offset: 0 })])
+      : [null, null];
+  const ratingsHref = (o: string | null, e: number | null) =>
+    `/marca/${slug}?tab=resenas${o ? `&orden=${o}` : ""}${e ? `&estrellas=${e}` : ""}`;
+  const ordenParam = ratingSort === "high" ? "altas" : ratingSort === "low" ? "bajas" : null;
+
   const garmentCount = garments?.length ?? 0;
   const lookCount = posts?.length ?? 0;
 
@@ -118,6 +144,13 @@ export default async function BrandPage({
             {brand.is_sustainable && <Badge variant="neutral">Sostenible</Badge>}
           </div>
           {cityName && <p className="mt-1 text-sm text-text-muted">{cityName}</p>}
+          {showsAverage(ratingSummary) && (
+            <Link href={`/marca/${slug}?tab=resenas`} className="mt-1 inline-flex items-center gap-1.5 text-sm text-text hover:underline">
+              <StarIcon className="size-4 fill-honey text-ink" aria-hidden />
+              <strong className="font-semibold">{formatRating(ratingSummary.avg)}</strong>
+              <span className="text-text-muted">· {ratingSummary.count} reseñas</span>
+            </Link>
+          )}
           {brand.bio && <p className="mt-3 max-w-2xl text-[15px] leading-6 text-text">{brand.bio}</p>}
           {styles.length > 0 && (
             <ul aria-label="Estilos" className="mt-3 flex flex-wrap gap-x-2">
@@ -152,10 +185,75 @@ export default async function BrandPage({
         tabs={[
           { id: "prendas", label: "Prendas", href: `/marca/${slug}`, badge: garmentCount },
           { id: "looks", label: "Looks", href: `/marca/${slug}?tab=looks`, badge: lookCount },
+          { id: "resenas", label: "Reseñas", href: `/marca/${slug}?tab=resenas`, badge: ratingSummary.count },
         ]}
       />
 
-      {tab === "looks" ? (
+      {tab === "resenas" ? (
+        <div className="mx-auto flex max-w-3xl flex-col gap-5">
+          <RatingSummary summary={ratingSummary} />
+          {myRating?.status === "removed" && (
+            <p role="status" className="rounded-[var(--radius-card)] bg-surface-sunken p-4 text-sm text-text">
+              El equipo de Icon retiró tu reseña de esta marca. Solo tú ves este aviso.
+            </p>
+          )}
+          {myRating?.status === "auto_hidden" && (
+            <p role="status" className="rounded-[var(--radius-card)] bg-surface-sunken p-4 text-sm text-text">
+              Tu reseña está oculta mientras el equipo revisa unos reportes.
+            </p>
+          )}
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <LinkTabs
+              label="Orden de las reseñas"
+              size="sm"
+              active={ratingSort}
+              tabs={[
+                { id: "recent", label: "Recientes", href: ratingsHref(null, starsFilter) },
+                { id: "high", label: "Más altas", href: ratingsHref("altas", starsFilter) },
+                { id: "low", label: "Más bajas", href: ratingsHref("bajas", starsFilter) },
+              ]}
+            />
+            {canRate && myRating?.status !== "removed" && (
+              <RatingFormSheet brandId={brand.id} brandName={brand.name} initial={myRating ? { stars: myRating.stars, body: myRating.body } : undefined} />
+            )}
+            {!isLoggedIn && (
+              <Button variant="secondary" render={<Link href={`/login?next=${encodeURIComponent(`/marca/${slug}?tab=resenas`)}`} />} nativeButton={false}>
+                <StarIcon data-icon="inline-start" /> Escribir reseña
+              </Button>
+            )}
+          </div>
+          <nav aria-label="Filtrar por estrellas" className="flex flex-wrap gap-2">
+            {[5, 4, 3, 2, 1].map((n) => (
+              <Link
+                key={n}
+                href={ratingsHref(ordenParam, starsFilter === n ? null : n)}
+                aria-current={starsFilter === n ? "true" : undefined}
+                className={`inline-flex min-h-9 items-center gap-1 rounded-full px-3 text-sm font-semibold ${starsFilter === n ? "bg-surface-inverse text-text-inverse" : "border-[1.5px] border-line-strong text-text hover:bg-surface-sunken"}`}
+              >
+                {n} <StarIcon className="size-3.5" aria-hidden />
+              </Link>
+            ))}
+          </nav>
+          {ratingPage && ratingPage.items.length > 0 ? (
+            <RatingList
+              key={`${ratingSort}:${starsFilter}`}
+              brandId={brand.id}
+              sort={ratingSort}
+              stars={starsFilter}
+              initial={ratingPage.items}
+              initialNext={ratingPage.nextOffset}
+              myId={myId}
+              isLoggedIn={isLoggedIn}
+            />
+          ) : (
+            <EmptyState
+              icon={StarIcon}
+              title={starsFilter ? "No hay reseñas con esas estrellas" : "Aún no hay reseñas"}
+              description={starsFilter ? "Prueba con otro filtro." : `Cuéntale a la comunidad cómo te fue con ${brand.name}.`}
+            />
+          )}
+        </div>
+      ) : tab === "looks" ? (
         lookCount > 0 ? (
           <div className="columns-2 gap-3 md:columns-3 md:gap-4 lg:columns-4">
             {posts!.map((p) => (

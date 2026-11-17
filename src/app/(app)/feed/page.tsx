@@ -24,6 +24,7 @@ import { getSuggestionChips } from "@/lib/suggestions";
 import { FEED_PAGE_SIZE, feedItemAuthor, parseFeedParams, getFeedPage, type FeedItem } from "@/lib/feed";
 import type { FilterGroup } from "@/components/feed/filter-panel";
 import { getFollowingFeedPage, getFollowSuggestions } from "@/lib/profile";
+import { RATING_MIN_FOR_AVG } from "@/lib/rating-rules";
 import { FollowSuggestions } from "@/components/profile/follow-suggestions";
 
 type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
@@ -262,6 +263,7 @@ export default async function FeedPage({ searchParams }: { searchParams: SearchP
 
     let groups: FilterGroup[] = [];
     let body: React.ReactNode;
+    let extraSorts: { value: string; label: string }[] | undefined;
     const clearFiltersHref = (() => {
       const params = new URLSearchParams();
       params.set("q", q);
@@ -273,13 +275,27 @@ export default async function FeedPage({ searchParams }: { searchParams: SearchP
     const gridKey = JSON.stringify({ q, type, f, sort });
 
     if (type === "brands") {
-      groups = [styleGroup];
+      // Spec 011: "Mejor valoradas" y "4 ★ o más" solo en esta pestaña.
+      const ratingGroup: FilterGroup = { param: "min_rating", label: "Valoración", options: [{ value: "4", label: "4 ★ o más" }] };
+      groups = [styleGroup, ratingGroup];
+      extraSorts = [{ value: "rating", label: "Mejor valoradas" }];
+      const minRating = sp.min_rating === "4" || (Array.isArray(sp.min_rating) && sp.min_rating.includes("4"));
       const { data, error } = await supabase.rpc("search_brands", {
         q,
         p_user_city: userCity,
         p_styles: f.style.length ? f.style : null,
       });
-      const rows = [...(data ?? [])].sort((a, b) => {
+      const ids = (data ?? []).map((b) => b.id);
+      const { data: ratingRows } = ids.length
+        ? await supabase.from("brands").select("id, rating_avg, rating_count").in("id", ids)
+        : { data: [] as { id: string; rating_avg: number | null; rating_count: number }[] };
+      const ratingOf = new Map((ratingRows ?? []).map((r) => [r.id, r]));
+      const shown = (id: string) => {
+        const r = ratingOf.get(id);
+        return r && r.rating_avg != null && r.rating_count >= RATING_MIN_FOR_AVG ? Number(r.rating_avg) : null;
+      };
+      const rows = [...(data ?? [])].filter((b) => !minRating || (shown(b.id) ?? 0) >= 4).sort((a, b) => {
+        if (sort === "rating") return (shown(b.id) ?? -1) - (shown(a.id) ?? -1) || (ratingOf.get(b.id)?.rating_count ?? 0) - (ratingOf.get(a.id)?.rating_count ?? 0);
         if (sort === "az") return a.name.localeCompare(b.name);
         if (sort === "new") return (b.created_at ?? "").localeCompare(a.created_at ?? "");
         if (sort === "popular") return b.garments - a.garments;
@@ -300,7 +316,7 @@ export default async function FeedPage({ searchParams }: { searchParams: SearchP
       ) : rows.length === 0 ? (
         <EmptyState
           text={`No encontramos marcas para «${q}».`}
-          clearHref={f.style.length ? clearFiltersHref : undefined}
+          clearHref={f.style.length || minRating ? clearFiltersHref : undefined}
         />
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -317,6 +333,7 @@ export default async function FeedPage({ searchParams }: { searchParams: SearchP
               isSustainable={b.is_sustainable}
               garments={b.garments}
               styles={brandStyles.get(b.id)}
+              rating={shown(b.id) != null ? { avg: shown(b.id)!, count: ratingOf.get(b.id)!.rating_count } : null}
             />
           ))}
         </div>
@@ -381,7 +398,7 @@ export default async function FeedPage({ searchParams }: { searchParams: SearchP
     }
 
     return (
-      <Shell isLoggedIn={isLoggedIn} groups={groups} sort={sort} suggestions={null}>
+      <Shell isLoggedIn={isLoggedIn} groups={groups} sort={sort} suggestions={null} extraSorts={extraSorts}>
         {tabs}
         {body}
       </Shell>
@@ -526,8 +543,10 @@ function Shell({
   suggestions,
   isLoggedIn,
   view,
+  extraSorts,
   children,
 }: {
+  extraSorts?: { value: string; label: string }[];
   groups: FilterGroup[];
   sort: string;
   isLoggedIn: boolean;
@@ -557,7 +576,7 @@ function Shell({
         {view !== "siguiendo" && (
           <>
             <div className="mb-4">
-              <FeedTopBar groups={groups} sort={sort} isLoggedIn={isLoggedIn} />
+              <FeedTopBar groups={groups} sort={sort} isLoggedIn={isLoggedIn} extraSorts={extraSorts} />
             </div>
             {suggestions && suggestions.length > 0 && <FeedSuggestions chips={suggestions} />}
             <FeedActiveChips groups={groups} />

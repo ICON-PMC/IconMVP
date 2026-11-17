@@ -11,6 +11,7 @@ import { CatalogTab } from "./_components/catalog-tab";
 import { LooksTab } from "./_components/looks-tab";
 import { ProfileTab } from "./_components/profile-tab";
 import { MentionsTab, parseMentionsView } from "./_components/mentions-tab";
+import { RatingsTab } from "./_components/ratings-tab";
 import { getInboxCounts } from "@/lib/claims";
 import { checkStorageQuota } from "@/lib/storage-quota";
 import { instagramImportEnabled } from "@/lib/instagram";
@@ -29,7 +30,7 @@ export default async function BrandPanelPage({
 }: {
   searchParams: Promise<{ ok?: string; error?: string; tab?: string; ver?: string; estado?: string; desde?: string; cat?: string; editar?: string }>;
 }) {
-  const { brand } = await requireBrandOwner();
+  const { brand, profile } = await requireBrandOwner();
   const sp = await searchParams;
   const { error, tab: tabParam } = sp;
   const tab = parseTab(tabParam);
@@ -178,6 +179,7 @@ export default async function BrandPanelPage({
             catalogo: catalog.length,
             looks: looks.length,
             menciones: inbox ? inbox.reviewsPending + inbox.proposedPending || undefined : undefined,
+            resenas: brand.rating_count || undefined,
           }}
         />
 
@@ -214,6 +216,7 @@ export default async function BrandPanelPage({
               categories={sp.ver === "sin-marca" ? (await getTagOptions(supabase)).category.map((c) => ({ id: c.id, name: c.name })) : []}
             />
           )}
+          {tab === "resenas" && <RatingsTab brandId={brand.id} myId={profile.id} />}
           {tab === "menciones" && !inbox && (
             <MentionsTab
               brand={brand}

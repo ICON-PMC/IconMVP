@@ -37,6 +37,10 @@ export async function loadOpenReports(): Promise<ReportGroup[]> {
   const postIds = [...groups.values()].filter((g) => g.targetType === "post").map((g) => g.targetId);
   const pgIds = [...groups.values()].filter((g) => g.targetType === "proposed_garment").map((g) => g.targetId);
   const profileIds = [...groups.values()].filter((g) => g.targetType === "profile").map((g) => g.targetId);
+  const ratingIds = [...groups.values()].filter((g) => g.targetType === "brand_review").map((g) => g.targetId);
+  const { data: ratings } = ratingIds.length
+    ? await supabase.from("brand_ratings").select("id, stars, body, status, user_id, brands(name, slug)").in("id", ratingIds)
+    : { data: [] as { id: string; stars: number; body: string; status: string; user_id: string; brands: unknown }[] };
   const [{ data: posts }, { data: imgs }, { data: pgs }] = await Promise.all([
     postIds.length
       ? supabase.from("posts").select("id, caption, status, hidden_reason, author_user_id, author_brand_id").in("id", postIds)
@@ -48,7 +52,11 @@ export async function loadOpenReports(): Promise<ReportGroup[]> {
       ? supabase.from("proposed_garments").select("id, name").in("id", pgIds)
       : Promise.resolve({ data: [] as { id: string; name: string }[] }),
   ]);
-  const profiles = await getPublicProfiles([...(posts ?? []).flatMap((p) => (p.author_user_id ? [p.author_user_id] : [])), ...profileIds]);
+  const profiles = await getPublicProfiles([
+    ...(posts ?? []).flatMap((p) => (p.author_user_id ? [p.author_user_id] : [])),
+    ...profileIds,
+    ...(ratings ?? []).map((r) => r.user_id),
+  ]);
   const firstImg = new Map<string, string>();
   for (const i of imgs ?? []) if (!firstImg.has(i.post_id)) firstImg.set(i.post_id, i.cf_image_id);
 
@@ -75,7 +83,13 @@ export async function loadOpenReports(): Promise<ReportGroup[]> {
       g.label = pr ? `Perfil: ${pr.displayName} (@${pr.handle})` : "Perfil borrado";
       g.profileHandle = pr?.handle ?? null;
     } else {
-      g.label = "Reseña de marca";
+      const r = (ratings ?? []).find((x) => x.id === g.targetId);
+      const b = r?.brands as { name: string; slug: string } | null | undefined;
+      const au = r ? profiles.get(r.user_id) : null;
+      g.rating = r
+        ? { stars: r.stars, body: r.body, status: r.status, brandName: b?.name ?? "Marca", brandSlug: b?.slug ?? null, author: au ? `${au.displayName} (@${au.handle})` : "Usuario" }
+        : null;
+      g.label = r ? `Reseña de ${b?.name ?? "marca"}` : "Reseña borrada";
     }
   }
   // Más reportados primero; a igual número, el más antiguo.

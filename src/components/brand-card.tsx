@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { BadgeCheckIcon } from "lucide-react";
+import { BadgeCheckIcon, StarIcon } from "lucide-react";
+import { formatRating } from "@/lib/rating-rules";
 import { Avatar } from "@/components/avatar";
 
 /**
@@ -17,6 +18,7 @@ export function BrandCard({
   garments,
   styles = [],
   logo = null,
+  rating = null,
 }: {
   id?: string;
   slug: string;
@@ -28,6 +30,8 @@ export function BrandCard({
   garments: number;
   styles?: string[];
   logo?: string | null;
+  /** Spec 011: solo con al menos 3 reseñas. */
+  rating?: { avg: number; count: number } | null;
 }) {
   return (
     <Link
@@ -55,6 +59,14 @@ export function BrandCard({
             </li>
           ))}
         </ul>
+      )}
+      {rating && (
+        <p className="flex items-center gap-1 text-[13px] text-text-inverse">
+          <StarIcon className="size-3.5 fill-honey text-honey" aria-hidden />
+          <span className="font-semibold">{formatRating(rating.avg)}</span>
+          <span className="text-text-inverse/80">({rating.count})</span>
+          <span className="sr-only">reseñas</span>
+        </p>
       )}
       <p className="mt-auto text-xs font-semibold text-leaf">
         {garments} {garments === 1 ? "prenda" : "prendas"}

@@ -15,7 +15,8 @@ export type FeedFiltersInput = {
   color: string[];
 };
 
-export const FEED_SORTS = new Set(["relevant", "new", "popular", "az"]);
+// "rating" solo aplica a la pestaña Marcas de la búsqueda (spec 011).
+export const FEED_SORTS = new Set(["relevant", "new", "popular", "az", "rating"]);
 export const FEED_PAGE_SIZE = 24;
 
 type SearchParamsLike = { [key: string]: string | string[] | undefined };

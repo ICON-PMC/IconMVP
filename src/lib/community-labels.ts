@@ -28,6 +28,8 @@ export type ReportGroup = {
   label: string;
   /** Reportes de perfil (spec 009): el @usuario para enlazar al perfil. */
   profileHandle?: string | null;
+  /** Reportes de reseñas (spec 011). */
+  rating?: { stars: number; body: string; brandName: string; brandSlug: string | null; author: string; status: string } | null;
 };
 
 export type CommunityData = {
