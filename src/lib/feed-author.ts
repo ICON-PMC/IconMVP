@@ -5,7 +5,7 @@ type FeedItem = Database["public"]["Functions"]["get_feed"]["Returns"][number];
 
 /**
  * Autor que muestra una tarjeta del feed (spec 008, regla de tolerancia): un look de usuario muestra
- * a su autor (sin enlace hasta la spec 009); todo lo demás, su marca. Nunca asume marca no nula.
+ * a su autor (enlace a su perfil, spec 009); todo lo demás, su marca. Nunca asume marca no nula.
  */
 export function feedItemAuthor(
   item: Pick<FeedItem, "id" | "brand_name" | "brand_slug" | "brand_id" | "author_type" | "author_user_id" | "author_name" | "author_handle" | "author_avatar">,
@@ -14,7 +14,7 @@ export function feedItemAuthor(
     return {
       name: item.author_name ?? item.author_handle ?? "Usuario",
       avatar: item.author_avatar ?? null,
-      href: null,
+      href: item.author_handle ? `/u/${item.author_handle}` : null,
       seed: item.author_user_id ?? item.id,
       isUser: true,
     };

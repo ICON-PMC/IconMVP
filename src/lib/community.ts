@@ -72,7 +72,8 @@ export async function loadOpenReports(): Promise<ReportGroup[]> {
       g.label = `Prenda propuesta: ${(pgs ?? []).find((x) => x.id === g.targetId)?.name ?? "borrada"}`;
     } else if (g.targetType === "profile") {
       const pr = profiles.get(g.targetId);
-      g.label = pr ? `Perfil: @${pr.handle}` : "Perfil";
+      g.label = pr ? `Perfil: ${pr.displayName} (@${pr.handle})` : "Perfil borrado";
+      g.profileHandle = pr?.handle ?? null;
     } else {
       g.label = "Reseña de marca";
     }
@@ -83,11 +84,12 @@ export async function loadOpenReports(): Promise<ReportGroup[]> {
 
 export async function loadCommunity(): Promise<CommunityData> {
   const supabase = await createClient();
-  const [{ data: stubs }, { data: mentions }, { data: proposed }, { data: blocked }] = await Promise.all([
+  const [{ data: stubs }, { data: mentions }, { data: proposed }, { data: blocked }, { data: hidden }] = await Promise.all([
     supabase.from("brand_stubs").select("id, name, status, created_at").neq("status", "claimed").order("created_at", { ascending: false }).limit(200),
     supabase.from("post_brand_mentions").select("brand_stub_id").not("brand_stub_id", "is", null),
     supabase.from("proposed_garments").select("id, name, category_tag_id, brand_id, brand_stub_id, created_at").eq("status", "open").order("created_at", { ascending: false }).limit(200),
     supabase.rpc("admin_blocked_users"),
+    supabase.rpc("admin_hidden_profiles"),
   ]);
   const mentionCount = new Map<string, number>();
   for (const m of mentions ?? []) if (m.brand_stub_id) mentionCount.set(m.brand_stub_id, (mentionCount.get(m.brand_stub_id) ?? 0) + 1);
@@ -121,6 +123,13 @@ export async function loadCommunity(): Promise<CommunityData> {
       label: [u.display_name, u.email, `@${u.handle}`].filter(Boolean).join(" · "),
       reason: u.posting_blocked_reason,
       since: u.posting_blocked_at,
+    })),
+    hiddenProfiles: (hidden ?? []).map((u) => ({
+      id: u.id,
+      handle: u.handle,
+      label: [u.display_name, u.email, `@${u.handle}`].filter(Boolean).join(" · "),
+      reason: u.profile_hidden_reason,
+      since: u.profile_hidden_at,
     })),
   };
 }

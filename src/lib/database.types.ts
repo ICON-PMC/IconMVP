@@ -66,9 +66,9 @@ export type Database = {
         Relationships: [];
       };
       users: {
-        Row: { id: string; auth_id: string | null; email: string | null; display_name: string | null; home_city_id: string | null; onboarded: boolean; role: Database["public"]["Enums"]["user_role"]; brand_id: string | null; handle: string; handle_key: string; handle_changed_at: string | null; avatar_key: string | null; avatar_bytes: number; bio: string | null; link_url: string | null; is_public: boolean; show_likes: boolean; posting_blocked_at: string | null; posting_blocked_reason: string | null; created_at: string; updated_at: string };
-        Insert: { id?: string; auth_id?: string | null; email?: string | null; display_name?: string | null; home_city_id?: string | null; onboarded?: boolean; role?: Database["public"]["Enums"]["user_role"]; brand_id?: string | null; handle?: string; handle_changed_at?: string | null; avatar_key?: string | null; avatar_bytes?: number; bio?: string | null; link_url?: string | null; is_public?: boolean; show_likes?: boolean; posting_blocked_at?: string | null; posting_blocked_reason?: string | null; created_at?: string; updated_at?: string };
-        Update: { id?: string; auth_id?: string | null; email?: string | null; display_name?: string | null; home_city_id?: string | null; onboarded?: boolean; role?: Database["public"]["Enums"]["user_role"]; brand_id?: string | null; handle?: string; handle_changed_at?: string | null; avatar_key?: string | null; avatar_bytes?: number; bio?: string | null; link_url?: string | null; is_public?: boolean; show_likes?: boolean; posting_blocked_at?: string | null; posting_blocked_reason?: string | null; created_at?: string; updated_at?: string };
+        Row: { id: string; auth_id: string | null; email: string | null; display_name: string | null; home_city_id: string | null; onboarded: boolean; role: Database["public"]["Enums"]["user_role"]; brand_id: string | null; handle: string; handle_key: string; handle_changed_at: string | null; avatar_key: string | null; avatar_bytes: number; bio: string | null; link_url: string | null; is_public: boolean; show_likes: boolean; posting_blocked_at: string | null; posting_blocked_reason: string | null; profile_notice_seen_at: string | null; profile_hidden_at: string | null; profile_hidden_reason: string | null; created_at: string; updated_at: string };
+        Insert: { id?: string; auth_id?: string | null; email?: string | null; display_name?: string | null; home_city_id?: string | null; onboarded?: boolean; role?: Database["public"]["Enums"]["user_role"]; brand_id?: string | null; handle?: string; handle_changed_at?: string | null; avatar_key?: string | null; avatar_bytes?: number; bio?: string | null; link_url?: string | null; is_public?: boolean; show_likes?: boolean; posting_blocked_at?: string | null; posting_blocked_reason?: string | null; profile_notice_seen_at?: string | null; profile_hidden_at?: string | null; profile_hidden_reason?: string | null; created_at?: string; updated_at?: string };
+        Update: { id?: string; auth_id?: string | null; email?: string | null; display_name?: string | null; home_city_id?: string | null; onboarded?: boolean; role?: Database["public"]["Enums"]["user_role"]; brand_id?: string | null; handle?: string; handle_changed_at?: string | null; avatar_key?: string | null; avatar_bytes?: number; bio?: string | null; link_url?: string | null; is_public?: boolean; show_likes?: boolean; posting_blocked_at?: string | null; posting_blocked_reason?: string | null; profile_notice_seen_at?: string | null; profile_hidden_at?: string | null; profile_hidden_reason?: string | null; created_at?: string; updated_at?: string };
         Relationships: [];
       };
       brands: {
@@ -209,6 +209,18 @@ export type Database = {
         Update: { user_id?: string; garment_id?: string; source_post_id?: string | null; created_at?: string };
         Relationships: [];
       };
+      user_follows: {
+        Row: { follower_id: string; followed_id: string; created_at: string };
+        Insert: { follower_id: string; followed_id: string; created_at?: string };
+        Update: { follower_id?: string; followed_id?: string; created_at?: string };
+        Relationships: [];
+      };
+      reserved_handles: {
+        Row: { handle: string };
+        Insert: { handle: string };
+        Update: { handle?: string };
+        Relationships: [];
+      };
       brand_follows: {
         Row: { user_id: string; brand_id: string; created_at: string };
         Insert: { user_id: string; brand_id: string; created_at?: string };
@@ -275,7 +287,7 @@ export type Database = {
         Relationships: [];
       };
       public_profiles: {
-        Row: { id: string; handle: string; display_name: string; avatar_key: string | null; is_public: boolean; bio: string | null; link_url: string | null; city_slug: string | null; city_name: string | null; likes_visible: boolean; is_brand_account: boolean; created_at: string };
+        Row: { id: string; handle: string; display_name: string; avatar_key: string | null; is_public: boolean; bio: string | null; link_url: string | null; city_slug: string | null; city_name: string | null; likes_visible: boolean; is_brand_account: boolean; created_at: string; is_hidden: boolean };
         Relationships: [];
       };
       feed_items: {
@@ -338,6 +350,29 @@ export type Database = {
         Returns: { id: string; email: string | null; display_name: string | null; handle: string; posting_blocked_at: string; posting_blocked_reason: string | null }[];
       };
       user_look_stats: { Args: Record<string, never>; Returns: Json };
+      // Spec 009: perfil público
+      handle_available: { Args: { p_handle: string }; Returns: string | null };
+      set_my_handle: { Args: { p_handle: string }; Returns: string };
+      get_public_profile: { Args: { p_handle: string }; Returns: Json };
+      profile_liked: {
+        Args: { p_user_id: string; p_kind: "garment" | "post"; p_limit?: number; p_offset?: number };
+        Returns: Database["public"]["Views"]["feed_items"]["Row"][];
+      };
+      get_following_feed: { Args: { p_limit?: number; p_offset?: number }; Returns: Database["public"]["Views"]["feed_items"]["Row"][] };
+      follow_suggestions: {
+        Args: Record<string, never>;
+        Returns: { kind: "brand" | "user"; id: string; name: string; slug_or_handle: string; image: string | null }[];
+      };
+      my_following: {
+        Args: Record<string, never>;
+        Returns: { kind: "brand" | "user"; id: string; name: string; slug_or_handle: string; image: string | null; followed_at: string }[];
+      };
+      mark_profile_notice_seen: { Args: Record<string, never>; Returns: undefined };
+      set_profile_hidden: { Args: { p_user_id: string; p_hidden: boolean; p_reason?: string | null }; Returns: undefined };
+      admin_hidden_profiles: {
+        Args: Record<string, never>;
+        Returns: { id: string; handle: string; display_name: string | null; email: string | null; profile_hidden_at: string; profile_hidden_reason: string | null }[];
+      };
       is_my_editable_look: { Args: { p_post_id: string }; Returns: boolean };
       ugc_name_error: { Args: { p_name: string; p_min: number; p_max: number }; Returns: string | null };
       approve_brand: { Args: { p_brand_id: string }; Returns: { brand_name: string; owner_email: string | null }[] };

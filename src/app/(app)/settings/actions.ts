@@ -14,14 +14,8 @@ export async function updateSettings(formData: FormData) {
   const supabase = await createClient();
   const userId = session.profile.id;
 
-  const displayName = String(formData.get("display_name") ?? "").trim();
-  const city = formData.get("city") ? String(formData.get("city")) : null;
+  // Nombre y ciudad se editan en el perfil (spec 009); aquí solo los estilos preferidos.
   const styleIds = formData.getAll("styles").map(String);
-
-  await supabase
-    .from("users")
-    .update({ display_name: displayName || null, home_city_id: city })
-    .eq("id", userId);
 
   // Reemplaza las preferencias de estilo.
   await supabase.from("user_preferences").delete().eq("user_id", userId);

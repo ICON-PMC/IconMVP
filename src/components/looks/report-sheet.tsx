@@ -45,7 +45,7 @@ export function ReportSheet({ targetType, targetId }: { targetType: ReportTarget
         open={open}
         onOpenChange={setOpen}
         title="Reportar"
-        description={state === "idle" ? "El equipo de Icon lo revisa. Quien publicó no sabe quién reportó." : undefined}
+        description={state === "idle" ? targetType === "profile" ? "El equipo de Icon lo revisa. La persona no sabe quién reportó." : "El equipo de Icon lo revisa. Quien publicó no sabe quién reportó." : undefined}
         footer={
           state === "idle" ? (
             <Button size="lg" className="w-full" onClick={submit} loading={pending} disabled={pending}>

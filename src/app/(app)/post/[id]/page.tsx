@@ -18,6 +18,8 @@ import { getCurrentUser } from "@/lib/auth";
 import { userLooksEnabled } from "@/lib/features";
 import { priceLabel } from "@/lib/taxonomy";
 import { LookOwnerActions } from "./owner-actions";
+import { UserFollowButton } from "@/components/profile/user-follow-button";
+import { doIFollow } from "@/lib/profile";
 
 const FLASH = { publicado: "¡Publicaste tu look! Ya está en el feed." };
 
@@ -38,6 +40,8 @@ export default async function PostPage({ params }: { params: Promise<{ id: strin
   const price = prices.length ? priceLabel(Math.min(...prices), Math.max(...prices)) : null;
   const isUserLook = author?.kind === "user";
   const canReport = userLooksEnabled() && isLoggedIn && !look.isMine && look.status === "published";
+  const followable = author?.kind === "user" && author.profile.isPublic && !look.isMine ? author.profile : null;
+  const iFollow = followable ? await doIFollow(session?.profile?.id, followable.id) : false;
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-5 md:px-6">
@@ -83,7 +87,12 @@ export default async function PostPage({ params }: { params: Promise<{ id: strin
         <div className="flex flex-col gap-5 md:sticky md:top-24 md:self-start">
           <div className="flex items-start justify-between gap-3">
             {author?.kind === "user" ? (
-              <AuthorChip profile={author.profile} />
+              <div className="flex min-w-0 flex-wrap items-center gap-3">
+                <AuthorChip profile={author.profile} />
+                {followable && (
+                  <UserFollowButton userId={followable.id} initialFollowing={iFollow} isLoggedIn={isLoggedIn} loginNext={path} size="sm" />
+                )}
+              </div>
             ) : (
               <div className="flex items-center gap-3">
                 <Avatar image={author?.kind === "brand" ? author.logo : null} name={authorName} seed={author?.kind === "brand" ? author.id : id} size={48} />

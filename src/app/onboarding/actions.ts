@@ -33,5 +33,20 @@ export async function completeOnboarding(formData: FormData) {
   }
 
   revalidatePath("/", "layout");
+  // Paso final opcional: nombre de usuario y foto (spec 009, FR-017). Las cuentas de marca no tienen perfil.
+  redirect(session.profile.role === "brand" ? "/feed" : "/onboarding?paso=perfil");
+}
+
+// Guarda el nombre de usuario elegido en el onboarding (la foto se sube aparte, al elegirla).
+export async function saveOnboardingProfile(formData: FormData) {
+  const session = await getCurrentUser();
+  if (!session?.profile) redirect("/login?next=/onboarding");
+  const handle = String(formData.get("handle") ?? "").trim().toLowerCase();
+  if (handle && handle !== session.profile.handle) {
+    const supabase = await createClient();
+    const { error } = await supabase.rpc("set_my_handle", { p_handle: handle });
+    if (error) redirect(`/onboarding?paso=perfil&error=${encodeURIComponent(error.message)}`);
+  }
+  revalidatePath("/", "layout");
   redirect("/feed");
 }

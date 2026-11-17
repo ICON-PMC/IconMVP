@@ -442,6 +442,17 @@ export async function setUserPostingBlock(userId: string, blocked: boolean, reas
   return { ok: true };
 }
 
+/** Oculta o restaura un perfil (spec 009); resuelve sus reportes abiertos. */
+export async function setProfileHidden(userId: string, hidden: boolean, reason?: string): Promise<AdminResult> {
+  await requireStaff();
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("set_profile_hidden", { p_user_id: userId, p_hidden: hidden, p_reason: reason ?? null });
+  if (error) return { ok: false, error: error.message };
+  revalidateCommunity();
+  revalidatePath("/u/[handle]", "page");
+  return { ok: true };
+}
+
 export async function setBrandStubBlocked(stubId: string, blocked: boolean): Promise<AdminResult> {
   await requireStaff();
   const supabase = await createClient();

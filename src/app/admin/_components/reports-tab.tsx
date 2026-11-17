@@ -11,14 +11,14 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { REASON_LABEL, type ReportGroup } from "@/lib/community-labels";
-import { dismissReports, moderatePost, setUserPostingBlock } from "../actions";
+import { dismissReports, moderatePost, setProfileHidden, setUserPostingBlock } from "../actions";
 
 const dateFmt = new Intl.DateTimeFormat("es-CO", { day: "numeric", month: "short" });
 
 /** Cola de reportes abiertos, agrupados por objetivo (spec 008, US5). */
 export function ReportsTab({ groups }: { groups: ReportGroup[] }) {
   if (!groups.length)
-    return <EmptyState icon={FlagIcon} title="No hay reportes abiertos" description="Cuando alguien reporte un look, aparecerá aquí." />;
+    return <EmptyState icon={FlagIcon} title="No hay reportes abiertos" description="Cuando alguien reporte un look o un perfil, aparecerá aquí." />;
   return (
     <ul className="flex flex-col gap-3">
       {groups.map((g) => (
@@ -60,6 +60,11 @@ function ReportRow({ group: g }: { group: ReportGroup }) {
           <span className="text-[13px] text-text-muted">desde {dateFmt.format(new Date(g.firstAt))}</span>
         </div>
         {g.post && <p className="text-sm text-text-muted">{g.post.author}</p>}
+        {g.targetType === "profile" && g.profileHandle && (
+          <Link href={`/u/${g.profileHandle}`} target="_blank" className="w-fit text-sm font-semibold text-action-text hover:underline">
+            Ver perfil
+          </Link>
+        )}
         {g.post?.caption && <p className="line-clamp-2 text-sm text-text">{g.post.caption}</p>}
         <p className="text-sm text-text">{g.reasons.map((r) => `${REASON_LABEL[r.reason] ?? r.reason} (${r.n})`).join(" · ")}</p>
         {g.notes.length > 0 && (
@@ -76,9 +81,13 @@ function ReportRow({ group: g }: { group: ReportGroup }) {
               variant="danger"
               size="sm"
               disabled={pending || !reason.trim()}
-              onClick={() => run(() => moderatePost(g.targetId, "hide", reason), "Look ocultado.")}
+              onClick={() =>
+                g.targetType === "profile"
+                  ? run(() => setProfileHidden(g.targetId, true, reason), "Perfil ocultado.")
+                  : run(() => moderatePost(g.targetId, "hide", reason), "Look ocultado.")
+              }
             >
-              Ocultar
+              {g.targetType === "profile" ? "Ocultar perfil" : "Ocultar"}
             </Button>
             <Button variant="ghost" size="sm" onClick={() => setHiding(false)}>
               Cancelar
@@ -115,6 +124,11 @@ function ReportRow({ group: g }: { group: ReportGroup }) {
                   </Button>
                 )}
               </>
+            )}
+            {g.targetType === "profile" && g.profileHandle && (
+              <Button variant="danger" size="sm" disabled={pending} onClick={() => setHiding(true)}>
+                Ocultar perfil
+              </Button>
             )}
             {g.targetType !== "post" && (
               <Button variant="secondary" size="sm" disabled={pending} onClick={() => run(() => dismissReports(g.targetType as "profile", g.targetId), "Reportes descartados.")}>

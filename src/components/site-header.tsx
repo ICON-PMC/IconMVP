@@ -11,9 +11,9 @@ export async function SiteHeader() {
   const ctx: NavContext = {
     isLoggedIn: Boolean(profile),
     role: (profile?.role ?? null) as NavRole,
-    handle: null,
-    avatar: null,
-    displayName: profile?.display_name ?? session?.email ?? null,
+    handle: profile && profile.role !== "brand" ? profile.handle : null,
+    avatar: profile?.avatar_key ?? null,
+    displayName: profile?.display_name || profile?.handle || session?.email || null,
     seed: profile?.id ?? "anon",
     userLooks: userLooksEnabled(),
   };
