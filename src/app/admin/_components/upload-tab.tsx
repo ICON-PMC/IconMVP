@@ -1,4 +1,3 @@
-import { GlassCard } from "@/components/glass-card";
 import { FormField } from "@/components/form-field";
 import { ChipSelect } from "@/components/chip-select";
 import { CityCombobox } from "@/components/city-combobox";
@@ -51,11 +50,11 @@ export function UploadTab({ form, data }: { form: UploadForm; data: UploadData }
           { id: "post", label: "Post (look)", href: "/admin?tab=cargar&form=post" },
         ]}
       />
-      <GlassCard className="p-5">
+      <div className="surface p-5">
         {form === "marca" && <BrandForm data={data} />}
         {form === "prenda" && <GarmentForm data={data} />}
         {form === "post" && <PostForm data={data} />}
-      </GlassCard>
+      </div>
     </div>
   );
 }

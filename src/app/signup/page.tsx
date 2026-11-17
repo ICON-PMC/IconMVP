@@ -1,9 +1,11 @@
 import Link from "next/link";
-import { Aurora } from "@/components/aurora";
-import { GlassCard } from "@/components/glass-card";
-import { GoogleButton } from "@/components/google-button";
 import { signUp } from "@/app/auth/actions";
+import { AuthNotice, AuthShell, OrDivider } from "@/components/auth-shell";
+import { FormField } from "@/components/form-field";
+import { GoogleButton } from "@/components/google-button";
 import { SubmitButton } from "@/components/submit-button";
+import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 
 export default async function SignupPage({
   searchParams,
@@ -12,100 +14,59 @@ export default async function SignupPage({
 }) {
   const { error, tipo } = await searchParams;
   const isBrand = tipo === "marca";
+  const seg = "flex min-h-10 items-center justify-center rounded-full px-3 text-sm font-semibold transition-colors";
 
   return (
-    <>
-      <Aurora />
-      <main className="flex min-h-dvh items-center justify-center p-6">
-        <GlassCard className="w-full max-w-sm p-8">
-          <h1 className="text-3xl font-medium tracking-tight text-forest">
-            {isBrand ? "Registra tu marca" : "Crea tu cuenta"}
-          </h1>
-          <p className="mt-1 mb-4 text-sm text-ink/70">
-            {isBrand
-              ? "Primero crea tu cuenta; en el siguiente paso armas el perfil de tu marca."
-              : "Guarda outfits y prendas de marcas colombianas."}
-          </p>
+    <AuthShell
+      title={isBrand ? "Registra tu marca" : "Crea tu cuenta"}
+      subtitle={
+        isBrand
+          ? "Primero crea tu cuenta; en el siguiente paso armas el perfil de tu marca."
+          : "Guarda outfits y prendas de marcas colombianas."
+      }
+    >
+      <nav aria-label="Tipo de cuenta" className="mb-5 grid grid-cols-2 rounded-full bg-surface-sunken p-1">
+        <Link href="/signup" aria-current={!isBrand ? "page" : undefined} className={cn(seg, !isBrand ? "bg-surface-inverse text-text-inverse" : "text-text")}>
+          Soy usuario
+        </Link>
+        <Link href="/signup?tipo=marca" aria-current={isBrand ? "page" : undefined} className={cn(seg, isBrand ? "bg-surface-inverse text-text-inverse" : "text-text")}>
+          Soy una marca
+        </Link>
+      </nav>
 
-          <div className="glass-input mb-5 grid grid-cols-2 rounded-full p-1 text-center text-sm font-medium">
-            <Link
-              href="/signup"
-              className={`rounded-full px-3 py-1.5 ${!isBrand ? "bg-forest text-white" : "text-ink/60"}`}
-            >
-              Soy usuario
-            </Link>
-            <Link
-              href="/signup?tipo=marca"
-              className={`rounded-full px-3 py-1.5 ${isBrand ? "bg-forest text-white" : "text-ink/60"}`}
-            >
-              Soy una marca
-            </Link>
-          </div>
+      {error && <AuthNotice tone="error">{error}</AuthNotice>}
 
-          {error && (
-            <p className="mb-4 rounded-xl bg-coral/15 px-3 py-2 text-sm text-coral">
-              {error}
-            </p>
-          )}
+      <form action={signUp} className="flex flex-col gap-4">
+        {isBrand && <input type="hidden" name="account_type" value="brand" />}
+        <FormField label={isBrand ? "Tu nombre" : "Nombre"} htmlFor="signup-name">
+          <Input id="signup-name" type="text" name="display_name" autoComplete="name" />
+        </FormField>
+        <FormField label="Correo" htmlFor="signup-email">
+          <Input id="signup-email" type="email" name="email" required autoComplete="email" placeholder="tu@correo.com" />
+        </FormField>
+        <FormField label="Contraseña" htmlFor="signup-password" hint="Mínimo 6 caracteres.">
+          <Input id="signup-password" type="password" name="password" required minLength={6} autoComplete="new-password" aria-describedby="signup-password-hint" />
+        </FormField>
+        {/* Se deshabilita mientras corre: un doble toque mandaba dos signUp y el segundo
+            mostraba "ya registrado" aunque la cuenta sí se creó. */}
+        <SubmitButton pendingText="Creando cuenta…" size="lg" className="mt-1 w-full">
+          Crear cuenta
+        </SubmitButton>
+      </form>
 
-          <form action={signUp} className="flex flex-col gap-3">
-            {isBrand && <input type="hidden" name="account_type" value="brand" />}
-            <input
-              className="glass-input rounded-xl px-4 py-2.5 text-sm"
-              type="text"
-              name="display_name"
-              placeholder={isBrand ? "Tu nombre" : "Nombre"}
-              autoComplete="name"
-            />
-            <input
-              className="glass-input rounded-xl px-4 py-2.5 text-sm"
-              type="email"
-              name="email"
-              placeholder="Email"
-              required
-              autoComplete="email"
-            />
-            <input
-              className="glass-input rounded-xl px-4 py-2.5 text-sm"
-              type="password"
-              name="password"
-              placeholder="Contraseña (mín. 6)"
-              required
-              minLength={6}
-              autoComplete="new-password"
-            />
-            {/* Se deshabilita mientras corre: un doble toque mandaba dos signUp y el segundo
-                mostraba "ya registrado" aunque la cuenta sí se creó. */}
-            <SubmitButton
-              pendingText="Creando cuenta…"
-              className="mt-1 h-auto rounded-xl bg-forest px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-forest-deep"
-            >
-              Crear cuenta
-            </SubmitButton>
-          </form>
+      {!isBrand && (
+        <>
+          <OrDivider />
+          <GoogleButton />
+        </>
+      )}
 
-          {!isBrand && (
-            <>
-              <div className="my-5 flex items-center gap-3 text-xs text-ink/40">
-                <span className="h-px flex-1 bg-ink/10" /> o
-                <span className="h-px flex-1 bg-ink/10" />
-              </div>
-
-              <GoogleButton />
-            </>
-          )}
-
-          <p className="mt-6 text-center text-sm text-ink/60">
-            ¿Ya tienes cuenta?{" "}
-            <Link
-              href="/login"
-              className="font-medium text-coral hover:underline"
-            >
-              Inicia sesión
-            </Link>
-          </p>
-        </GlassCard>
-      </main>
-    </>
+      <p className="mt-6 text-center text-sm text-text-muted">
+        ¿Ya tienes cuenta?{" "}
+        <Link href="/login" className="font-semibold text-action-text hover:underline">
+          Inicia sesión
+        </Link>
+      </p>
+    </AuthShell>
   );
 }

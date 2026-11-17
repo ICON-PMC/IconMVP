@@ -64,7 +64,7 @@ export function BrandGarments({
           <button
             type="button"
             onClick={() => setShown((n) => n + BATCH)}
-            className="glass-input min-h-11 rounded-full px-4 text-sm font-medium text-ink/80 hover:bg-white/70"
+            className="bg-surface-raised border-[1.5px] border-line text-text focus:border-line-strong focus:outline-none min-h-11 rounded-full px-4 text-sm font-medium text-ink/80 hover:bg-surface-sunken"
           >
             Ver más prendas ({garments.length - shown})
           </button>

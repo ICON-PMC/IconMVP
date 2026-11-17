@@ -18,7 +18,7 @@ type Props = {
   defaults: { name: string; bio: string; city: string; link: string; styles: string[] };
 };
 
-const field = "glass-input h-11 rounded-xl px-4 text-base md:h-10 md:text-sm";
+const field = "bg-surface-raised border-[1.5px] border-line text-text focus:border-line-strong focus:outline-none h-11 rounded-xl px-4 text-base md:h-10 md:text-sm";
 
 function FieldError({ id, msg }: { id: string; msg?: string }) {
   return msg ? (
@@ -67,7 +67,7 @@ export function ProfileForm({ cities, styles, defaults }: Props) {
           id="bio"
           name="bio"
           rows={3}
-          className="glass-input min-h-24 resize-none rounded-xl px-4 py-2.5 text-base md:text-sm"
+          className="bg-surface-raised border-[1.5px] border-line text-text focus:border-line-strong focus:outline-none min-h-24 resize-none rounded-xl px-4 py-2.5 text-base md:text-sm"
           defaultValue={v.bio}
           onChange={(ev) => setBioLen(ev.target.value.length)}
           aria-invalid={!!e.bio}

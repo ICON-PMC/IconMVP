@@ -4,34 +4,41 @@ import { cn } from "@/lib/utils";
 export type LinkTab = { id: string; label: string; href: string; badge?: number };
 
 /**
- * Pestañas basadas en URL (enlazables, sobreviven a los redirects de server actions).
- * En móvil ocupan todo el ancho y hacen scroll horizontal; desde `sm` son una píldora.
+ * Pestañas basadas en URL (enlazables, sobreviven a los redirects de server actions). Spec 007:
+ * - `pill` (por defecto): para cambiar de vista; la activa en tinta con texto crema.
+ * - `underline`: para perfiles y páginas de marca; la activa subrayada.
+ * En móvil hacen scroll horizontal; cada pestaña mide al menos 44 px de alto.
  */
 export function LinkTabs({
   tabs,
   active,
   label,
   size = "md",
+  variant = "pill",
   className,
 }: {
   tabs: LinkTab[];
   active: string;
   label: string;
   size?: "sm" | "md";
+  variant?: "pill" | "underline";
   className?: string;
 }) {
+  const underline = variant === "underline";
   return (
     <nav
       aria-label={label}
       className={cn(
-        "glass-input overflow-x-auto",
-        size === "md"
-          ? "-mx-4 rounded-none px-4 py-1 sm:mx-0 sm:w-fit sm:max-w-full sm:rounded-full sm:px-1"
-          : "w-fit max-w-full rounded-full p-1",
+        "max-w-full overflow-x-auto",
+        underline
+          ? "border-b border-line"
+          : size === "md"
+            ? "-mx-4 px-4 sm:mx-0 sm:w-fit sm:px-0"
+            : "w-fit",
         className,
       )}
     >
-      <ul className="flex min-w-max gap-1">
+      <ul className={cn("flex min-w-max", underline ? "gap-5" : "gap-2")}>
         {tabs.map((t) => {
           const isActive = t.id === active;
           return (
@@ -40,16 +47,26 @@ export function LinkTabs({
                 href={t.href}
                 aria-current={isActive ? "page" : undefined}
                 className={cn(
-                  "flex min-h-11 items-center gap-1.5 rounded-full px-4 text-sm font-medium transition-colors md:min-h-9",
-                  isActive ? "bg-forest text-white" : "text-ink/70 hover:text-forest",
+                  "flex min-h-11 items-center gap-1.5 text-sm font-semibold transition-colors outline-none focus-visible:ring-2 focus-visible:ring-line-strong",
+                  underline
+                    ? cn(
+                        "-mb-px border-b-2 px-0.5",
+                        isActive ? "border-text text-text" : "border-transparent text-text-muted hover:text-text",
+                      )
+                    : cn(
+                        "rounded-full px-4",
+                        isActive
+                          ? "bg-surface-inverse text-text-inverse"
+                          : "border-[1.5px] border-line-strong text-text hover:bg-surface-sunken",
+                      ),
                 )}
               >
                 {t.label}
                 {t.badge != null && (
                   <span
                     className={cn(
-                      "rounded-full px-1.5 text-[11px]",
-                      isActive ? "bg-white/25" : "bg-ink/10",
+                      "rounded-full px-1.5 text-[11px] tabular-nums",
+                      isActive && !underline ? "bg-white/20" : "bg-surface-sunken",
                     )}
                   >
                     {t.badge}

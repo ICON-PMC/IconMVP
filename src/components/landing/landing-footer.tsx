@@ -37,7 +37,7 @@ export function LandingFooter({ audience }: { audience: "personas" | "marcas" })
             href={whatsappLink("Hola, Icon 👋")}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-4 inline-flex min-h-11 items-center rounded-full bg-coral px-5 font-semibold text-white"
+            className="mt-4 inline-flex min-h-11 items-center rounded-full bg-action px-5 font-semibold text-action-ink"
           >
             WhatsApp {CONTACT_PHONE}
           </a>

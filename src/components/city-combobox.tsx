@@ -14,26 +14,26 @@ const matches = (item: CityOption, query: string) => norm(item.label).includes(n
 const LIMIT = 50;
 
 const inputGroup =
-  "glass-input relative flex min-h-11 w-full items-center rounded-xl pr-16 md:min-h-10 focus-within:ring-3 focus-within:ring-ring/50";
+  "field relative flex w-full items-center pr-16";
 const input =
-  "h-11 w-full min-w-24 flex-1 bg-transparent px-4 text-base text-ink outline-none placeholder:text-ink/40 md:h-10 md:text-sm";
+  "h-11 w-full min-w-24 flex-1 bg-transparent px-3.5 text-base text-text outline-none placeholder:text-text-muted md:text-[15px]";
 
 function Popup({ empty }: { empty: string }) {
   return (
     <Combobox.Portal>
       <Combobox.Positioner className="z-50 outline-none" sideOffset={4}>
-        <Combobox.Popup className="w-[var(--anchor-width)] max-w-[var(--available-width)] overflow-hidden rounded-xl border border-black/5 bg-white/95 text-ink shadow-lg backdrop-blur">
+        <Combobox.Popup className="w-[var(--anchor-width)] max-w-[var(--available-width)] overflow-hidden rounded-[var(--radius-field)] border border-line bg-surface-raised text-text shadow-[var(--shadow-float)]">
           <Combobox.Empty>
-            <p className="px-4 py-3 text-sm text-ink/50">{empty}</p>
+            <p className="px-4 py-3 text-sm text-text-muted">{empty}</p>
           </Combobox.Empty>
           <Combobox.List className="max-h-[min(18rem,var(--available-height))] overflow-y-auto overscroll-contain py-1 outline-0 data-empty:p-0">
             {(item: CityOption) => (
               <Combobox.Item
                 key={item.value}
                 value={item}
-                className="grid min-h-11 cursor-default grid-cols-[1rem_1fr] items-center gap-2 px-3 text-sm outline-none select-none data-highlighted:bg-forest/10 md:min-h-9"
+                className="grid min-h-11 cursor-default grid-cols-[1rem_1fr] items-center gap-2 px-3 text-sm outline-none select-none data-highlighted:bg-surface-sunken md:min-h-10"
               >
-                <Combobox.ItemIndicator className="col-start-1 text-forest">
+                <Combobox.ItemIndicator className="col-start-1 text-text">
                   <CheckIcon className="size-4" />
                 </Combobox.ItemIndicator>
                 <span className="col-start-2">{item.label}</span>
@@ -88,7 +88,7 @@ export function CityCombobox({
           aria-describedby={describedBy}
           className={input}
         />
-        <div className="absolute right-1 flex h-full items-center text-ink/50">
+        <div className="absolute right-1 flex h-full items-center text-text-muted">
           <Combobox.Clear aria-label="Quitar ciudad" className="flex size-8 items-center justify-center">
             <XIcon className="size-4" />
           </Combobox.Clear>

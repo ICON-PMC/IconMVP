@@ -1,14 +1,12 @@
-import Link from "next/link";
 import type { FeedItem } from "@/lib/feed";
-import { priceLabel } from "@/lib/taxonomy";
-import { R2Image, SIZES } from "@/components/r2-image";
-import { SaveButton } from "@/components/save-button";
-import { LikeButton } from "@/components/like-button";
+import type { FeedCardProps } from "@/components/cards/card-props";
+import { GarmentFeedCard } from "@/components/cards/garment-feed-card";
+import { LookCard } from "@/components/cards/look-card";
 
-// Alto/ancho de la imagen acotado: se conserva la proporción real (estilo Pinterest)
-// pero sin extremos, para que la grilla no se descuadre con fotos muy altas o muy bajas.
-const MIN_RATIO = 0.9;
-const MAX_RATIO = 1.45;
+// Proporción real de cada foto (alto/ancho), como un board de Pinterest (ajuste de la dueña,
+// 2026-11-16). Solo se recortan los extremos (panorámicas o tiras muy altas).
+const MIN_RATIO = 0.6;
+const MAX_RATIO = 2;
 const DEFAULT_RATIO = 1.25;
 
 export function cardRatio(item: Pick<FeedItem, "image_width" | "image_height">) {
@@ -16,100 +14,13 @@ export function cardRatio(item: Pick<FeedItem, "image_width" | "image_height">) 
   return Math.min(MAX_RATIO, Math.max(MIN_RATIO, item.image_height / item.image_width));
 }
 
-// Tarjeta única para el feed mixto: mismo layout para posts (outfits) y prendas,
-// distinguidos con una insignia sutil. `tagNames` mapea slug -> nombre (grupo 8:
-// nunca mostrar el slug crudo en UI).
-export function FeedCard({
-  item,
-  tagNames,
-  saved = false,
-  liked = false,
-  isLoggedIn = false,
-  path = "/feed",
-  from,
-  priority = false,
-  prefetch,
-}: {
-  item: FeedItem;
-  tagNames: Record<string, string>;
-  saved?: boolean;
-  liked?: boolean;
-  isLoggedIn?: boolean;
-  path?: string;
-  /** Origen para atribuir el clic saliente en la ficha (búsqueda por foto, "más como esta"). */
-  from?: "photo_search" | "similar";
-  /** Primeras tarjetas de la pantalla: la foto se pide de inmediato y con prioridad (spec 006). */
-  priority?: boolean;
-  /** false con ahorro de datos: no precargar la ficha (spec 006). */
-  prefetch?: boolean;
-}) {
-  const base = item.kind === "post" ? `/post/${item.id}` : `/prenda/${item.id}`;
-  const href = from ? `${base}?from=${from}` : base;
-  const price = priceLabel(item.min_price, item.max_price);
-  const ratio = cardRatio(item);
-  const tags = [...item.occasions, ...item.styles]
-    .map((slug) => tagNames[slug] ?? slug)
-    .slice(0, 3);
-
-  return (
-    <article className="mb-4 break-inside-avoid">
-      <div className="glass transform-gpu overflow-hidden rounded-2xl">
-        <div className="relative w-full overflow-hidden bg-white/40" style={{ aspectRatio: `1 / ${ratio}` }}>
-          <Link href={href} prefetch={prefetch} aria-label={item.title ?? item.brand_name} className="absolute inset-0 block">
-            <R2Image image={item.image} alt={item.title ?? item.brand_name} sizes={SIZES.card} priority={priority} className="block h-full w-full object-cover" />
-          </Link>
-          {/* Acciones sobre la imagen, fuera del <Link> (un <button> dentro de un <a> es HTML
-              inválido y el clic navegaría). */}
-          <div className="pointer-events-none absolute inset-x-2 bottom-2 flex items-center justify-between">
-            <div className="pointer-events-auto">
-              <SaveButton kind={item.kind} id={item.id} saved={saved} path={path} compact />
-            </div>
-            <div className="pointer-events-auto">
-              <LikeButton
-                kind={item.kind}
-                itemId={item.id}
-                initialLiked={liked}
-                initialCount={item.like_count}
-                path={path}
-                isLoggedIn={isLoggedIn}
-                compact
-              />
-            </div>
-          </div>
-        </div>
-        <Link href={href} className="block p-3">
-          {/* Móvil: solo el nombre del look o la prenda. Desde md: marca, precio, ciudad y etiquetas. */}
-          <p className="line-clamp-2 text-sm font-medium text-forest">
-            {item.title ?? item.brand_name}
-          </p>
-          <div className="mt-1 hidden md:block">
-            <div className="flex items-center justify-between gap-2">
-              <span className="flex items-center gap-1 text-sm text-ink/80">
-                {item.brand_name}
-                {item.brand_verified && (
-                  <span title="Verificada por el equipo" aria-label="verificada">
-                    ✓
-                  </span>
-                )}
-              </span>
-              {price && <span className="text-sm text-ink/70">{price}</span>}
-            </div>
-            {item.city_name && <p className="mt-0.5 text-xs text-ink/50">{item.city_name}</p>}
-            {tags.length > 0 && (
-              <div className="mt-2 flex flex-wrap gap-1">
-                {tags.map((t) => (
-                  <span
-                    key={t}
-                    className="rounded-full bg-white/50 px-2 py-0.5 text-[11px] text-forest-deep"
-                  >
-                    {t}
-                  </span>
-                ))}
-              </div>
-            )}
-          </div>
-        </Link>
-      </div>
-    </article>
+// Tarjeta del feed mixto (spec 007): elige la tarjeta de PRENDA o la de LOOK según `item.kind`.
+// Se conserva este punto de entrada para no tocar a quienes la usan (FeedGrid, búsqueda por foto…).
+export function FeedCard(props: FeedCardProps) {
+  const ratio = cardRatio(props.item);
+  return props.item.kind === "post" ? (
+    <LookCard {...props} ratio={ratio} />
+  ) : (
+    <GarmentFeedCard {...props} ratio={ratio} />
   );
 }

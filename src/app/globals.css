@@ -7,8 +7,10 @@
 @theme {
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-  /* Exhibición: wordmark ICON y títulos grandes de las landings. */
-  --font-display: var(--font-instrument-serif), Georgia, serif;
+  /* Wordmark ICON y títulos serif de la landing. */
+  --font-wordmark: var(--font-instrument-serif), Georgia, serif;
+  /* Títulos de la app (spec 007): grotesca de trazo grueso elegida en /admin/estilo. */
+  --font-display: var(--font-display-family), var(--font-geist-sans), system-ui, sans-serif;
 
   /* Paleta Icon — tropical: verdes profundos, rojo/naranja, verde claro y crema */
   --color-cream: #faf7ef;
@@ -23,6 +25,40 @@
   --color-sky: #9cc3c9;
   --color-honey: #f2c94c;
   --color-honey-soft: #fbeeb8;
+  /* Derivado (spec 007): texto de acento y peligro sobre fondos claros (contraste 4,7 sobre crema). */
+  --color-coral-deep: #c8401a;
+
+  /* ── Tokens de uso (spec 007, "tropical plano") ──────────────────────────────
+     Los componentes nuevos usan SOLO estos nombres. Contrastes en specs/007-rediseno-ui/research.md (D1).
+     Regla: el texto sobre coral (action) es siempre tinta; nunca blanco (3,4:1 no cumple AA). */
+  --color-surface: var(--color-cream);
+  --color-surface-raised: #ffffff;
+  --color-surface-sunken: var(--color-leaf-soft);
+  --color-surface-inverse: var(--color-forest-deep);
+  --color-text: var(--color-ink);
+  --color-text-muted: #667066;
+  --color-text-inverse: var(--color-cream);
+  --color-line: color-mix(in srgb, var(--color-ink) 14%, transparent);
+  --color-line-strong: var(--color-ink);
+  --color-action: var(--color-coral);
+  --color-action-ink: var(--color-ink);
+  --color-action-text: var(--color-coral-deep);
+  --color-success: var(--color-forest);
+  --color-warning: var(--color-honey);
+  --color-danger: var(--color-coral-deep);
+
+  --radius-chip: 9999px;
+  --radius-field: 16px;
+  --radius-photo: 20px;
+  --radius-card: 24px;
+  --radius-sheet: 28px;
+
+  --shadow-float: 0 8px 24px rgb(20 40 30 / 0.12);
+  --ease-out: cubic-bezier(0.2, 0, 0, 1);
+}
+
+:root {
+  --bottom-nav-h: 72px;
 }
 
 html {
@@ -35,41 +71,11 @@ body {
   min-height: 100dvh;
 }
 
-/* ── Frosted glass ("liquid glass") ───────────────────────────── */
-.glass {
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.3),
-    rgba(255, 255, 255, 0.12)
-  );
-  backdrop-filter: blur(22px) saturate(180%);
-  -webkit-backdrop-filter: blur(22px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  box-shadow:
-    0 10px 36px rgba(20, 40, 30, 0.18),
-    inset 0 1px 0 rgba(255, 255, 255, 0.6);
-}
-
-.glass-input {
-  background: rgba(255, 255, 255, 0.45);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  transition:
-    border-color 0.15s ease,
-    background 0.15s ease;
-}
-.glass-input:focus {
-  outline: none;
-  background: rgba(255, 255, 255, 0.65);
-  border-color: var(--color-forest);
-}
-
 /* ── shadcn/ui ────────────────────────────────────────────────────
-   Los tokens de shadcn se mapean a la paleta Icon (no se introduce un sistema de color
-   paralelo). primary = forest, destructive = coral, etc. */
+   Los tokens de shadcn se mapean a los tokens de uso de Icon (no hay sistema de color
+   paralelo). primary = acción (coral), destructive = peligro (coral-deep), etc. */
 @theme inline {
-  --font-heading: var(--font-sans);
+  --font-heading: var(--font-display);
   --color-ring: var(--ring);
   --color-input: var(--input);
   --color-border: var(--border);
@@ -98,25 +104,26 @@ body {
 }
 
 :root {
-  --background: var(--color-cream);
-  --foreground: var(--color-ink);
-  --card: var(--color-cream);
-  --card-foreground: var(--color-ink);
-  --popover: var(--color-cream);
-  --popover-foreground: var(--color-ink);
-  --primary: var(--color-forest);
-  --primary-foreground: #fff;
-  --secondary: var(--color-leaf-soft);
-  --secondary-foreground: var(--color-forest);
-  --muted: var(--color-leaf-soft);
-  --muted-foreground: color-mix(in srgb, var(--color-ink) 60%, transparent);
-  --accent: var(--color-leaf-soft);
-  --accent-foreground: var(--color-forest);
-  --destructive: var(--color-coral);
-  --border: color-mix(in srgb, var(--color-ink) 12%, transparent);
-  --input: color-mix(in srgb, var(--color-ink) 12%, transparent);
-  --ring: var(--color-forest);
-  --radius: 0.75rem;
+  /* shadcn → tokens de uso (spec 007). primary = acción (coral con texto tinta). */
+  --background: var(--color-surface);
+  --foreground: var(--color-text);
+  --card: var(--color-surface-raised);
+  --card-foreground: var(--color-text);
+  --popover: var(--color-surface-raised);
+  --popover-foreground: var(--color-text);
+  --primary: var(--color-action);
+  --primary-foreground: var(--color-action-ink);
+  --secondary: var(--color-surface-sunken);
+  --secondary-foreground: var(--color-text);
+  --muted: var(--color-surface-sunken);
+  --muted-foreground: var(--color-text-muted);
+  --accent: var(--color-surface-sunken);
+  --accent-foreground: var(--color-text);
+  --destructive: var(--color-danger);
+  --border: var(--color-line);
+  --input: var(--color-line);
+  --ring: var(--color-ink);
+  --radius: 1rem;
 }
 
 @layer base {
@@ -128,7 +135,7 @@ body {
 /* ── Wordmark ICON ──────────────────────────────────────────────
    Instrument Serif con un trazo extra para que las letras se vean más gruesas. */
 @utility wordmark {
-  font-family: var(--font-display);
+  font-family: var(--font-wordmark);
   letter-spacing: 0.06em;
   line-height: 0.86;
   -webkit-text-stroke: 0.022em currentColor;
@@ -159,11 +166,106 @@ body {
   padding-bottom: calc(6rem + env(safe-area-inset-bottom));
 }
 
-/* Inputs `glass-input` de 16px en móvil: evita el zoom automático de iOS al enfocar. */
+
+/* ── Sistema "tropical plano" (spec 007) ───────────────────────────────────────── */
+@utility surface {
+  background-color: var(--color-surface-raised);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-card);
+}
+@utility surface-inverse {
+  background-color: var(--color-surface-inverse);
+  color: var(--color-text-inverse);
+  border-radius: var(--radius-card);
+}
+/* Único lugar con desenfoque: barras de navegación fijas (constitución VI). */
+@utility bar-blur {
+  background-color: color-mix(in srgb, var(--color-surface) 80%, transparent);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+@utility bar-blur-inverse {
+  background-color: color-mix(in srgb, var(--color-surface-inverse) 88%, transparent);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+@utility field {
+  min-height: 48px;
+  background-color: var(--color-surface-raised);
+  border: 1.5px solid var(--color-line);
+  border-radius: var(--radius-field);
+  color: var(--color-text);
+  transition: border-color 150ms var(--ease-out);
+  &:focus,
+  &:focus-within {
+    outline: none;
+    border-color: var(--color-line-strong);
+  }
+  &[aria-invalid="true"] {
+    border-color: var(--color-danger);
+  }
+}
 @media (max-width: 767px) {
-  input.glass-input,
-  select.glass-input,
-  textarea.glass-input {
+  input.field,
+  select.field,
+  textarea.field {
     font-size: 16px;
   }
+}
+@utility pb-safe-nav {
+  padding-bottom: calc(var(--bottom-nav-h) + 24px + env(safe-area-inset-bottom));
+}
+
+/* Escala tipográfica (data-model §1). */
+@utility text-display {
+  font-family: var(--font-display);
+  font-size: 40px;
+  line-height: 44px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+  @media (min-width: 768px) {
+    font-size: 56px;
+    line-height: 58px;
+  }
+}
+@utility text-h1 {
+  font-family: var(--font-display);
+  font-size: 30px;
+  line-height: 34px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+  @media (min-width: 768px) {
+    font-size: 40px;
+    line-height: 44px;
+  }
+}
+@utility text-h2 {
+  font-family: var(--font-display);
+  font-size: 24px;
+  line-height: 28px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+  @media (min-width: 768px) {
+    font-size: 28px;
+    line-height: 32px;
+  }
+}
+@utility text-h3 {
+  font-family: var(--font-display);
+  font-size: 19px;
+  line-height: 24px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  @media (min-width: 768px) {
+    font-size: 20px;
+    line-height: 26px;
+  }
+}
+@utility text-label {
+  font-size: 13px;
+  line-height: 16px;
+  font-weight: 600;
 }

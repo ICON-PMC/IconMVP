@@ -17,7 +17,7 @@ export async function LandingHeader({ audience }: { audience: "personas" | "marc
     }`;
 
   return (
-    <header className="glass mt-3 flex items-center justify-between gap-2 rounded-full py-2 pr-2 pl-4 sm:pl-5">
+    <header className="bar-blur mt-3 flex items-center border border-line justify-between gap-2 rounded-full py-2 pr-2 pl-4 sm:pl-5">
       <Link href="/" className="wordmark text-[26px] text-forest" aria-label="Icon, inicio">
         ICON
       </Link>

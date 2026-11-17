@@ -4,7 +4,6 @@ import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser, isStaff } from "@/lib/auth";
-import { Aurora } from "@/components/aurora";
 import { FlashToast } from "@/components/flash-toast";
 import { PageShell, SectionHeader } from "@/components/page-shell";
 import { SiteHeader } from "@/components/site-header";
@@ -180,7 +179,6 @@ export default async function AdminPage({
 
   return (
     <>
-      <Aurora />
       <PageShell>
         <SiteHeader />
         <Suspense>

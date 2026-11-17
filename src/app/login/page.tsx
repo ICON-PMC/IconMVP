@@ -1,81 +1,45 @@
 import Link from "next/link";
-import { Aurora } from "@/components/aurora";
-import { GlassCard } from "@/components/glass-card";
-import { GoogleButton } from "@/components/google-button";
 import { signIn } from "@/app/auth/actions";
+import { AuthNotice, AuthShell, OrDivider } from "@/components/auth-shell";
+import { FormField } from "@/components/form-field";
+import { GoogleButton } from "@/components/google-button";
 import { SubmitButton } from "@/components/submit-button";
+import { Input } from "@/components/ui/input";
 
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string; aviso?: string }>;
+  searchParams: Promise<{ error?: string; aviso?: string; next?: string }>;
 }) {
-  const { error, aviso } = await searchParams;
+  const { error, aviso, next } = await searchParams;
 
   return (
-    <>
-      <Aurora />
-      <main className="flex min-h-dvh items-center justify-center p-6">
-        <GlassCard className="w-full max-w-sm p-8">
-          <h1 className="text-3xl font-medium tracking-tight text-forest">Icon</h1>
-          <p className="mt-1 mb-6 text-sm text-ink/70">
-            Entra para guardar tus prendas favoritas.
-          </p>
+    <AuthShell title="Inicia sesión" subtitle="Guarda prendas y looks de marcas colombianas.">
+      {aviso && !error && <AuthNotice tone="info">{aviso}</AuthNotice>}
+      {error && <AuthNotice tone="error">{error}</AuthNotice>}
 
-          {aviso && !error && (
-            <p className="mb-4 rounded-xl bg-forest/10 px-3 py-2 text-sm text-forest">
-              {aviso}
-            </p>
-          )}
-          {error && (
-            <p className="mb-4 rounded-xl bg-coral/15 px-3 py-2 text-sm text-coral">
-              {error}
-            </p>
-          )}
+      <form action={signIn} className="flex flex-col gap-4">
+        {next && <input type="hidden" name="next" value={next} />}
+        <FormField label="Correo" htmlFor="login-email">
+          <Input id="login-email" type="email" name="email" required autoComplete="email" placeholder="tu@correo.com" />
+        </FormField>
+        <FormField label="Contraseña" htmlFor="login-password">
+          <Input id="login-password" type="password" name="password" required autoComplete="current-password" />
+        </FormField>
+        <SubmitButton pendingText="Entrando…" size="lg" className="mt-1 w-full">
+          Iniciar sesión
+        </SubmitButton>
+      </form>
 
-          <form action={signIn} className="flex flex-col gap-3">
-            <input
-              className="glass-input rounded-xl px-4 py-2.5 text-sm"
-              type="email"
-              name="email"
-              placeholder="Email"
-              required
-              autoComplete="email"
-            />
-            <input
-              className="glass-input rounded-xl px-4 py-2.5 text-sm"
-              type="password"
-              name="password"
-              placeholder="Contraseña"
-              required
-              autoComplete="current-password"
-            />
-            <SubmitButton
-              pendingText="Entrando…"
-              className="mt-1 h-auto rounded-xl bg-forest px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-forest-deep"
-            >
-              Iniciar sesión
-            </SubmitButton>
-          </form>
+      <OrDivider />
+      <GoogleButton />
 
-          <div className="my-5 flex items-center gap-3 text-xs text-ink/40">
-            <span className="h-px flex-1 bg-ink/10" /> o
-            <span className="h-px flex-1 bg-ink/10" />
-          </div>
-
-          <GoogleButton />
-
-          <p className="mt-6 text-center text-sm text-ink/60">
-            ¿No tienes cuenta?{" "}
-            <Link
-              href="/signup"
-              className="font-medium text-coral hover:underline"
-            >
-              Regístrate
-            </Link>
-          </p>
-        </GlassCard>
-      </main>
-    </>
+      <p className="mt-6 text-center text-sm text-text-muted">
+        ¿No tienes cuenta?{" "}
+        <Link href="/signup" className="font-semibold text-action-text hover:underline">
+          Regístrate
+        </Link>
+      </p>
+    </AuthShell>
   );
 }

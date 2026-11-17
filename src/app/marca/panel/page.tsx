@@ -1,8 +1,6 @@
 import { Suspense } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { requireBrandOwner } from "@/lib/auth";
-import { Aurora } from "@/components/aurora";
-import { GlassCard } from "@/components/glass-card";
 import { PageShell, SectionHeader } from "@/components/page-shell";
 import { SiteHeader } from "@/components/site-header";
 import { BrandStatusBanner } from "@/components/brand-status-banner";
@@ -37,10 +35,9 @@ export default async function BrandPanelPage({
   if (!brand) {
     return (
       <>
-        <Aurora />
         <PageShell width="2xl">
           <SiteHeader />
-          <GlassCard className="mt-10 p-8 text-center">
+          <div className="surface mt-10 p-8 text-center">
             <h1 className="text-2xl font-medium tracking-tight text-forest">
               Conecta tu marca
             </h1>
@@ -60,7 +57,7 @@ export default async function BrandPanelPage({
             >
               {igEnabled ? "Conectar con Instagram" : "Registrar mi marca"}
             </a>
-          </GlassCard>
+          </div>
         </PageShell>
       </>
     );
@@ -159,7 +156,6 @@ export default async function BrandPanelPage({
 
   return (
     <>
-      <Aurora />
       <PageShell>
         <SiteHeader />
         <Suspense>

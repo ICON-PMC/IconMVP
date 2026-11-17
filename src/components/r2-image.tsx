@@ -7,7 +7,8 @@ import { imageSrcSet, imageUrl } from "@/lib/images";
 export const SIZES = {
   // Ancho real de la tarjeta: media pantalla (o un tercio) menos márgenes y separación. Con esto un
   // celular de densidad media pide la versión de 320 px y uno de alta densidad la de 640.
-  card: "(min-width: 1024px) 320px, (min-width: 768px) calc(33vw - 24px), calc(50vw - 24px)",
+  // Board de hasta 4 columnas en un contenedor de 1280 px.
+  card: "(min-width: 1280px) 300px, (min-width: 1024px) calc(25vw - 24px), (min-width: 768px) calc(33vw - 24px), calc(50vw - 24px)",
   detail: "(min-width: 768px) 50vw, 100vw",
 } as const;
 

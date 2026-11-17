@@ -195,7 +195,7 @@ export async function createBrandGarment(formData: FormData) {
   if (img) {
     await supabase
       .from("garment_images")
-      .insert({ garment_id: garment.id, cf_image_id: img.key, bytes: img.bytes, variants_ready: img.variantsReady, position: 0 });
+      .insert({ garment_id: garment.id, cf_image_id: img.key, bytes: img.bytes, variants_ready: img.variantsReady, width: img.width, height: img.height, position: 0 });
     scheduleEmbeddings([garment.id]); // búsqueda por foto (spec 005)
   }
 
@@ -293,7 +293,7 @@ async function replaceCoverImage(
   ownerId: string,
   image: UploadedImage,
 ): Promise<string | null> {
-  const row = { cf_image_id: image.key, bytes: image.bytes, variants_ready: image.variantsReady };
+  const row = { cf_image_id: image.key, bytes: image.bytes, variants_ready: image.variantsReady, width: image.width, height: image.height };
   let oldKey: string | null = null;
   let error: { message: string } | null = null;
   if (kind === "garment") {
@@ -364,7 +364,7 @@ export async function createBrandPost(formData: FormData) {
   if (img) {
     await supabase
       .from("post_images")
-      .insert({ post_id: post.id, cf_image_id: img.key, bytes: img.bytes, variants_ready: img.variantsReady, position: 0 });
+      .insert({ post_id: post.id, cf_image_id: img.key, bytes: img.bytes, variants_ready: img.variantsReady, width: img.width, height: img.height, position: 0 });
   }
 
   revalidatePath("/marca/panel");
@@ -846,7 +846,7 @@ export async function importInstagramMedia(
       });
       await supabase
         .from("post_images")
-        .insert({ post_id: post.id, cf_image_id: img.key, bytes: img.bytes, variants_ready: img.variantsReady, position: 0 });
+        .insert({ post_id: post.id, cf_image_id: img.key, bytes: img.bytes, variants_ready: img.variantsReady, width: img.width, height: img.height, position: 0 });
       created++;
     } catch (e) {
       if (e instanceof StorageQuotaError) {

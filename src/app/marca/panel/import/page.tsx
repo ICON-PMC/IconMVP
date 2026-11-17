@@ -1,8 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChevronLeftIcon } from "lucide-react";
-import { Aurora } from "@/components/aurora";
-import { GlassCard } from "@/components/glass-card";
 import { EmptyState } from "@/components/empty-state";
 import { PageShell } from "@/components/page-shell";
 import { SiteHeader } from "@/components/site-header";
@@ -19,7 +17,6 @@ export default async function InstagramImportPage() {
 
   return (
     <>
-      <Aurora />
       <PageShell>
         <SiteHeader />
         <Link
@@ -34,7 +31,7 @@ export default async function InstagramImportPage() {
           prendas de cada una antes de publicarla.
         </p>
 
-        <GlassCard className="mt-6 p-4 sm:p-6">
+        <div className="surface mt-6 p-4 sm:p-6">
           {!result.ok ? (
             <div className="space-y-3">
               <p role="alert" className="rounded-xl bg-coral/15 px-3 py-2 text-sm text-coral">
@@ -58,7 +55,7 @@ export default async function InstagramImportPage() {
           ) : (
             <ImportPicker items={result.items} />
           )}
-        </GlassCard>
+        </div>
       </PageShell>
     </>
   );

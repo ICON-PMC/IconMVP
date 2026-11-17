@@ -69,7 +69,7 @@ export function CameraButton({
 
   const buttonClass =
     className ??
-    "glass-input flex size-10 shrink-0 items-center justify-center rounded-full text-ink/70 hover:bg-white/70 hover:text-forest";
+    "bg-surface-raised border-[1.5px] border-line text-text focus:border-line-strong focus:outline-none flex size-10 shrink-0 items-center justify-center rounded-full text-ink/70 hover:bg-surface-sunken hover:text-forest";
 
   if (!isLoggedIn)
     return (
@@ -80,7 +80,7 @@ export function CameraButton({
     );
 
   const option =
-    "glass-input flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-medium text-ink hover:bg-white/70 disabled:opacity-60";
+    "bg-surface-raised border-[1.5px] border-line text-text focus:border-line-strong focus:outline-none flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-medium text-ink hover:bg-surface-sunken disabled:opacity-60";
 
   return (
     <>

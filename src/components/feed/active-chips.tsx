@@ -2,6 +2,8 @@
 
 import { useFeedUrl } from "@/components/feed/use-feed-url";
 import type { FilterGroup } from "@/components/feed/filter-panel";
+import { Chip } from "@/components/chip";
+import { Button } from "@/components/ui/button";
 
 // Fila de chips removibles sobre la grilla, uno por cada valor de filtro activo
 // (en cualquier grupo), más "Limpiar todo". Los filtros de búsqueda (`q`) y el
@@ -20,25 +22,15 @@ export function FeedActiveChips({ groups }: { groups: FilterGroup[] }) {
   if (active.length === 0) return null;
 
   return (
-    <div className="mb-4 flex flex-wrap items-center gap-1.5">
+    <div className="mb-3 flex flex-wrap items-center gap-x-2">
       {active.map((chip) => (
-        <button
-          key={`${chip.param}:${chip.value}`}
-          type="button"
-          onClick={() => remove(chip.param, chip.value)}
-          className="flex items-center gap-1 rounded-full bg-forest px-3 py-1 text-xs font-medium text-white hover:bg-forest-deep"
-        >
+        <Chip key={`${chip.param}:${chip.value}`} selected onRemove={() => remove(chip.param, chip.value)}>
           {chip.label}
-          <span aria-hidden>×</span>
-        </button>
+        </Chip>
       ))}
-      <button
-        type="button"
-        onClick={() => clearFilters(["q", "sort"])}
-        className="text-xs font-medium text-coral hover:underline"
-      >
+      <Button type="button" variant="link" size="sm" onClick={() => clearFilters(["q", "sort"])}>
         Limpiar todo
-      </button>
+      </Button>
     </div>
   );
 }

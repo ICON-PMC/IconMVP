@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { UserPlus, UserCheck } from "lucide-react";
-import { followBrand, unfollowBrand } from "@/app/marca/[slug]/actions";
+import { followBrand, unfollowBrand } from "@/app/(app)/marca/[slug]/actions";
 
 // Botón Seguir / Siguiendo con UI optimista (Grupo 2 de docs/legacy-specs/2026-09-22-user-social-actions).
 //
@@ -30,7 +30,7 @@ export function FollowButton({
     return (
       <Link
         href={`/login?next=${encodeURIComponent(`/marca/${slug}`)}`}
-        className="glass-input inline-flex min-h-11 items-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-ink/80 hover:bg-white/70"
+        className="inline-flex min-h-11 items-center gap-2 rounded-full bg-surface-inverse px-5 text-sm font-semibold text-text-inverse hover:opacity-90"
       >
         <UserPlus className="h-4 w-4" aria-hidden />
         Seguir
@@ -61,10 +61,10 @@ export function FollowButton({
         disabled={pending}
         aria-pressed={following}
         aria-label={following ? "Dejar de seguir" : "Seguir"}
-        className={`inline-flex min-h-11 items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition disabled:opacity-60 ${
+        className={`inline-flex min-h-11 items-center gap-2 rounded-full px-5 text-sm font-semibold transition-colors outline-none focus-visible:ring-2 focus-visible:ring-line-strong disabled:opacity-60 ${
           following
-            ? "glass-input text-forest hover:bg-white/70"
-            : "bg-forest text-white hover:bg-forest-deep"
+            ? "border-[1.5px] border-line-strong text-text hover:bg-surface-sunken"
+            : "bg-surface-inverse text-text-inverse hover:opacity-90"
         }`}
       >
         {following ? (
@@ -75,7 +75,7 @@ export function FollowButton({
         {following ? "Siguiendo" : "Seguir"}
       </button>
       {error && (
-        <p role="alert" className="text-xs text-coral">
+        <p role="alert" className="text-xs text-danger">
           {error}
         </p>
       )}

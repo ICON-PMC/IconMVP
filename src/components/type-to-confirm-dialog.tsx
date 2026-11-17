@@ -55,9 +55,9 @@ export function TypeToConfirmDialog({
           <AlertDialogTitle>{title}</AlertDialogTitle>
           <AlertDialogDescription render={<div />}>{description}</AlertDialogDescription>
         </AlertDialogHeader>
-        <label className="flex flex-col gap-1.5 text-sm text-ink/70">
+        <label className="flex flex-col gap-1.5 text-sm text-text-muted">
           <span>
-            Escribe <strong className="font-medium text-ink">{phrase}</strong> para confirmar
+            Escribe <strong className="font-semibold text-text">{phrase}</strong> para confirmar
           </span>
           <Input
             value={typed}

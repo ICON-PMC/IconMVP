@@ -17,7 +17,7 @@ export function BrandCoverForm({ currentKey }: { currentKey: string | null }) {
       <p className="text-xs font-medium uppercase tracking-wide text-ink/60">Portada</p>
       <label
         htmlFor="cover-image"
-        className="glass-input relative flex aspect-[4/3] max-h-64 cursor-pointer items-center justify-center overflow-hidden rounded-2xl text-center text-sm text-ink/60"
+        className="bg-surface-raised border-[1.5px] border-line text-text focus:border-line-strong focus:outline-none relative flex aspect-[4/3] max-h-64 cursor-pointer items-center justify-center overflow-hidden rounded-2xl text-center text-sm text-ink/60"
       >
         {shown ? (
           // eslint-disable-next-line @next/next/no-img-element

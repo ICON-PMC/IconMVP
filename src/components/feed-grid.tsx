@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
-import Link from "next/link";
+import { SearchXIcon } from "lucide-react";
+import { EmptyState } from "@/components/empty-state";
 import { usePathname, useSearchParams } from "next/navigation";
 import { FeedCard, cardRatio } from "@/components/feed-card";
 import type { FeedItem } from "@/lib/feed";
@@ -16,15 +17,17 @@ function itemKey(item: FeedItem) {
 // Columnas reales (no CSS `columns`): el multicolumn de iOS Safari a veces no pinta el
 // contenido de una tarjeta con backdrop-filter. Cada ítem va a la columna más corta
 // según su proporción; es estable al añadir ítems al final (scroll infinito).
+// Board: 2 columnas en celular, 3 en tableta y 4 (máximo) desde 1024 px.
+const COL_QUERIES = ["(min-width: 1024px)", "(min-width: 768px)"] as const;
 function subscribeCols(cb: () => void) {
-  const mq = window.matchMedia("(min-width: 768px)");
-  mq.addEventListener("change", cb);
-  return () => mq.removeEventListener("change", cb);
+  const mqs = COL_QUERIES.map((q) => window.matchMedia(q));
+  mqs.forEach((mq) => mq.addEventListener("change", cb));
+  return () => mqs.forEach((mq) => mq.removeEventListener("change", cb));
 }
 function useColumnCount() {
   return useSyncExternalStore(
     subscribeCols,
-    () => (window.matchMedia("(min-width: 768px)").matches ? 3 : 2),
+    () => (window.matchMedia(COL_QUERIES[0]).matches ? 4 : window.matchMedia(COL_QUERIES[1]).matches ? 3 : 2),
     () => 2,
   );
 }
@@ -37,7 +40,7 @@ function splitColumns(items: FeedItem[], count: number): FeedItem[][] {
     let target = 0;
     for (let i = 1; i < count; i++) if (heights[i] < heights[target]) target = i;
     cols[target].push(it);
-    heights[target] += ratio + 0.2; // + alto aproximado del título
+    heights[target] += ratio + 0.15; // + alto aproximado del texto bajo la foto
   }
   return cols;
 }
@@ -256,20 +259,18 @@ export function FeedGrid({
   if (items.length === 0) {
     if (emptyState) return <>{emptyState}</>;
     return (
-      <div className="glass rounded-2xl px-6 py-16 text-center">
-        <p className="text-sm text-ink/60">
-          No hay outfits ni prendas con esos filtros. Prueba quitar alguno.
-        </p>
-        <Link href="/feed" className="mt-3 inline-block text-sm font-medium text-coral hover:underline">
-          Limpiar filtros
-        </Link>
-      </div>
+      <EmptyState
+        icon={SearchXIcon}
+        title="No hay resultados con esos filtros"
+        description="Prueba quitar alguno."
+        action={{ label: "Limpiar filtros", href: "/feed" }}
+      />
     );
   }
 
   return (
     <div>
-      <div className="flex items-start gap-4">
+      <div className="flex items-start gap-3 md:gap-4">
         {columns.map((col, i) => (
           <div key={i} className="min-w-0 flex-1">
             {col.map((item, row) => (
@@ -291,12 +292,12 @@ export function FeedGrid({
       </div>
       {nextOffset != null && (
         <div ref={sentinelRef} className="flex flex-col items-center gap-2 py-8" aria-live="polite">
-          <p className="text-sm text-ink/40">{error ?? (loading ? "Cargando más…" : "")}</p>
+          <p className="text-sm text-text-muted">{error ?? (loading ? "Cargando más…" : "")}</p>
           {error && (
             <button
               type="button"
               onClick={() => loadMore()}
-              className="glass-input min-h-11 rounded-full px-4 text-sm font-medium text-ink/80 hover:bg-white/70"
+              className="min-h-11 rounded-full border-[1.5px] border-line-strong px-4 text-sm font-semibold text-text hover:bg-surface-sunken"
             >
               Reintentar
             </button>
@@ -304,7 +305,7 @@ export function FeedGrid({
         </div>
       )}
       {nextOffset == null && (
-        <p className="py-8 text-center text-sm text-ink/40">Eso es todo por ahora.</p>
+        <p className="py-8 text-center text-sm text-text-muted">Eso es todo por ahora.</p>
       )}
     </div>
   );

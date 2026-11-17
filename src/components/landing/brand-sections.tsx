@@ -18,7 +18,7 @@ export function HowToUpload() {
         <article className={`${card} bg-leaf-soft`}>
           <div>
             <p className={sub}>Opción A</p>
-            <h3 className="font-display text-[clamp(2rem,4vw,2.6rem)] leading-none">Tú</h3>
+            <h3 className="font-wordmark text-[clamp(2rem,4vw,2.6rem)] leading-none">Tú</h3>
           </div>
           <div className="flex flex-1 flex-col gap-4">
             <CheckList
@@ -50,7 +50,7 @@ export function HowToUpload() {
           </span>
           <div>
             <p className={sub}>Opción B</p>
-            <h3 className="font-display text-[clamp(2rem,4vw,2.6rem)] leading-none">Nosotros</h3>
+            <h3 className="font-wordmark text-[clamp(2rem,4vw,2.6rem)] leading-none">Nosotros</h3>
           </div>
           <div className="flex flex-1 flex-col gap-4">
             <CheckList
@@ -124,7 +124,7 @@ export function BrandPanelPreview() {
               ["5", "borradores", "bg-leaf-soft"],
             ].map(([n, l, bg]) => (
               <div key={l} className={`rounded-[14px] border-[1.5px] border-ink px-3 py-2.5 ${bg}`}>
-                <b className="font-display block text-3xl leading-none font-normal">{n}</b>
+                <b className="font-wordmark block text-3xl leading-none font-normal">{n}</b>
                 <span className="text-xs text-ink/60">{l}</span>
               </div>
             ))}
@@ -138,7 +138,7 @@ export function BrandPanelPreview() {
         </div>
 
         <div className={`flex flex-col gap-3 rounded-3xl border-[1.5px] border-ink bg-honey-soft p-5 ${HOVER_CARD}`}>
-          <h3 className="font-display text-[28px] leading-tight">Todo tu catálogo en un lugar</h3>
+          <h3 className="font-wordmark text-[28px] leading-tight">Todo tu catálogo en un lugar</h3>
           <div className="text-sm">
             <CheckList
               items={[

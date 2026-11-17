@@ -1,5 +1,5 @@
 import { Bookmark } from "lucide-react";
-import { toggleSavedPost, toggleSavedGarment } from "@/app/saved/actions";
+import { toggleSavedPost, toggleSavedGarment } from "@/app/(app)/saved/actions";
 
 // Botón de guardar (marcador/bookmark). Server component: el form llama a un server action.
 // Ícono a propósito distinto del corazón del LikeButton, para no confundirlos.
@@ -33,8 +33,10 @@ export function SaveButton({
         type="submit"
         aria-label={saved ? "Quitar de guardados" : "Guardar"}
         title={saved ? "Quitar de guardados" : "Guardar"}
-        className={`glass flex ${compact ? "h-8 w-8 bg-white/75!" : "h-9 w-9"} items-center justify-center rounded-full transition hover:scale-105 ${
-          saved ? "text-coral" : "text-ink/60"
+        aria-pressed={saved}
+        // Spec 007: círculo sólido; guardado = relleno coral con ícono tinta. 40 px sobre la foto, 44 fuera.
+        className={`flex ${compact ? "size-10" : "size-11"} items-center justify-center rounded-full shadow-sm transition-colors outline-none focus-visible:ring-2 focus-visible:ring-line-strong ${
+          saved ? "bg-action text-action-ink" : "bg-surface-raised/95 text-text hover:bg-surface-raised"
         }`}
       >
         <Bookmark className={`h-4 w-4 ${saved ? "fill-current" : ""}`} aria-hidden />

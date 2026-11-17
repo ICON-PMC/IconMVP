@@ -38,7 +38,7 @@ export function DisplayTitle({
   return (
     <Tag
       id={id}
-      className={`font-display text-[clamp(2.1rem,5.2vw,3.6rem)] leading-[1.02] font-normal tracking-tight text-balance text-ink [&_em]:text-coral ${className}`}
+      className={`font-wordmark text-[clamp(2.1rem,5.2vw,3.6rem)] leading-[1.02] font-normal tracking-tight text-balance text-ink [&_em]:text-coral ${className}`}
     >
       {children}
     </Tag>
@@ -47,9 +47,9 @@ export function DisplayTitle({
 
 const BTN = {
   primary:
-    "bg-coral text-white shadow-[0_8px_22px_color-mix(in_srgb,var(--color-coral)_35%,transparent)] hover:-translate-y-0.5 hover:shadow-[0_12px_28px_color-mix(in_srgb,var(--color-coral)_45%,transparent)] active:translate-y-0 active:scale-[.98]",
+    "bg-action text-action-ink shadow-[0_8px_22px_color-mix(in_srgb,var(--color-coral)_35%,transparent)] hover:-translate-y-0.5 hover:shadow-[0_12px_28px_color-mix(in_srgb,var(--color-coral)_45%,transparent)] active:translate-y-0 active:scale-[.98]",
   forest: "bg-forest text-white hover:-translate-y-0.5 hover:bg-forest-deep active:scale-[.98]",
-  glass: "glass text-forest hover:-translate-y-0.5 hover:bg-white/50 active:scale-[.98]",
+  outline: "border-[1.5px] border-line-strong bg-transparent text-text hover:-translate-y-0.5 hover:bg-surface-sunken active:scale-[.98]",
 } as const;
 
 export function CtaLink({

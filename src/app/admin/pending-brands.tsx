@@ -1,6 +1,5 @@
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
-import { GlassCard } from "@/components/glass-card";
 import { imageUrl } from "@/lib/images";
 import { normalizeUrl } from "@/lib/links";
 import { ReviewActions } from "./review-actions";
@@ -27,9 +26,9 @@ export async function PendingBrands() {
 
   if (!brands?.length) {
     return (
-      <GlassCard className="p-8 text-center text-sm text-ink/60">
+      <div className="surface p-8 text-center text-sm text-ink/60">
         No hay marcas pendientes de revisión.
-      </GlassCard>
+      </div>
     );
   }
 
@@ -60,7 +59,7 @@ export async function PendingBrands() {
         const cover = imageUrl(b.logo_url);
         return (
           <li key={b.id}>
-            <GlassCard className="p-4 sm:p-5">
+            <div className="surface p-4 sm:p-5">
               <div className="flex gap-3 sm:gap-4">
                 <div className="relative size-20 shrink-0 sm:size-24 overflow-hidden rounded-2xl bg-ink/10">
                   {cover && <Image src={cover} alt={`Portada de ${b.name}`} fill unoptimized className="object-cover" />}
@@ -107,7 +106,7 @@ export async function PendingBrands() {
               <div className="mt-4 flex border-t border-ink/10 pt-4 sm:justify-end">
                 <ReviewActions brandId={b.id} brandName={b.name} />
               </div>
-            </GlassCard>
+            </div>
           </li>
         );
       })}

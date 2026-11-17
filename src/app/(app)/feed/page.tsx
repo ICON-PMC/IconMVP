@@ -6,8 +6,9 @@ import { getBrandStyleNames } from "@/lib/tags";
 import { createClient } from "@/lib/supabase/server";
 import { EMPTY_FEED_OPTIONS, getFeedOptions } from "@/lib/feed-options";
 import { FeedSkeletonGrid } from "@/components/feed/feed-skeleton";
-import { SiteHeader } from "@/components/site-header";
-import { Aurora } from "@/components/aurora";
+import { EmptyState as SystemEmptyState } from "@/components/empty-state";
+import { LinkTabs } from "@/components/link-tabs";
+import { CloudOffIcon, SearchXIcon } from "lucide-react";
 import { FeedTopBar } from "@/components/feed/top-bar";
 import { FeedActiveChips } from "@/components/feed/active-chips";
 import { FeedSuggestions } from "@/components/feed/suggestions";
@@ -172,7 +173,7 @@ export default async function FeedPage({ searchParams }: { searchParams: SearchP
         sort={sort}
         suggestions={null}
       >
-        <p className="mb-4 text-sm text-ink/60">
+        <p className="mb-4 text-sm text-text-muted">
           Prendas parecidas a la que estabas viendo.{" "}
           <Link href={`/prenda/${sp.similar}`} className="font-medium text-coral hover:underline">
             Volver a la prenda
@@ -181,7 +182,7 @@ export default async function FeedPage({ searchParams }: { searchParams: SearchP
         {rows.length === 0 ? (
           <EmptyState text="Ninguna prenda parecida cumple esos filtros." clearHref={`/feed?similar=${sp.similar}`} />
         ) : (
-          <div className="columns-2 gap-4 md:columns-3">
+          <div className="columns-2 gap-3 md:columns-3 md:gap-4 lg:columns-4">
             {rows.map((item) => (
               <FeedCard
                 key={item.id}
@@ -232,24 +233,17 @@ export default async function FeedPage({ searchParams }: { searchParams: SearchP
       ["brands", "Marcas"],
     ];
     const tabs = (
-      <div className="mb-5 flex flex-wrap gap-2">
-        {TAB_LABELS.map(([t, label]) => (
-          <Link
-            key={t}
-            href={tabHref(t)}
-            className={
-              t === type
-                ? "rounded-full bg-forest px-4 py-1.5 text-sm font-medium text-white"
-                : "glass-input rounded-full px-4 py-1.5 text-sm text-ink/80 hover:bg-white/70"
-            }
-          >
-            {label}{" "}
-            <span className={t === type ? "text-white/70" : "text-ink/40"}>
-              {counts[t as keyof typeof counts]}
-            </span>
-          </Link>
-        ))}
-      </div>
+      <LinkTabs
+        label="Tipo de resultado"
+        active={type}
+        className="mb-5"
+        tabs={TAB_LABELS.map(([t, label]) => ({
+          id: t,
+          label,
+          href: tabHref(t),
+          badge: counts[t as keyof typeof counts],
+        }))}
+      />
     );
 
     let groups: FilterGroup[] = [];
@@ -286,7 +280,7 @@ export default async function FeedPage({ searchParams }: { searchParams: SearchP
         rows.map((b) => b.id),
       );
       body = error ? (
-        <p className="text-sm text-ink/60">
+        <p className="text-sm text-text-muted">
           No pudimos cargar marcas en este momento. Intenta de nuevo.
         </p>
       ) : rows.length === 0 ? (
@@ -299,6 +293,8 @@ export default async function FeedPage({ searchParams }: { searchParams: SearchP
           {rows.map((b) => (
             <BrandCard
               key={b.id}
+              id={b.id}
+              logo={b.logo_url}
               slug={b.slug}
               name={b.name}
               bio={b.bio}
@@ -421,9 +417,12 @@ async function BrowseResults({
   const { items, nextOffset, error } = await getFeedPage(filters, sort);
   if (error)
     return (
-      <p className="glass rounded-2xl px-6 py-16 text-center text-sm text-ink/60">
-        No pudimos cargar el feed en este momento. Intenta de nuevo en un momento.
-      </p>
+      <SystemEmptyState
+        icon={CloudOffIcon}
+        title="No pudimos cargar el feed"
+        description="Intenta de nuevo en un momento."
+        action={{ label: "Reintentar", href: "/feed" }}
+      />
     );
   return (
     <FeedGrid
@@ -468,14 +467,15 @@ function SearchResults({
   );
 }
 
+// Sin resultados en búsqueda o filtros (spec 007): estado vacío del sistema con una salida.
 function EmptyState({ text, clearHref = "/feed" }: { text: string; clearHref?: string }) {
   return (
-    <div className="glass rounded-2xl px-6 py-16 text-center">
-      <p className="text-sm text-ink/60">{text}</p>
-      <Link href={clearHref} className="mt-3 inline-block text-sm font-medium text-coral hover:underline">
-        Limpiar filtros
-      </Link>
-    </div>
+    <SystemEmptyState
+      icon={SearchXIcon}
+      title="No encontramos nada"
+      description={text}
+      action={{ label: clearHref === "/feed" ? "Ver todo el feed" : "Quitar filtros", href: clearHref }}
+    />
   );
 }
 
@@ -494,15 +494,11 @@ function Shell({
 }) {
   return (
     <>
-      <Aurora />
-      <div className="mx-auto w-full max-w-5xl px-4 py-6">
-        <SiteHeader />
+      <div className="mx-auto w-full max-w-7xl px-3 py-5 md:px-6">
         <Suspense>
           <FlashToast messages={FEED_FLASH} />
         </Suspense>
-        <h1 className="mt-8 mb-4 text-3xl font-medium tracking-tight text-forest">
-          Explorar
-        </h1>
+        <h1 className="mt-2 mb-4 text-h1 text-text">Explorar</h1>
         <div className="mb-4">
           <FeedTopBar groups={groups} sort={sort} isLoggedIn={isLoggedIn} />
         </div>

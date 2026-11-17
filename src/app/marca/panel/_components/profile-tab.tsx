@@ -1,6 +1,5 @@
 import { ChipSelect } from "@/components/chip-select";
 import { CityCombobox } from "@/components/city-combobox";
-import { GlassCard } from "@/components/glass-card";
 import { FormField } from "@/components/form-field";
 import { StickyActionBar } from "@/components/sticky-action-bar";
 import { Button } from "@/components/ui/button";
@@ -27,10 +26,10 @@ export function ProfileTab({
 }) {
   return (
     <>
-      <GlassCard className="mb-4 p-5">
+      <div className="surface mb-4 p-5">
         <BrandCoverForm currentKey={brand.logo_url} />
-      </GlassCard>
-      <GlassCard className="p-5">
+      </div>
+      <div className="surface p-5">
         <form id={FORM_ID} action={updateBrandProfile} className="flex flex-col gap-4">
           <FormField label="Nombre" htmlFor="name">
             <Input id="name" name="name" defaultValue={brand.name} required autoComplete="off" />
@@ -68,7 +67,7 @@ export function ProfileTab({
             max={MAX_BRAND_STYLES}
           />
         </form>
-      </GlassCard>
+      </div>
       <div className="mt-8">
         <CloseBrandSection brandName={brand.name} />
       </div>

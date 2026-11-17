@@ -4,8 +4,6 @@ import { notFound } from "next/navigation";
 import { ChevronLeftIcon } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { requireBrandOwner } from "@/lib/auth";
-import { Aurora } from "@/components/aurora";
-import { GlassCard } from "@/components/glass-card";
 import { SiteHeader } from "@/components/site-header";
 import { PageShell, SectionHeader } from "@/components/page-shell";
 import { StatusBadge } from "@/components/status-badge";
@@ -100,7 +98,6 @@ export default async function BrandPostEditorPage({
 
   return (
     <>
-      <Aurora />
       <PageShell width="2xl">
         <SiteHeader />
         <Suspense>
@@ -138,14 +135,14 @@ export default async function BrandPostEditorPage({
                 o elimínalo.
               </p>
             )}
-            <GlassCard className="p-5">
+            <div className="surface p-5">
               <SectionHeader title="Texto y foto" />
               <div className="mt-4">
                 <LookDetailsForm postId={id} caption={post.caption} />
               </div>
-            </GlassCard>
+            </div>
 
-            <GlassCard className="p-5">
+            <div className="surface p-5">
               <SectionHeader
                 title={`1 · Prendas (${tagged.length})`}
                 description="Las prendas que se ven en la foto."
@@ -173,9 +170,9 @@ export default async function BrandPostEditorPage({
                   </p>
                 )}
               </div>
-            </GlassCard>
+            </div>
 
-            <GlassCard className="p-5">
+            <div className="surface p-5">
               <SectionHeader
                 title="2 · Ocasión, estilo y clima"
                 description="Ayudan a que te encuentren por intención."
@@ -189,7 +186,7 @@ export default async function BrandPostEditorPage({
                   selected={(myTags ?? []).map((t) => t.tag_id)}
                 />
               </div>
-            </GlassCard>
+            </div>
           </div>
         </div>
       </PageShell>

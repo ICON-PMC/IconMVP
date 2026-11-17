@@ -2,12 +2,12 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/auth";
 import { getGarmentLikeCounts, getMyFollowedBrands, getMyLikedGarmentIds, getMyLikedPostIds } from "@/lib/social";
-import { SiteHeader } from "@/components/site-header";
-import { Aurora } from "@/components/aurora";
 import { PostCard } from "@/components/post-card";
 import { GarmentCard } from "@/components/garment-card";
 import { BrandCard } from "@/components/brand-card";
 import { SavedTabs } from "./saved-tabs";
+import { BookmarkIcon, StoreIcon } from "lucide-react";
+import { EmptyState } from "@/components/empty-state";
 
 const TABS = new Set(["guardados", "siguiendo"]);
 
@@ -30,17 +30,18 @@ export default async function SavedPage({
     const followed = await getMyFollowedBrands();
     return (
       <>
-        <Aurora />
-        <div className="mx-auto w-full max-w-5xl px-4 py-6">
-          <SiteHeader />
+        <div className="mx-auto w-full max-w-6xl px-4 py-5 md:px-6">
 
-          <h1 className="mt-8 mb-4 text-3xl font-medium tracking-tight text-forest">
-            Lo mío
-          </h1>
+          <h1 className="mt-2 mb-4 text-h1 text-text">Lo mío</h1>
           <SavedTabs active="siguiendo" />
 
           {followed.length === 0 ? (
-            <p className="text-sm text-ink/60">Aún no sigues ninguna marca.</p>
+            <EmptyState
+              icon={StoreIcon}
+              title="Aún no sigues ninguna marca"
+              description="Sigue a las marcas que te gustan para encontrarlas rápido."
+              action={{ label: "Explorar marcas", href: "/feed?q=a&type=brands" }}
+            />
           ) : (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {followed.map((b) => (
@@ -113,27 +114,24 @@ export default async function SavedPage({
 
   return (
     <>
-      <Aurora />
-      <div className="mx-auto w-full max-w-5xl px-4 py-6">
-        <SiteHeader />
+      <div className="mx-auto w-full max-w-6xl px-4 py-5 md:px-6">
 
-        <h1 className="mt-8 mb-4 text-3xl font-medium tracking-tight text-forest">
-          Lo mío
-        </h1>
+        <h1 className="mt-2 mb-4 text-h1 text-text">Lo mío</h1>
         <SavedTabs active="guardados" />
 
         {empty && (
-          <p className="text-sm text-ink/60">
-            Aún no has guardado nada. Toca el marcador en un look o una prenda.
-          </p>
+          <EmptyState
+            icon={BookmarkIcon}
+            title="Todavía no guardas nada"
+            description="Toca el marcador en un look o una prenda para tenerla aquí."
+            action={{ label: "Explorar el feed", href: "/feed" }}
+          />
         )}
 
         {posts.length > 0 && (
           <>
-            <h2 className="mb-4 text-sm font-medium uppercase tracking-wide text-ink/50">
-              Looks
-            </h2>
-            <div className="columns-2 gap-4 md:columns-3">
+            <h2 className="mb-4 text-h3 text-text">Looks</h2>
+            <div className="columns-2 gap-3 md:columns-3 md:gap-4 lg:columns-4">
               {posts.map((p) => (
                 <PostCard key={p.id} post={p} saved liked={likedPostIds.has(p.id)} isLoggedIn={true} path="/saved" />
               ))}
@@ -143,9 +141,7 @@ export default async function SavedPage({
 
         {garments.length > 0 && (
           <>
-            <h2 className="mt-10 mb-4 text-sm font-medium uppercase tracking-wide text-ink/50">
-              Prendas
-            </h2>
+            <h2 className="mt-10 mb-4 text-h3 text-text">Prendas</h2>
             <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
               {garments.map((g) => (
                 <GarmentCard

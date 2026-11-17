@@ -71,7 +71,7 @@ export function UsersTab({
       {users.length ? (
         <ul className="flex flex-col gap-2">
           {users.map((u) => (
-            <li key={u.id} className="glass-input flex flex-wrap items-center gap-3 rounded-2xl p-3">
+            <li key={u.id} className="bg-surface-raised border-[1.5px] border-line text-text focus:border-line-strong focus:outline-none flex flex-wrap items-center gap-3 rounded-2xl p-3">
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-medium text-ink">{u.email ?? "(sin correo)"}</p>
                 <p className="truncate text-xs text-ink/50">
@@ -95,7 +95,7 @@ export function UsersTab({
                   ))}
                 </NativeSelect>
               ) : (
-                <span className="rounded-full bg-white/50 px-3 py-1 text-xs text-ink/70">
+                <span className="rounded-full bg-surface-sunken px-3 py-1 text-xs text-ink/70">
                   {ROLE_LABEL[u.role]}
                   {u.id === myId && " (tú)"}
                 </span>

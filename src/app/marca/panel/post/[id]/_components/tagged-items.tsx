@@ -11,7 +11,7 @@ import { setPostItemSize, untagGarmentFromPost } from "../../../actions";
 export type TaggedItem = { id: string; title: string; price: string | null; sizeId: string | null };
 
 const nativeSelect =
-  "glass-input h-11 w-28 shrink-0 rounded-lg px-2 text-base text-ink md:h-8 md:text-sm";
+  "bg-surface-raised border-[1.5px] border-line text-text focus:border-line-strong focus:outline-none h-11 w-28 shrink-0 rounded-lg px-2 text-base text-ink md:h-8 md:text-sm";
 
 export function TaggedItems({
   postId,

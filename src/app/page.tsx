@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Aurora } from "@/components/aurora";
 import { getCurrentUser } from "@/lib/auth";
 import { getLandingPhotos } from "@/lib/landing";
 import { Hero } from "@/components/landing/hero";
@@ -38,7 +37,6 @@ export default async function Home() {
 
   return (
     <>
-      <Aurora />
       <div className="mx-auto w-full max-w-6xl px-4 sm:px-8">
         <LandingHeader audience="personas" />
 
@@ -57,7 +55,7 @@ export default async function Home() {
           actions={
             session
               ? [primary]
-              : [primary, { href: "/feed", label: "Explorar el feed", variant: "glass" }]
+              : [primary, { href: "/feed", label: "Explorar el feed", variant: "outline" }]
           }
         />
 

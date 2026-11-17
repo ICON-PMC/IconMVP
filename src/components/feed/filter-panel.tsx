@@ -10,8 +10,12 @@ import {
   SheetFooter,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { SlidersHorizontalIcon } from "lucide-react";
 import { useFeedUrl } from "@/components/feed/use-feed-url";
 import { CityMultiCombobox } from "@/components/city-combobox";
+import { Chip } from "@/components/chip";
+import { Button } from "@/components/ui/button";
+import { useMediaQuery } from "@/lib/use-media-query";
 
 export type FilterGroup = {
   param: string;
@@ -30,7 +34,7 @@ function Swatch({ color }: { color: string | null | undefined }) {
   return (
     <span
       aria-hidden
-      className="inline-block size-3 shrink-0 rounded-full border border-black/15"
+      className="inline-block size-3.5 shrink-0 rounded-full border border-line"
       style={{
         background:
           color ?? "conic-gradient(#e8782a, #f2cf3a, #3e8e4e, #2f5da8, #6b3fa0, #d6247a, #e8782a)",
@@ -44,6 +48,8 @@ function Swatch({ color }: { color: string | null | undefined }) {
 // (evita una navegación por cada chip que se toca), "Limpiar" vacía el borrador.
 export function FeedFilterPanel({ groups }: { groups: FilterGroup[] }) {
   const { selected, applyGroups, pending } = useFeedUrl();
+  // Spec 007: hoja inferior en el celular, lateral en escritorio.
+  const desktop = useMediaQuery("(min-width: 768px)");
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState<Record<string, string[]>>({});
 
@@ -80,55 +86,48 @@ export function FeedFilterPanel({ groups }: { groups: FilterGroup[] }) {
   return (
     <Sheet open={open} onOpenChange={handleOpenChange}>
       <SheetTrigger
-        className="glass-input rounded-full px-4 py-2 text-sm font-medium text-ink/80 hover:bg-white/70"
+        className="inline-flex min-h-11 items-center gap-2 rounded-full border-[1.5px] border-line-strong px-4 text-sm font-semibold text-text outline-none hover:bg-surface-sunken focus-visible:ring-2 focus-visible:ring-line-strong"
         data-testid="feed-filters-trigger"
       >
-        Filtros{activeCount > 0 ? ` (${activeCount})` : ""}
+        <SlidersHorizontalIcon className="size-4" aria-hidden />
+        Filtros
+        {activeCount > 0 && (
+          <span className="flex size-5 items-center justify-center rounded-full bg-action text-[11px] text-action-ink tabular-nums">
+            {activeCount}
+          </span>
+        )}
       </SheetTrigger>
       <SheetContent
-        side="right"
-        className="w-full overflow-y-auto p-0 sm:max-w-sm"
+        side={desktop ? "right" : "bottom"}
+        className="w-full gap-0 overflow-hidden p-0 sm:max-w-sm"
       >
+        {!desktop && <div className="mx-auto mt-2.5 h-1 w-9 shrink-0 rounded-full bg-line" aria-hidden />}
         <SheetHeader>
           <SheetTitle>Filtros</SheetTitle>
           <SheetDescription>
             Ocasión, ciudad, precio, categoría, estilo y color.
           </SheetDescription>
         </SheetHeader>
-        <div className="flex flex-1 flex-col gap-5 overflow-y-auto px-4 pb-4">
+        <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-4 pb-4">
           {groups.map((g) => {
             const values = draft[g.param] ?? [];
             return (
               <div key={g.param}>
-                <p className="mb-1.5 flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-ink/50">
+                <p className="mb-1 flex items-center gap-1.5 text-label text-text">
                   {g.label}
                   {values.length > 0 && (
-                    <span className="rounded-full bg-forest/10 px-1.5 text-forest">
-                      {values.length}
-                    </span>
+                    <span className="rounded-full bg-surface-sunken px-1.5 tabular-nums">{values.length}</span>
                   )}
                 </p>
                 {g.searchable && g.featured?.length ? (
-                  <div className="mb-2 flex flex-wrap gap-1.5">
+                  <div className="mb-1 flex flex-wrap gap-x-2">
                     {g.options
                       .filter((o) => g.featured!.includes(o.value))
-                      .map((o) => {
-                        const active = values.includes(o.value);
-                        return (
-                          <button
-                            key={o.value}
-                            type="button"
-                            onClick={() => toggleDraft(g.param, o.value)}
-                            className={
-                              active
-                                ? "rounded-full bg-forest px-3 py-1 text-xs font-medium text-white"
-                                : "glass-input rounded-full px-3 py-1 text-xs text-ink/80 hover:bg-white/70"
-                            }
-                          >
-                            {o.label}
-                          </button>
-                        );
-                      })}
+                      .map((o) => (
+                        <Chip key={o.value} selected={values.includes(o.value)} onClick={() => toggleDraft(g.param, o.value)}>
+                          {o.label}
+                        </Chip>
+                      ))}
                   </div>
                 ) : null}
                 {g.searchable ? (
@@ -143,47 +142,28 @@ export function FeedFilterPanel({ groups }: { groups: FilterGroup[] }) {
                     }
                   />
                 ) : (
-                  <div className="flex flex-wrap gap-1.5">
-                    {g.options.map((o) => {
-                      const active = values.includes(o.value);
-                      return (
-                        <button
-                          key={o.value}
-                          type="button"
-                          onClick={() => toggleDraft(g.param, o.value)}
-                          className={
-                            active
-                              ? "flex items-center gap-1.5 rounded-full bg-forest px-3 py-1 text-xs font-medium text-white"
-                              : "glass-input flex items-center gap-1.5 rounded-full px-3 py-1 text-xs text-ink/80 hover:bg-white/70"
-                          }
-                        >
+                  <div className="flex flex-wrap gap-x-2">
+                    {g.options.map((o) => (
+                      <Chip key={o.value} selected={values.includes(o.value)} onClick={() => toggleDraft(g.param, o.value)}>
+                        <span className="flex items-center gap-1.5">
                           <Swatch color={o.swatch} />
                           {o.label}
-                        </button>
-                      );
-                    })}
+                        </span>
+                      </Chip>
+                    ))}
                   </div>
                 )}
               </div>
             );
           })}
         </div>
-        <SheetFooter className="flex-row gap-2 border-t border-black/5">
-          <button
-            type="button"
-            onClick={clearDraft}
-            className="flex-1 rounded-full px-4 py-2 text-sm font-medium text-coral hover:bg-coral/10"
-          >
+        <SheetFooter className="flex-row gap-2 border-t border-line pb-[max(1rem,env(safe-area-inset-bottom))]">
+          <Button type="button" variant="secondary" className="flex-1" onClick={clearDraft}>
             Limpiar
-          </button>
-          <button
-            type="button"
-            onClick={apply}
-            disabled={pending}
-            className="flex-1 rounded-full bg-forest px-4 py-2 text-sm font-medium text-white hover:bg-forest-deep disabled:opacity-60"
-          >
-            {pending ? "Aplicando…" : "Aplicar"}
-          </button>
+          </Button>
+          <Button type="button" className="flex-1" onClick={apply} loading={pending}>
+            Ver resultados
+          </Button>
         </SheetFooter>
       </SheetContent>
     </Sheet>

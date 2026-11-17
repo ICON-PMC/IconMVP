@@ -30,7 +30,7 @@ export function Hero({
   steps: [Step, Step, Step];
   title: ReactNode;
   lead: ReactNode;
-  actions: { href: string; label: string; variant?: "primary" | "glass" }[];
+  actions: { href: string; label: string; variant?: "primary" | "outline" }[];
 }) {
   return (
     <section aria-labelledby="hero-title" className="pt-5 sm:pt-9">
@@ -51,7 +51,7 @@ export function Hero({
           >
             <span
               aria-hidden
-              className="font-display absolute top-[-0.55em] left-[0.12em] text-[clamp(2.4rem,6.4vw,4.9rem)] leading-none text-ink transition-colors duration-300 group-hover:text-coral"
+              className="font-wordmark absolute top-[-0.55em] left-[0.12em] text-[clamp(2.4rem,6.4vw,4.9rem)] leading-none text-ink transition-colors duration-300 group-hover:text-coral"
             >
               {i + 1}
             </span>

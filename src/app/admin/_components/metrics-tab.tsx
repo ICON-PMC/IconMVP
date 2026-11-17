@@ -1,4 +1,3 @@
-import { GlassCard } from "@/components/glass-card";
 import { SectionHeader } from "@/components/page-shell";
 
 type Row = { id: string; name: string; clicks: number };
@@ -24,15 +23,15 @@ export function MetricsTab({
       <ul className="grid grid-cols-3 gap-3">
         {tiles.map((m) => (
           <li key={m.label}>
-            <GlassCard className="px-3 py-4 text-center">
+            <div className="surface px-3 py-4 text-center">
               <p className="text-2xl font-medium text-forest sm:text-3xl">{m.value}</p>
               <p className="text-[11px] uppercase tracking-wide text-ink/60">{m.label}</p>
-            </GlassCard>
+            </div>
           </li>
         ))}
       </ul>
 
-      <GlassCard className="p-5">
+      <div className="surface p-5">
         <SectionHeader title="Clics a la tienda" />
         <div className="mt-4 mb-5 flex gap-10">
           <div>
@@ -48,7 +47,7 @@ export function MetricsTab({
           <TopList title="Top marcas" rows={topBrands} />
           <TopList title="Top prendas" rows={topGarments} />
         </div>
-      </GlassCard>
+      </div>
     </div>
   );
 }
