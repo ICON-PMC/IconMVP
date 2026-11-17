@@ -18,10 +18,13 @@ export function FeedTopBar({
   groups,
   sort,
   isLoggedIn = false,
+  extraSorts = [],
 }: {
   groups: FilterGroup[];
   sort: string;
   isLoggedIn?: boolean;
+  /** Órdenes propios de una pestaña (p. ej. "Mejor valoradas" en Marcas, spec 011). */
+  extraSorts?: { value: string; label: string }[];
 }) {
   const { searchParams, setQuery, setSort } = useFeedUrl();
 
@@ -61,7 +64,7 @@ export function FeedTopBar({
           aria-label="Ordenar por"
           className="min-h-11 rounded-full border-[1.5px] border-line-strong bg-transparent px-3 text-sm font-semibold text-text outline-none focus-visible:ring-2 focus-visible:ring-line-strong"
         >
-          {SORT_OPTS.map((o) => (
+          {[...SORT_OPTS, ...extraSorts].map((o) => (
             <option key={o.value} value={o.value}>
               Ordenar: {o.label}
             </option>

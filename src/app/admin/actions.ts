@@ -505,6 +505,17 @@ export async function unlinkProposed(proposedId: string): Promise<AdminResult> {
 export async function resolveProposedClaim(proposedId: string, approve: boolean): Promise<AdminResult> {
   return claimRpc("resolve_proposed_claim", { p_proposed_id: proposedId, p_approve: approve });
 }
+/** Spec 011: retirar o restaurar una reseña (resuelve sus reportes). */
+export async function moderateBrandRating(ratingId: string, action: "remove" | "restore"): Promise<AdminResult> {
+  await requireStaff();
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("moderate_brand_rating", { p_rating_id: ratingId, p_action: action });
+  if (error) return { ok: false, error: error.message };
+  revalidateCommunity();
+  revalidatePath("/marca/[slug]", "page");
+  return { ok: true };
+}
+
 /** Cambia o quita la marca mencionada que indicó una solicitud pendiente. */
 export async function setPendingBrandStub(brandId: string, stubId: string | null): Promise<AdminResult> {
   await requireStaff();
