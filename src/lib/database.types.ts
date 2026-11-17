@@ -155,6 +155,24 @@ export type Database = {
         Update: { id?: string; post_id?: string; brand_id?: string; status?: Database["public"]["Enums"]["brand_review_status"]; decided_at?: string | null; decided_by?: string | null; note?: string | null; created_at?: string };
         Relationships: [];
       };
+      interaction_events: {
+        Row: { id: number; user_id: string | null; anon_key: string | null; kind: "impression" | "detail_view"; item_kind: "garment" | "post" | "brand"; item_id: string; surface: string; position: number | null; sort: string | null; personalized: boolean; bucket: string; created_at: string };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      search_events: {
+        Row: { id: number; user_id: string | null; anon_key: string | null; q: string | null; q_norm: string | null; filters: Json; tab: string; sort: string | null; results: number; bucket: string; created_at: string };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      reco_settings: {
+        Row: { id: number; w_click: number; w_save: number; w_like: number; w_follow: number; w_view: number; w_declared_style: number; w_declared_city: number; half_life_days: number; mix_affinity: number; mix_quality: number; mix_recency: number; explore_every: number; d_style: number; d_category: number; d_brand: number; d_occasion: number; d_author: number; d_city: number; d_price: number; updated_at: string };
+        Insert: never;
+        Update: Partial<Omit<Database["public"]["Tables"]["reco_settings"]["Row"], "id">>;
+        Relationships: [];
+      };
       brand_ratings: {
         Row: { id: string; brand_id: string; user_id: string; stars: number; body: string; status: Database["public"]["Enums"]["rating_status"]; edited_at: string | null; reviewed_at: string | null; created_at: string; updated_at: string };
         Insert: { id?: string; brand_id: string; user_id: string; stars: number; body: string };
@@ -368,6 +386,9 @@ export type Database = {
         Returns: { id: string; email: string | null; display_name: string | null; handle: string; posting_blocked_at: string; posting_blocked_reason: string | null }[];
       };
       user_look_stats: { Args: Record<string, never>; Returns: Json };
+      // Spec 003: recomendación
+      log_events: { Args: { p: Json }; Returns: number };
+      purge_old_events: { Args: { p_days: number }; Returns: number };
       // Spec 011: reseñas de marcas
       moderate_brand_rating: { Args: { p_rating_id: string; p_action: "remove" | "restore" }; Returns: undefined };
       brand_ratings_page: {

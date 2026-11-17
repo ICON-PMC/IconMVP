@@ -1,11 +1,20 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import { SearchXIcon } from "lucide-react";
 import { EmptyState } from "@/components/empty-state";
 import { usePathname, useSearchParams } from "next/navigation";
 import { FeedCard, cardRatio } from "@/components/feed-card";
 import type { FeedItem } from "@/lib/feed";
+import { Tracked } from "@/components/events/tracked";
+import type { Surface } from "@/lib/events/client";
 
 type SavedIds = { posts: Set<string>; garments: Set<string> };
 type LikedIds = { posts: Set<string>; garments: Set<string> };
@@ -27,7 +36,12 @@ function subscribeCols(cb: () => void) {
 function useColumnCount() {
   return useSyncExternalStore(
     subscribeCols,
-    () => (window.matchMedia(COL_QUERIES[0]).matches ? 4 : window.matchMedia(COL_QUERIES[1]).matches ? 3 : 2),
+    () =>
+      window.matchMedia(COL_QUERIES[0]).matches
+        ? 4
+        : window.matchMedia(COL_QUERIES[1]).matches
+          ? 3
+          : 2,
     () => 2,
   );
 }
@@ -38,7 +52,8 @@ function splitColumns(items: FeedItem[], count: number): FeedItem[][] {
   for (const it of items) {
     const ratio = cardRatio(it);
     let target = 0;
-    for (let i = 1; i < count; i++) if (heights[i] < heights[target]) target = i;
+    for (let i = 1; i < count; i++)
+      if (heights[i] < heights[target]) target = i;
     cols[target].push(it);
     heights[target] += ratio + 0.15; // + alto aproximado del texto bajo la foto
   }
@@ -68,7 +83,8 @@ if (typeof window !== "undefined") {
   });
 }
 function readStored(key: string): Stored | null {
-  if (typeof window === "undefined" || Date.now() - lastPopState > 2000) return null;
+  if (typeof window === "undefined" || Date.now() - lastPopState > 2000)
+    return null;
   try {
     const raw = sessionStorage.getItem(key);
     if (!raw) return null;
@@ -86,7 +102,9 @@ function writeStored(key: string, s: Omit<Stored, "savedAt">) {
   }
 }
 function storeKey(pathname: string, search: URLSearchParams) {
-  const sorted = [...search.entries()].filter(([k]) => k !== "offset").sort(([a], [b]) => a.localeCompare(b));
+  const sorted = [...search.entries()]
+    .filter(([k]) => k !== "offset")
+    .sort(([a], [b]) => a.localeCompare(b));
   return `${STORE_PREFIX}${pathname}?${new URLSearchParams(sorted)}`;
 }
 
@@ -98,7 +116,10 @@ function mergeIds(
   const known = new Set(firstPage.map((i) => i.id));
   const pick = (old: string[], now: Set<string>) =>
     new Set([...old.filter((id) => !known.has(id)), ...now]);
-  return { posts: pick(stored.posts, fresh.posts), garments: pick(stored.garments, fresh.garments) };
+  return {
+    posts: pick(stored.posts, fresh.posts),
+    garments: pick(stored.garments, fresh.garments),
+  };
 }
 
 // Ahorro de datos activado: no precargar fichas (spec 006, FR-023).
@@ -108,7 +129,11 @@ function subscribeNone() {
 function useSaveData() {
   return useSyncExternalStore(
     subscribeNone,
-    () => Boolean((navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData),
+    () =>
+      Boolean(
+        (navigator as Navigator & { connection?: { saveData?: boolean } })
+          .connection?.saveData,
+      ),
     () => false,
   );
 }
@@ -129,6 +154,7 @@ export function FeedGrid({
   tagNames,
   emptyState,
   apiQuery,
+  track,
 }: {
   initialItems: FeedItem[];
   initialNextOffset?: number | null;
@@ -142,6 +168,8 @@ export function FeedGrid({
   emptyState?: React.ReactNode;
   /** Parámetros extra para /api/feed (p. ej. el perfil cuyas pestañas se cargan). */
   apiQuery?: Record<string, string>;
+  /** Spec 003: superficie y orden para registrar impresiones. */
+  track?: { surface: Surface; sort?: string; personalized?: boolean };
 }) {
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -164,16 +192,27 @@ export function FeedGrid({
   // Guardados y likes: para la primera tanda manda lo que acaba de leer el servidor (pudo cambiar en
   // la ficha); para el resto, lo restaurado.
   const [saved, setSaved] = useState<SavedIds>(() =>
-    restored ? mergeIds(restored.saved, initialSaved, initialItems) : initialSaved,
+    restored
+      ? mergeIds(restored.saved, initialSaved, initialItems)
+      : initialSaved,
   );
   const [liked, setLiked] = useState<LikedIds>(() =>
-    restored ? mergeIds(restored.liked, initialLiked, initialItems) : initialLiked,
+    restored
+      ? mergeIds(restored.liked, initialLiked, initialItems)
+      : initialLiked,
   );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
   const colCount = useColumnCount();
-  const columns = useMemo(() => splitColumns(items, colCount), [items, colCount]);
+  const columns = useMemo(
+    () => splitColumns(items, colCount),
+    [items, colCount],
+  );
+  const positions = useMemo(
+    () => new Map(items.map((it, i) => [itemKey(it), i])),
+    [items],
+  );
 
   const loadMore = useCallback(async () => {
     if (loading || nextOffset == null) return;
@@ -185,7 +224,8 @@ export function FeedGrid({
       if (pendingIds) {
         const ids = pendingIds.slice(nextOffset, nextOffset + BATCH);
         url = `/api/feed/items?ids=${ids.join(",")}`;
-        following = nextOffset + BATCH < pendingIds.length ? nextOffset + BATCH : null;
+        following =
+          nextOffset + BATCH < pendingIds.length ? nextOffset + BATCH : null;
       } else {
         const params = new URLSearchParams(searchParams.toString());
         for (const [k, v] of Object.entries(apiQuery ?? {})) params.set(k, v);
@@ -198,16 +238,30 @@ export function FeedGrid({
       const data = await res.json();
       setItems((prev) => {
         const seen = new Set(prev.map(itemKey));
-        const fresh = (data.items as FeedItem[]).filter((it) => !seen.has(itemKey(it)));
+        const fresh = (data.items as FeedItem[]).filter(
+          (it) => !seen.has(itemKey(it)),
+        );
         return [...prev, ...fresh];
       });
       setSaved((prev) => ({
-        posts: new Set([...prev.posts, ...((data.savedPosts as string[]) ?? [])]),
-        garments: new Set([...prev.garments, ...((data.savedGarments as string[]) ?? [])]),
+        posts: new Set([
+          ...prev.posts,
+          ...((data.savedPosts as string[]) ?? []),
+        ]),
+        garments: new Set([
+          ...prev.garments,
+          ...((data.savedGarments as string[]) ?? []),
+        ]),
       }));
       setLiked((prev) => ({
-        posts: new Set([...prev.posts, ...((data.likedPosts as string[]) ?? [])]),
-        garments: new Set([...prev.garments, ...((data.likedGarments as string[]) ?? [])]),
+        posts: new Set([
+          ...prev.posts,
+          ...((data.likedPosts as string[]) ?? []),
+        ]),
+        garments: new Set([
+          ...prev.garments,
+          ...((data.likedGarments as string[]) ?? []),
+        ]),
       }));
       setNextOffset(pendingIds ? following : (data.nextOffset ?? null));
     } catch {
@@ -257,7 +311,9 @@ export function FeedGrid({
   // Restaurar la posición después de pintar las tarjetas restauradas.
   useEffect(() => {
     if (!restored) return;
-    requestAnimationFrame(() => requestAnimationFrame(() => window.scrollTo(0, restored.scrollY)));
+    requestAnimationFrame(() =>
+      requestAnimationFrame(() => window.scrollTo(0, restored.scrollY)),
+    );
   }, [restored]);
 
   if (items.length === 0) {
@@ -278,25 +334,54 @@ export function FeedGrid({
         {columns.map((col, i) => (
           <div key={i} className="min-w-0 flex-1">
             {col.map((item, row) => (
-              <FeedCard
+              <Tracked
                 key={itemKey(item)}
-                item={item}
-                tagNames={tagNames}
-                saved={item.kind === "post" ? saved.posts.has(item.id) : saved.garments.has(item.id)}
-                liked={item.kind === "post" ? liked.posts.has(item.id) : liked.garments.has(item.id)}
-                isLoggedIn={isLoggedIn}
-                path="/feed"
-                prefetch={saveData ? false : undefined}
-                // Primera fila de cada columna y la segunda en las dos primeras: ~4 fotos visibles al cargar.
-                priority={row === 0 || (row === 1 && i < 2)}
-              />
+                event={
+                  track
+                    ? {
+                        itemKind: item.kind,
+                        itemId: item.id,
+                        surface: track.surface,
+                        position: positions.get(itemKey(item)) ?? 0,
+                        sort: track.sort ?? null,
+                        personalized: track.personalized ?? false,
+                      }
+                    : null
+                }
+              >
+                <FeedCard
+                  item={item}
+                  tagNames={tagNames}
+                  saved={
+                    item.kind === "post"
+                      ? saved.posts.has(item.id)
+                      : saved.garments.has(item.id)
+                  }
+                  liked={
+                    item.kind === "post"
+                      ? liked.posts.has(item.id)
+                      : liked.garments.has(item.id)
+                  }
+                  isLoggedIn={isLoggedIn}
+                  path="/feed"
+                  prefetch={saveData ? false : undefined}
+                  // Primera fila de cada columna y la segunda en las dos primeras: ~4 fotos visibles al cargar.
+                  priority={row === 0 || (row === 1 && i < 2)}
+                />
+              </Tracked>
             ))}
           </div>
         ))}
       </div>
       {nextOffset != null && (
-        <div ref={sentinelRef} className="flex flex-col items-center gap-2 py-8" aria-live="polite">
-          <p className="text-sm text-text-muted">{error ?? (loading ? "Cargando más…" : "")}</p>
+        <div
+          ref={sentinelRef}
+          className="flex flex-col items-center gap-2 py-8"
+          aria-live="polite"
+        >
+          <p className="text-sm text-text-muted">
+            {error ?? (loading ? "Cargando más…" : "")}
+          </p>
           {error && (
             <button
               type="button"
@@ -309,7 +394,9 @@ export function FeedGrid({
         </div>
       )}
       {nextOffset == null && (
-        <p className="py-8 text-center text-sm text-text-muted">Eso es todo por ahora.</p>
+        <p className="py-8 text-center text-sm text-text-muted">
+          Eso es todo por ahora.
+        </p>
       )}
     </div>
   );

@@ -183,6 +183,7 @@ export default async function ProfilePage({ params, searchParams }: Props) {
 
       <FeedGrid
         key={`${profile.id}:${tab}`}
+        track={{ surface: "profile" }}
         initialItems={page.items}
         initialNextOffset={page.nextOffset}
         initialSaved={saved}

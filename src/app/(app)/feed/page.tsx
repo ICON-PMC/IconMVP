@@ -25,6 +25,7 @@ import { FEED_PAGE_SIZE, feedItemAuthor, parseFeedParams, getFeedPage, type Feed
 import type { FilterGroup } from "@/components/feed/filter-panel";
 import { getFollowingFeedPage, getFollowSuggestions } from "@/lib/profile";
 import { RATING_MIN_FOR_AVG } from "@/lib/rating-rules";
+import { SearchTracker } from "@/components/events/search-tracker";
 import { FollowSuggestions } from "@/components/profile/follow-suggestions";
 
 type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
@@ -264,6 +265,7 @@ export default async function FeedPage({ searchParams }: { searchParams: SearchP
     let groups: FilterGroup[] = [];
     let body: React.ReactNode;
     let extraSorts: { value: string; label: string }[] | undefined;
+    let resultCount = 0;
     const clearFiltersHref = (() => {
       const params = new URLSearchParams();
       params.set("q", q);
@@ -305,6 +307,7 @@ export default async function FeedPage({ searchParams }: { searchParams: SearchP
         return b.sim - a.sim;
       });
       if (error) console.error("[feed] search_brands falló:", error.message);
+      resultCount = rows.length;
       const brandStyles = await getBrandStyleNames(
         supabase,
         rows.map((b) => b.id),
@@ -351,6 +354,7 @@ export default async function FeedPage({ searchParams }: { searchParams: SearchP
         f,
       );
       sortFeedItems(rows, sort, meta);
+      resultCount = rows.length;
       body =
         rows.length === 0 ? (
           <EmptyState text={`No encontramos outfits para «${q}». Prueba con otro término o quita filtros.`} clearHref={clearFiltersHref} />
@@ -370,6 +374,7 @@ export default async function FeedPage({ searchParams }: { searchParams: SearchP
         f,
       );
       sortFeedItems(rows, sort, meta);
+      resultCount = rows.length;
       body =
         rows.length === 0 ? (
           <EmptyState text={`No encontramos prendas para «${q}». Prueba con otro término o quita filtros.`} clearHref={clearFiltersHref} />
@@ -389,6 +394,7 @@ export default async function FeedPage({ searchParams }: { searchParams: SearchP
       ]);
       const rows = [...gRows, ...pRows];
       sortFeedItems(rows, sort, meta);
+      resultCount = rows.length;
       body =
         rows.length === 0 ? (
           <EmptyState text={`No encontramos nada para «${q}». Prueba con otro término o quita filtros.`} clearHref={clearFiltersHref} />
@@ -399,6 +405,13 @@ export default async function FeedPage({ searchParams }: { searchParams: SearchP
 
     return (
       <Shell isLoggedIn={isLoggedIn} groups={groups} sort={sort} suggestions={null} extraSorts={extraSorts}>
+        <SearchTracker
+          q={q}
+          tab={type === "all" ? "feed" : (type as "garments" | "posts" | "brands")}
+          sort={sort}
+          results={resultCount}
+          filters={Object.fromEntries(Object.entries(f).filter(([, v]) => v.length > 0))}
+        />
         {tabs}
         {body}
       </Shell>
@@ -443,6 +456,7 @@ async function FollowingResults({
   return (
     <FeedGrid
       key="siguiendo"
+      track={{ surface: "following", sort: "new" }}
       initialItems={items}
       initialNextOffset={nextOffset}
       initialSaved={saved}
@@ -485,6 +499,7 @@ async function BrowseResults({
   return (
     <FeedGrid
       key={gridKey}
+      track={{ surface: "feed", sort }}
       initialItems={items}
       initialNextOffset={nextOffset}
       initialSaved={saved}
@@ -515,6 +530,7 @@ function SearchResults({
   return (
     <FeedGrid
       key={gridKey}
+      track={{ surface: "search" }}
       initialItems={rows.slice(0, FEED_PAGE_SIZE)}
       pendingIds={rows.slice(FEED_PAGE_SIZE).map((r) => r.id)}
       initialSaved={saved}

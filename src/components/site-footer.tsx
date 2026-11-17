@@ -8,6 +8,7 @@ const LINKS = [
   { href: "/signup", label: "Crear cuenta" },
   { href: "/signup?tipo=marca", label: "Registrar mi marca" },
   { href: "/login", label: "Entrar" },
+  { href: "/privacidad", label: "Privacidad" },
 ];
 
 export function SiteFooter() {
