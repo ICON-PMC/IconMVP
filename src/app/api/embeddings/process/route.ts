@@ -38,7 +38,11 @@ async function run(garmentIds?: string[], all = false) {
     deleted: 0,
     error: e instanceof Error ? e.message : String(e),
   }));
-  return { ...result, variants, drafts };
+  // Spec 003: la actividad detallada se guarda 180 días.
+  const events = await admin
+    .rpc("purge_old_events", { p_days: 180 })
+    .then(({ data, error }) => (error ? { deleted: 0, error: error.message } : { deleted: data ?? 0 }));
+  return { ...result, variants, drafts, events };
 }
 
 // Spec 008 (R13): borradores de looks de usuarios sin cambios en 30 días, con sus fotos.

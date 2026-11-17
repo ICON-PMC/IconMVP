@@ -1,3 +1,4 @@
+import { DetailView } from "@/components/events/detail-view";
 import Link from "next/link";
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
@@ -48,6 +49,7 @@ export default async function PostPage({ params }: { params: Promise<{ id: strin
       <Suspense>
         <FlashToast messages={FLASH} />
       </Suspense>
+      {look.status === "published" && <DetailView itemKind="post" itemId={id} />}
       <Link href="/feed" className="mb-4 inline-flex min-h-11 items-center gap-1.5 text-sm font-semibold text-action-text hover:underline">
         <ArrowLeftIcon className="size-4" aria-hidden /> Volver al feed
       </Link>

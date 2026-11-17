@@ -14,8 +14,9 @@ async function loadPage(sp: Record<string, string>, offset: number) {
   if (sp.ver === "siguiendo" && (await getCurrentUser())) {
     return { ...(await getFollowingFeedPage(offset)), error: null };
   }
-  const { filters, sort } = parseFeedParams(sp);
-  return getFeedPage(filters, sort, offset, FEED_PAGE_SIZE);
+  const { filters, sort, priceRange } = parseFeedParams(sp);
+  const signedIn = Boolean((await getCurrentUser())?.profile);
+  return getFeedPage(filters, sort, offset, FEED_PAGE_SIZE, { price: priceRange, asOf: sp.as_of ?? null, signedIn });
 }
 
 // Siguiente lote del feed mixto para el scroll infinito de <FeedGrid>.

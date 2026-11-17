@@ -21,12 +21,17 @@ export type FilterGroup = {
   param: string;
   label: string;
   /** `swatch`: color de muestra (hex) para el grupo Color; `null` = multicolor/estampado. */
-  options: { value: string; label: string; swatch?: string | null }[];
+  options: { value: string; label: string; swatch?: string | null; count?: number }[];
   /** Muchas opciones (ciudades): buscador con selección múltiple en vez de chips. */
   searchable?: boolean;
   /** Con `searchable`: estas opciones (las más usadas) se muestran además como chips. */
   featured?: string[];
+  /** Spec 003: el grupo Precio suma dos campos de precio libre (`pmin`, `pmax`). */
+  priceInputs?: boolean;
 };
+
+const PRICE_PARAMS = ["pmin", "pmax"] as const;
+const copFmt = new Intl.NumberFormat("es-CO");
 
 // Muestra de color de un chip del grupo Color (sin `swatch` no se dibuja nada).
 function Swatch({ color }: { color: string | null | undefined }) {
@@ -56,13 +61,16 @@ export function FeedFilterPanel({ groups }: { groups: FilterGroup[] }) {
   // Reinicia el borrador con lo que hay en la URL cada vez que se abre el panel.
   function handleOpenChange(next: boolean) {
     if (next)
-      setDraft(
-        Object.fromEntries(groups.map((g) => [g.param, selected(g.param)])),
-      );
+      setDraft({
+        ...Object.fromEntries(groups.map((g) => [g.param, selected(g.param)])),
+        ...(groups.some((g) => g.priceInputs) ? Object.fromEntries(PRICE_PARAMS.map((p) => [p, selected(p)])) : {}),
+      });
     setOpen(next);
   }
 
-  const activeCount = groups.reduce((n, g) => n + selected(g.param).length, 0);
+  const activeCount =
+    groups.reduce((n, g) => n + selected(g.param).length, 0) +
+    (groups.some((g) => g.priceInputs) ? PRICE_PARAMS.filter((p) => selected(p).length > 0).length : 0);
 
   function toggleDraft(param: string, value: string) {
     setDraft((prev) => {
@@ -80,7 +88,10 @@ export function FeedFilterPanel({ groups }: { groups: FilterGroup[] }) {
   }
 
   function clearDraft() {
-    setDraft(Object.fromEntries(groups.map((g) => [g.param, []])));
+    setDraft({
+      ...Object.fromEntries(groups.map((g) => [g.param, []])),
+      ...(groups.some((g) => g.priceInputs) ? { pmin: [], pmax: [] } : {}),
+    });
   }
 
   return (
@@ -105,7 +116,7 @@ export function FeedFilterPanel({ groups }: { groups: FilterGroup[] }) {
         <SheetHeader>
           <SheetTitle>Filtros</SheetTitle>
           <SheetDescription>
-            Ocasión, ciudad, precio, categoría, estilo y color.
+            Ocasión, ciudad, precio, categoría, estilo, color, talla y marca.
           </SheetDescription>
         </SheetHeader>
         <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-4 pb-4">
@@ -119,6 +130,25 @@ export function FeedFilterPanel({ groups }: { groups: FilterGroup[] }) {
                     <span className="rounded-full bg-surface-sunken px-1.5 tabular-nums">{values.length}</span>
                   )}
                 </p>
+                {g.priceInputs && (
+                  <div className="mb-2 grid grid-cols-2 gap-2">
+                    {PRICE_PARAMS.map((p) => (
+                      <label key={p} className="flex flex-col gap-1 text-[13px] text-text-muted">
+                        {p === "pmin" ? "Desde (COP)" : "Hasta (COP)"}
+                        <input
+                          inputMode="numeric"
+                          className="field h-11 px-3 text-base text-text md:text-[15px]"
+                          placeholder={p === "pmin" ? "0" : "Sin límite"}
+                          value={draft[p]?.[0] ? copFmt.format(Number(draft[p][0])) : ""}
+                          onChange={(e) => {
+                            const digits = e.target.value.replace(/\D/g, "").slice(0, 9);
+                            setDraft((prev) => ({ ...prev, [p]: digits ? [digits] : [] }));
+                          }}
+                        />
+                      </label>
+                    ))}
+                  </div>
+                )}
                 {g.searchable && g.featured?.length ? (
                   <div className="mb-1 flex flex-wrap gap-x-2">
                     {g.options
@@ -144,7 +174,13 @@ export function FeedFilterPanel({ groups }: { groups: FilterGroup[] }) {
                 ) : (
                   <div className="flex flex-wrap gap-x-2">
                     {g.options.map((o) => (
-                      <Chip key={o.value} selected={values.includes(o.value)} onClick={() => toggleDraft(g.param, o.value)}>
+                      <Chip
+                        key={o.value}
+                        selected={values.includes(o.value)}
+                        onClick={() => toggleDraft(g.param, o.value)}
+                        count={o.count}
+                        className={o.count === 0 && !values.includes(o.value) ? "opacity-50" : undefined}
+                      >
                         <span className="flex items-center gap-1.5">
                           <Swatch color={o.swatch} />
                           {o.label}

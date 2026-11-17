@@ -82,6 +82,12 @@ export default async function SettingsPage({
           Cerrar sesión
         </Button>
       </form>
+      <p className="mt-6 text-sm text-text-muted">
+        Qué datos guardamos y para qué:{" "}
+        <Link href="/privacidad" className="font-semibold text-action-text hover:underline">
+          Privacidad
+        </Link>
+      </p>
       <DeleteAccountSection brandName={myBrand?.name ?? null} />
     </div>
   );

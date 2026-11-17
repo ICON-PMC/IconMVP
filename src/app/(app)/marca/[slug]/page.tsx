@@ -1,3 +1,4 @@
+import { DetailView } from "@/components/events/detail-view";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cityLabel } from "@/lib/cities";
@@ -122,6 +123,7 @@ export default async function BrandPage({
   // enlaces; luego pestañas Prendas / Looks. La spec 009 reutiliza esta misma estructura para usuarios.
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-5 md:px-6">
+      <DetailView itemKind="brand" itemId={brand.id} />
       <header className="surface overflow-hidden">
         <div className="h-20 bg-surface-inverse md:h-28" aria-hidden />
         <div className="px-5 pb-5 md:px-8 md:pb-7">

@@ -1,3 +1,4 @@
+import { DetailView } from "@/components/events/detail-view";
 import Link from "next/link";
 import { cityLabel } from "@/lib/cities";
 import { notFound } from "next/navigation";
@@ -122,6 +123,7 @@ export default async function GarmentPage({
     // pb-24 en celular: espacio para la barra fija de "Ir a la tienda" además de la de navegación.
     <div className="mx-auto w-full max-w-6xl px-4 pt-5 pb-24 md:px-6 md:pb-5">
       <PageHeaderBack />
+      <DetailView itemKind="garment" itemId={id} />
 
       <div className="grid gap-6 md:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] md:gap-10">
         <div className="flex flex-col gap-3">

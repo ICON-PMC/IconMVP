@@ -6,6 +6,8 @@ import { EmptyState } from "@/components/empty-state";
 import { usePathname, useSearchParams } from "next/navigation";
 import { FeedCard, cardRatio } from "@/components/feed-card";
 import type { FeedItem } from "@/lib/feed";
+import { Tracked } from "@/components/events/tracked";
+import type { Surface } from "@/lib/events/client";
 
 type SavedIds = { posts: Set<string>; garments: Set<string> };
 type LikedIds = { posts: Set<string>; garments: Set<string> };
@@ -129,6 +131,7 @@ export function FeedGrid({
   tagNames,
   emptyState,
   apiQuery,
+  track,
 }: {
   initialItems: FeedItem[];
   initialNextOffset?: number | null;
@@ -142,6 +145,8 @@ export function FeedGrid({
   emptyState?: React.ReactNode;
   /** Parámetros extra para /api/feed (p. ej. el perfil cuyas pestañas se cargan). */
   apiQuery?: Record<string, string>;
+  /** Spec 003: superficie y orden para registrar impresiones. */
+  track?: { surface: Surface; sort?: string; personalized?: boolean };
 }) {
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -174,6 +179,7 @@ export function FeedGrid({
   const sentinelRef = useRef<HTMLDivElement>(null);
   const colCount = useColumnCount();
   const columns = useMemo(() => splitColumns(items, colCount), [items, colCount]);
+  const positions = useMemo(() => new Map(items.map((it, i) => [itemKey(it), i])), [items]);
 
   const loadMore = useCallback(async () => {
     if (loading || nextOffset == null) return;
@@ -278,8 +284,22 @@ export function FeedGrid({
         {columns.map((col, i) => (
           <div key={i} className="min-w-0 flex-1">
             {col.map((item, row) => (
-              <FeedCard
+              <Tracked
                 key={itemKey(item)}
+                event={
+                  track
+                    ? {
+                        itemKind: item.kind,
+                        itemId: item.id,
+                        surface: track.surface,
+                        position: positions.get(itemKey(item)) ?? 0,
+                        sort: track.sort ?? null,
+                        personalized: track.personalized ?? false,
+                      }
+                    : null
+                }
+              >
+                <FeedCard
                 item={item}
                 tagNames={tagNames}
                 saved={item.kind === "post" ? saved.posts.has(item.id) : saved.garments.has(item.id)}
@@ -289,7 +309,8 @@ export function FeedGrid({
                 prefetch={saveData ? false : undefined}
                 // Primera fila de cada columna y la segunda en las dos primeras: ~4 fotos visibles al cargar.
                 priority={row === 0 || (row === 1 && i < 2)}
-              />
+                />
+              </Tracked>
             ))}
           </div>
         ))}
