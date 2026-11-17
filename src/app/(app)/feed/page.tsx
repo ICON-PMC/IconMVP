@@ -21,7 +21,7 @@ import { getMySavedIds } from "@/lib/saves";
 import { getMyLikedGarmentIds, getMyLikedPostIds } from "@/lib/social";
 import { getCurrentUser } from "@/lib/auth";
 import { getSuggestionChips } from "@/lib/suggestions";
-import { FEED_PAGE_SIZE, parseFeedParams, getFeedPage, type FeedItem } from "@/lib/feed";
+import { FEED_PAGE_SIZE, feedItemAuthor, parseFeedParams, getFeedPage, type FeedItem } from "@/lib/feed";
 import type { FilterGroup } from "@/components/feed/filter-panel";
 
 type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
@@ -32,7 +32,7 @@ type Meta = { sim: number; same_city: boolean };
 
 function sortFeedItems(items: FeedItem[], sort: string, meta: Map<string, Meta>) {
   items.sort((a, b) => {
-    if (sort === "az") return a.brand_name.localeCompare(b.brand_name);
+    if (sort === "az") return feedItemAuthor(a).name.localeCompare(feedItemAuthor(b).name, "es");
     if (sort === "new") return (b.published_at ?? "").localeCompare(a.published_at ?? "");
     if (sort === "popular") return (b.popularity ?? 0) - (a.popularity ?? 0);
     const key = (it: FeedItem) => `${it.kind}:${it.id}`;

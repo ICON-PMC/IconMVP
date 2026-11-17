@@ -6,10 +6,16 @@ type Supabase = Awaited<ReturnType<typeof createClient>>;
  * Claves de R2 de prendas, looks y/o la portada de una marca. Se leen ANTES de borrar las filas
  * (después la cascada ya se las llevó) y se pasan a `deleteFromR2` cuando el borrado salió bien.
  * Con `brandId` incluye todo lo de la marca: prendas, looks y portada.
+ * Con `userId` incluye las fotos de sus looks y su foto de perfil (spec 008).
  */
 export async function imageKeysFor(
   supabase: Supabase,
-  { garmentIds = [], postIds = [], brandId }: { garmentIds?: string[]; postIds?: string[]; brandId?: string },
+  {
+    garmentIds = [],
+    postIds = [],
+    brandId,
+    userId,
+  }: { garmentIds?: string[]; postIds?: string[]; brandId?: string; userId?: string },
 ): Promise<string[]> {
   const keys: string[] = [];
   if (brandId) {
@@ -21,6 +27,14 @@ export async function imageKeysFor(
     garmentIds = [...garmentIds, ...(garments.data ?? []).map((g) => g.id)];
     postIds = [...postIds, ...(posts.data ?? []).map((p) => p.id)];
     if (brand.data?.logo_url) keys.push(brand.data.logo_url);
+  }
+  if (userId) {
+    const [posts, user] = await Promise.all([
+      supabase.from("posts").select("id").eq("author_user_id", userId),
+      supabase.from("users").select("avatar_key").eq("id", userId).maybeSingle(),
+    ]);
+    postIds = [...postIds, ...(posts.data ?? []).map((p) => p.id)];
+    if (user.data?.avatar_key) keys.push(user.data.avatar_key);
   }
   const [gImgs, pImgs] = await Promise.all([
     garmentIds.length

@@ -66,9 +66,9 @@ export type Database = {
         Relationships: [];
       };
       users: {
-        Row: { id: string; auth_id: string | null; email: string | null; display_name: string | null; home_city_id: string | null; onboarded: boolean; role: Database["public"]["Enums"]["user_role"]; brand_id: string | null; created_at: string; updated_at: string };
-        Insert: { id?: string; auth_id?: string | null; email?: string | null; display_name?: string | null; home_city_id?: string | null; onboarded?: boolean; role?: Database["public"]["Enums"]["user_role"]; brand_id?: string | null; created_at?: string; updated_at?: string };
-        Update: { id?: string; auth_id?: string | null; email?: string | null; display_name?: string | null; home_city_id?: string | null; onboarded?: boolean; role?: Database["public"]["Enums"]["user_role"]; brand_id?: string | null; created_at?: string; updated_at?: string };
+        Row: { id: string; auth_id: string | null; email: string | null; display_name: string | null; home_city_id: string | null; onboarded: boolean; role: Database["public"]["Enums"]["user_role"]; brand_id: string | null; handle: string; handle_key: string; handle_changed_at: string | null; avatar_key: string | null; avatar_bytes: number; bio: string | null; link_url: string | null; is_public: boolean; show_likes: boolean; posting_blocked_at: string | null; posting_blocked_reason: string | null; created_at: string; updated_at: string };
+        Insert: { id?: string; auth_id?: string | null; email?: string | null; display_name?: string | null; home_city_id?: string | null; onboarded?: boolean; role?: Database["public"]["Enums"]["user_role"]; brand_id?: string | null; handle?: string; handle_changed_at?: string | null; avatar_key?: string | null; avatar_bytes?: number; bio?: string | null; link_url?: string | null; is_public?: boolean; show_likes?: boolean; posting_blocked_at?: string | null; posting_blocked_reason?: string | null; created_at?: string; updated_at?: string };
+        Update: { id?: string; auth_id?: string | null; email?: string | null; display_name?: string | null; home_city_id?: string | null; onboarded?: boolean; role?: Database["public"]["Enums"]["user_role"]; brand_id?: string | null; handle?: string; handle_changed_at?: string | null; avatar_key?: string | null; avatar_bytes?: number; bio?: string | null; link_url?: string | null; is_public?: boolean; show_likes?: boolean; posting_blocked_at?: string | null; posting_blocked_reason?: string | null; created_at?: string; updated_at?: string };
         Relationships: [];
       };
       brands: {
@@ -126,9 +126,9 @@ export type Database = {
         Relationships: [];
       };
       posts: {
-        Row: { id: string; author_type: Database["public"]["Enums"]["post_author_type"]; author_brand_id: string | null; author_user_id: string | null; caption: string | null; status: Database["public"]["Enums"]["post_status"]; popularity: number; published_at: string | null; created_at: string; updated_at: string };
-        Insert: { id?: string; author_type: Database["public"]["Enums"]["post_author_type"]; author_brand_id?: string | null; author_user_id?: string | null; caption?: string | null; status?: Database["public"]["Enums"]["post_status"]; popularity?: number; published_at?: string | null; created_at?: string; updated_at?: string };
-        Update: { id?: string; author_type?: Database["public"]["Enums"]["post_author_type"]; author_brand_id?: string | null; author_user_id?: string | null; caption?: string | null; status?: Database["public"]["Enums"]["post_status"]; popularity?: number; published_at?: string | null; created_at?: string; updated_at?: string };
+        Row: { id: string; author_type: Database["public"]["Enums"]["post_author_type"]; author_brand_id: string | null; author_user_id: string | null; caption: string | null; status: Database["public"]["Enums"]["post_status"]; popularity: number; published_at: string | null; moderation_locked: boolean; hidden_at: string | null; hidden_reason: string | null; reviewed_at: string | null; created_at: string; updated_at: string };
+        Insert: { id?: string; author_type: Database["public"]["Enums"]["post_author_type"]; author_brand_id?: string | null; author_user_id?: string | null; caption?: string | null; status?: Database["public"]["Enums"]["post_status"]; popularity?: number; published_at?: string | null; moderation_locked?: boolean; hidden_at?: string | null; hidden_reason?: string | null; reviewed_at?: string | null; created_at?: string; updated_at?: string };
+        Update: { id?: string; author_type?: Database["public"]["Enums"]["post_author_type"]; author_brand_id?: string | null; author_user_id?: string | null; caption?: string | null; status?: Database["public"]["Enums"]["post_status"]; popularity?: number; published_at?: string | null; moderation_locked?: boolean; hidden_at?: string | null; hidden_reason?: string | null; reviewed_at?: string | null; created_at?: string; updated_at?: string };
         Relationships: [];
       };
       post_images: {
@@ -153,6 +153,42 @@ export type Database = {
         Row: { id: string; post_id: string; brand_id: string; status: Database["public"]["Enums"]["brand_review_status"]; decided_at: string | null; created_at: string };
         Insert: { id?: string; post_id: string; brand_id: string; status?: Database["public"]["Enums"]["brand_review_status"]; decided_at?: string | null; created_at?: string };
         Update: { id?: string; post_id?: string; brand_id?: string; status?: Database["public"]["Enums"]["brand_review_status"]; decided_at?: string | null; created_at?: string };
+        Relationships: [];
+      };
+      brand_stubs: {
+        Row: { id: string; name: string; name_key: string; status: Database["public"]["Enums"]["brand_stub_status"]; claimed_brand_id: string | null; created_by_user_id: string | null; created_at: string; updated_at: string };
+        Insert: { id?: string; name: string; status?: Database["public"]["Enums"]["brand_stub_status"]; claimed_brand_id?: string | null; created_by_user_id?: string | null; created_at?: string; updated_at?: string };
+        Update: { id?: string; name?: string; status?: Database["public"]["Enums"]["brand_stub_status"]; claimed_brand_id?: string | null; created_by_user_id?: string | null; created_at?: string; updated_at?: string };
+        Relationships: [];
+      };
+      proposed_garments: {
+        Row: { id: string; name: string; category_tag_id: string; brand_id: string | null; brand_stub_id: string | null; status: Database["public"]["Enums"]["proposed_garment_status"]; claimed_garment_id: string | null; created_by_user_id: string; created_at: string; updated_at: string };
+        Insert: { id?: string; name: string; category_tag_id: string; brand_id?: string | null; brand_stub_id?: string | null; status?: Database["public"]["Enums"]["proposed_garment_status"]; claimed_garment_id?: string | null; created_by_user_id: string; created_at?: string; updated_at?: string };
+        Update: { id?: string; name?: string; category_tag_id?: string; brand_id?: string | null; brand_stub_id?: string | null; status?: Database["public"]["Enums"]["proposed_garment_status"]; claimed_garment_id?: string | null; created_by_user_id?: string; created_at?: string; updated_at?: string };
+        Relationships: [];
+      };
+      proposed_garment_colors: {
+        Row: { proposed_garment_id: string; color_id: string };
+        Insert: { proposed_garment_id: string; color_id: string };
+        Update: { proposed_garment_id?: string; color_id?: string };
+        Relationships: [];
+      };
+      post_proposed_items: {
+        Row: { id: string; post_id: string; proposed_garment_id: string; position: number; position_x: number | null; position_y: number | null; created_at: string };
+        Insert: { id?: string; post_id: string; proposed_garment_id: string; position?: number; position_x?: number | null; position_y?: number | null; created_at?: string };
+        Update: { id?: string; post_id?: string; proposed_garment_id?: string; position?: number; position_x?: number | null; position_y?: number | null; created_at?: string };
+        Relationships: [];
+      };
+      post_brand_mentions: {
+        Row: { id: string; post_id: string; brand_id: string | null; brand_stub_id: string | null; created_at: string };
+        Insert: { id?: string; post_id: string; brand_id?: string | null; brand_stub_id?: string | null; created_at?: string };
+        Update: { id?: string; post_id?: string; brand_id?: string | null; brand_stub_id?: string | null; created_at?: string };
+        Relationships: [];
+      };
+      content_reports: {
+        Row: { id: string; reporter_user_id: string; target_type: Database["public"]["Enums"]["report_target"]; target_id: string; reason: Database["public"]["Enums"]["report_reason"]; note: string | null; status: Database["public"]["Enums"]["report_status"]; resolved_by: string | null; resolved_at: string | null; created_at: string };
+        Insert: { id?: string; reporter_user_id: string; target_type: Database["public"]["Enums"]["report_target"]; target_id: string; reason: Database["public"]["Enums"]["report_reason"]; note?: string | null; status?: Database["public"]["Enums"]["report_status"]; resolved_by?: string | null; resolved_at?: string | null; created_at?: string };
+        Update: { id?: string; reporter_user_id?: string; target_type?: Database["public"]["Enums"]["report_target"]; target_id?: string; reason?: Database["public"]["Enums"]["report_reason"]; note?: string | null; status?: Database["public"]["Enums"]["report_status"]; resolved_by?: string | null; resolved_at?: string | null; created_at?: string };
         Relationships: [];
       };
       user_preferences: {
@@ -238,6 +274,10 @@ export type Database = {
         Row: { garment_id: string; title: string; brand_id: string; clicks: number };
         Relationships: [];
       };
+      public_profiles: {
+        Row: { id: string; handle: string; display_name: string; avatar_key: string | null; is_public: boolean; bio: string | null; link_url: string | null; city_slug: string | null; city_name: string | null; likes_visible: boolean; is_brand_account: boolean; created_at: string };
+        Relationships: [];
+      };
       feed_items: {
         Row: {
           kind: "post" | "garment";
@@ -246,10 +286,11 @@ export type Database = {
           popularity: number;
           published_at: string | null;
           created_at: string;
-          brand_id: string;
-          brand_name: string;
-          brand_slug: string;
-          brand_verified: boolean;
+          // Nulos en looks de usuario (spec 008). Nunca asumir que hay marca.
+          brand_id: string | null;
+          brand_name: string | null;
+          brand_slug: string | null;
+          brand_verified: boolean | null;
           city_slug: string | null;
           city_name: string | null;
           image: string | null;
@@ -264,6 +305,11 @@ export type Database = {
           score: number;
           like_count: number;
           colors: string[];
+          author_type?: "brand" | "team" | "user" | null;
+          author_user_id?: string | null;
+          author_handle?: string | null;
+          author_name?: string | null;
+          author_avatar?: string | null;
         };
         Relationships: [];
       };
@@ -272,6 +318,28 @@ export type Database = {
       current_user_id: { Args: Record<string, never>; Returns: string };
       is_staff: { Args: Record<string, never>; Returns: boolean };
       check_storage_quota: { Args: { p_brand_id: string; p_bytes: number }; Returns: Json };
+      check_user_storage_quota: { Args: { p_bytes: number }; Returns: Json };
+      user_storage_bytes: { Args: { p_user_id: string }; Returns: number };
+      get_or_create_brand_stub: { Args: { p_name: string }; Returns: Json };
+      search_brand_mentions: {
+        Args: { q: string };
+        Returns: { kind: "brand" | "stub"; id: string; name: string; slug: string | null }[];
+      };
+      report_content: {
+        Args: { p_target_type: Database["public"]["Enums"]["report_target"]; p_target_id: string; p_reason: Database["public"]["Enums"]["report_reason"]; p_note?: string | null };
+        Returns: Json;
+      };
+      moderate_post: { Args: { p_post_id: string; p_action: "hide" | "restore" | "dismiss"; p_reason?: string | null }; Returns: undefined };
+      set_user_posting_block: { Args: { p_user_id: string; p_blocked: boolean; p_reason?: string | null }; Returns: undefined };
+      set_brand_stub_blocked: { Args: { p_stub_id: string; p_blocked: boolean }; Returns: undefined };
+      stale_user_drafts: { Args: { p_days: number }; Returns: { post_id: string; image_key: string | null }[] };
+      admin_blocked_users: {
+        Args: Record<string, never>;
+        Returns: { id: string; email: string | null; display_name: string | null; handle: string; posting_blocked_at: string; posting_blocked_reason: string | null }[];
+      };
+      user_look_stats: { Args: Record<string, never>; Returns: Json };
+      is_my_editable_look: { Args: { p_post_id: string }; Returns: boolean };
+      ugc_name_error: { Args: { p_name: string; p_min: number; p_max: number }; Returns: string | null };
       approve_brand: { Args: { p_brand_id: string }; Returns: { brand_name: string; owner_email: string | null }[] };
       reject_brand: { Args: { p_brand_id: string; p_note?: string | null }; Returns: { brand_name: string; owner_email: string | null }[] };
       search_garments: {
@@ -366,10 +434,11 @@ export type Database = {
           popularity: number;
           published_at: string | null;
           created_at: string;
-          brand_id: string;
-          brand_name: string;
-          brand_slug: string;
-          brand_verified: boolean;
+          // Nulos en looks de usuario (spec 008). Nunca asumir que hay marca.
+          brand_id: string | null;
+          brand_name: string | null;
+          brand_slug: string | null;
+          brand_verified: boolean | null;
           city_slug: string | null;
           city_name: string | null;
           image: string | null;
@@ -384,6 +453,11 @@ export type Database = {
           score: number;
           like_count: number;
           colors: string[];
+          author_type?: "brand" | "team" | "user" | null;
+          author_user_id?: string | null;
+          author_handle?: string | null;
+          author_name?: string | null;
+          author_avatar?: string | null;
         }[];
       };
       create_style_tag: {
@@ -435,6 +509,11 @@ export type Database = {
       post_status: "draft" | "published" | "archived";
       size_system: "alpha" | "numeric" | "special";
       brand_review_status: "pending" | "accepted" | "declined";
+      brand_stub_status: "open" | "claimed" | "blocked";
+      proposed_garment_status: "open" | "claimed" | "rejected";
+      report_target: "post" | "profile" | "brand_review" | "proposed_garment";
+      report_reason: "not_fashion" | "offensive" | "spam" | "stolen_photo" | "other";
+      report_status: "open" | "actioned" | "dismissed";
       click_source: "feed" | "post" | "garment" | "brand_profile" | "photo_search" | "similar";
     };
     CompositeTypes: Record<string, never>;

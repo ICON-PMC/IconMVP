@@ -1,8 +1,14 @@
 // Navegación de la app (spec 007, contracts §1). Configuración pura: sin React ni servidor.
 
 export type CentralAction = "photo-search" | "create-look";
-/** La spec 008 cambia la acción central a "create-look" (crear look). */
-export const CENTRAL_ACTION: CentralAction = "photo-search";
+
+/**
+ * Acción central de la barra inferior. Con los looks de usuarios encendidos (spec 008, bandera
+ * USER_LOOKS_ENABLED) es "Crear" (+); la búsqueda por foto queda dentro del buscador del feed.
+ */
+export function centralAction(ctx: Pick<NavContext, "userLooks">): CentralAction {
+  return ctx.userLooks ? "create-look" : "photo-search";
+}
 
 export type NavRole = "user" | "brand" | "curator" | "admin" | null;
 export type NavContext = {
@@ -12,6 +18,7 @@ export type NavContext = {
   avatar: string | null;
   displayName: string | null;
   seed: string; // para el color del avatar sin foto
+  userLooks: boolean; // spec 008: bandera de looks de usuarios (se lee en el servidor)
 };
 
 export type NavKey = "home" | "search" | "central" | "saved" | "account";
@@ -20,14 +27,15 @@ export type NavItem = { key: NavKey; label: string; href: string; requiresAuth: 
 const login = (next: string) => `/login?next=${encodeURIComponent(next)}`;
 
 export function navItems(ctx: NavContext): NavItem[] {
+  const central = centralAction(ctx);
   const account = ctx.handle ? `/u/${ctx.handle}` : "/settings";
   return [
     { key: "home", label: "Inicio", href: "/feed", requiresAuth: false },
     { key: "search", label: "Buscar", href: "/feed?buscar=1", requiresAuth: false },
     {
       key: "central",
-      label: CENTRAL_ACTION === "create-look" ? "Crear" : "Buscar por foto",
-      href: CENTRAL_ACTION === "create-look" ? "/crear" : "/feed?visual=1",
+      label: central === "create-look" ? "Crear look" : "Buscar por foto",
+      href: central === "create-look" ? (ctx.isLoggedIn ? "/crear" : login("/crear")) : "/feed?visual=1",
       requiresAuth: true,
     },
     { key: "saved", label: "Guardados", href: ctx.isLoggedIn ? "/saved" : login("/saved"), requiresAuth: true },

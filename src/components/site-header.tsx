@@ -1,5 +1,6 @@
 import { TopBar } from "@/components/nav/top-bar";
 import { getCurrentUser } from "@/lib/auth";
+import { userLooksEnabled } from "@/lib/features";
 import type { NavContext, NavRole } from "@/lib/nav";
 
 // Encabezado de las pantallas fuera del grupo (app) (paneles de marca y del equipo): la misma barra
@@ -14,6 +15,7 @@ export async function SiteHeader() {
     avatar: null,
     displayName: profile?.display_name ?? session?.email ?? null,
     seed: profile?.id ?? "anon",
+    userLooks: userLooksEnabled(),
   };
   return <TopBar ctx={ctx} />;
 }

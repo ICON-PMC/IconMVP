@@ -4,6 +4,8 @@ import type { Database } from "@/lib/database.types";
 // Fila del feed mixto: un post (outfit) o una prenda, con `kind` como discriminador.
 export type FeedItem = Database["public"]["Functions"]["get_feed"]["Returns"][number];
 
+export { feedItemAuthor } from "@/lib/feed-author";
+
 export type FeedFiltersInput = {
   city: string[];
   occasion: string[];

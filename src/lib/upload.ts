@@ -1,6 +1,6 @@
 import { uploadVariants } from "@/lib/image-variants";
 import { uploadToR2 } from "@/lib/r2";
-import { assertStorageQuota } from "@/lib/storage-quota";
+import { assertStorageQuota, assertUserStorageQuota } from "@/lib/storage-quota";
 
 // `bytes` es el peso de la imagen principal (lo único que cuenta para la cuota). `variantsReady`
 // indica si también quedaron las variantes de 320 y 640 px (spec 006): guardarlo en
@@ -16,7 +16,8 @@ export type UploadedImage = {
 
 // Si se pasa, la subida se bloquea cuando supera la cuota de esa marca (solo subidas de la
 // propia marca; el staff sube en su nombre sin bloqueo, pero el peso igual cuenta).
-export type UploadOptions = { enforceQuotaFor?: string };
+// `enforceUserQuota` aplica la cuota de 50 MB de quien tiene la sesión (looks de usuarios, spec 008).
+export type UploadOptions = { enforceQuotaFor?: string; enforceUserQuota?: boolean };
 
 // sharp se importa de forma perezosa a propósito: importarlo a nivel de módulo hacía que
 // el render de páginas que lo importan diera 500 en el runtime serverless de Vercel.
@@ -32,6 +33,7 @@ async function resizeAndUpload(
     .webp({ quality: 80 })
     .toBuffer({ resolveWithObject: true });
   if (opts.enforceQuotaFor) await assertStorageQuota(opts.enforceQuotaFor, out.length);
+  if (opts.enforceUserQuota) await assertUserStorageQuota(out.length);
   // Clave única en cada subida (spec 006, US5): las fotos se sirven con caché larga e inmutable, así
   // que una clave nunca se reutiliza; reemplazar una foto = clave nueva + borrar la anterior.
   const key = `${keyPrefix}/${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}.webp`;

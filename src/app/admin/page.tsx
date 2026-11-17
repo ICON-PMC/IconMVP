@@ -10,11 +10,14 @@ import { SiteHeader } from "@/components/site-header";
 import { Button } from "@/components/ui/button";
 import { AdminTabs, parseAdminTab } from "./admin-tabs";
 import { PendingBrands, pendingBrandsCount } from "./pending-brands";
-import { MetricsTab } from "./_components/metrics-tab";
+import { MetricsTab, type UserLookStats } from "./_components/metrics-tab";
 import { UploadTab, parseUploadForm, type UploadData } from "./_components/upload-tab";
 import { TagsTab, type AdminTag } from "./_components/tags-tab";
 import { BrandsTab, type AdminBrand } from "./_components/brands-tab";
 import { UsersTab, type AdminUser } from "./_components/users-tab";
+import { ReportsTab } from "./_components/reports-tab";
+import { CommunityTab } from "./_components/community-tab";
+import { loadCommunity, loadOpenReports, openReportsCount } from "@/lib/community";
 import { cityLabel } from "@/lib/cities";
 import { getCityOptions } from "@/lib/cities";
 
@@ -82,6 +85,12 @@ async function loadUsers(q: string | undefined): Promise<AdminUser[]> {
   return data ?? [];
 }
 
+async function loadBlockedIds(): Promise<string[]> {
+  const supabase = await createClient();
+  const { data } = await supabase.rpc("admin_blocked_users");
+  return (data ?? []).map((u) => u.id);
+}
+
 async function loadSearchVocabulary() {
   const supabase = await createClient();
   const [synonyms, stopwords] = await Promise.all([
@@ -124,7 +133,9 @@ async function loadMetrics() {
       supabase.from("brand_click_counts").select("*").order("clicks", { ascending: false }).limit(6),
       supabase.from("garment_click_counts").select("*").order("clicks", { ascending: false }).limit(6),
     ]);
+  const { data: looks } = await supabase.rpc("user_look_stats");
   return {
+    looks: (looks as UserLookStats | null) ?? null,
     totals: { brands: brands.count ?? 0, garments: garments.count ?? 0, posts: posts.count ?? 0 },
     clicks: { total: clicksTotal.count ?? 0, last7d: clicks7d.count ?? 0 },
     topBrands: (topBrandsRes.data ?? [])
@@ -175,7 +186,7 @@ export default async function AdminPage({
   if (!isStaff(session.profile)) redirect("/");
   const { tab: tabParam, form, aviso, q } = await searchParams;
   const tab = parseAdminTab(tabParam);
-  const pendingCount = await pendingBrandsCount();
+  const [pendingCount, reportsCount] = await Promise.all([pendingBrandsCount(), openReportsCount()]);
 
   return (
     <>
@@ -202,7 +213,7 @@ export default async function AdminPage({
           }
         />
 
-        <AdminTabs active={tab} pendingCount={pendingCount} />
+        <AdminTabs active={tab} pendingCount={pendingCount} reportsCount={reportsCount} />
 
         <div className="mt-6">
           {tab === "metricas" && (
@@ -214,10 +225,13 @@ export default async function AdminPage({
           {tab === "cargar" && (
             <UploadTab form={parseUploadForm(form)} data={await loadUploadData()} />
           )}
+          {tab === "reportes" && <ReportsTab groups={await loadOpenReports()} />}
+          {tab === "comunidad" && <CommunityTab data={await loadCommunity()} />}
           {tab === "marcas" && <BrandsTab brands={await loadBrands()} />}
           {tab === "usuarios" && (
             <UsersTab
               users={await loadUsers(q)}
+              blockedIds={await loadBlockedIds()}
               q={q ?? ""}
               canEdit={session.profile?.role === "admin"}
               myId={session.profile?.id ?? ""}
