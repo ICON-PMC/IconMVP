@@ -116,9 +116,9 @@ export function VisualResults({
   const liked = new Set(likedGarments);
 
   return (
-    <div className="grid gap-6 md:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] md:items-start">
+    <div className="grid grid-cols-1 gap-6 md:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] md:items-start">
       {/* Foto buscada + recorte (izquierda / arriba en móvil) */}
-      <div className="md:sticky md:top-4">
+      <div className="min-w-0 md:sticky md:top-4">
         <div className="relative mx-auto w-fit max-w-full">
           <InlineCrop src={session.original} rect={session.rect ?? FULL} onCommit={recrop} disabled={cropBusy} />
           <button
@@ -151,7 +151,7 @@ export function VisualResults({
       </div>
 
       {/* Coincidencias (derecha / abajo en móvil) */}
-      <div>
+      <div className="min-w-0">
         {current?.error ? (
           <p className="bg-surface-raised border border-line rounded-2xl px-6 py-14 text-center text-sm text-coral">{current.error}</p>
         ) : !current ? (
