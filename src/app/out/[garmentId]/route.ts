@@ -12,6 +12,17 @@ const SOURCES: Database["public"]["Enums"]["click_source"][] = [
   "similar", // "Más como esta" (spec 005)
 ];
 
+// Agentes que se identifican como robots, vistas previas de enlaces y precargas: no son clics de
+// personas. Se redirigen igual, pero no se registran (antes inflaban los clics en ráfagas).
+const BOT_UA =
+  /bot|crawl|spider|slurp|scrapy|curl|wget|python|httpx|axios|node-fetch|go-http|java\/|okhttp|headless|lighthouse|preview|facebookexternalhit|whatsapp|telegram|slack|discord|embedly|vercel-screenshot/i;
+function isAutomated(req: NextRequest): boolean {
+  const ua = req.headers.get("user-agent") ?? "";
+  if (!ua || BOT_UA.test(ua)) return true;
+  const purpose = `${req.headers.get("sec-purpose") ?? ""} ${req.headers.get("purpose") ?? ""}`;
+  return /prefetch|prerender/i.test(purpose) || req.headers.has("next-router-prefetch");
+}
+
 // Redirección de salida a la tienda de la marca, registrando el clic (tracking día 1).
 export async function GET(
   req: NextRequest,
@@ -49,7 +60,7 @@ export async function GET(
     userId = profile?.id ?? null;
   }
 
-  await supabase.from("outbound_clicks").insert({
+  if (!isAutomated(req)) await supabase.from("outbound_clicks").insert({
     garment_id: garment.id,
     brand_id: garment.brand_id,
     post_id: postId,

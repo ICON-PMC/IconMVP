@@ -192,7 +192,7 @@ export default async function GarmentPage({
 
           {/* Escritorio: acciones en línea. */}
           <div className="mt-6 hidden items-center gap-2 md:flex">
-            <Button size="lg" className="flex-1" render={<a href={outHref} target="_blank" rel="noopener noreferrer" />} nativeButton={false}>
+            <Button size="lg" className="flex-1" render={<a href={outHref} target="_blank" rel="nofollow noopener noreferrer" />} nativeButton={false}>
               Ir a la tienda <ArrowUpRightIcon data-icon="inline-end" />
             </Button>
             {actions}
@@ -204,7 +204,7 @@ export default async function GarmentPage({
 
       {/* Celular: barra fija sobre la barra de navegación (FR-020). */}
       <StickyActionBar stackAboveNav className="md:hidden">
-        <Button size="lg" className="flex-1" render={<a href={outHref} target="_blank" rel="noopener noreferrer" />} nativeButton={false}>
+        <Button size="lg" className="flex-1" render={<a href={outHref} target="_blank" rel="nofollow noopener noreferrer" />} nativeButton={false}>
           Ir a la tienda <ArrowUpRightIcon data-icon="inline-end" />
         </Button>
         {actions}

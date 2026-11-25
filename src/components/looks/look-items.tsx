@@ -98,7 +98,7 @@ export function LookItems({
               {path && <SaveButton kind="garment" id={g.garmentId} sourcePostId={postId} saved={savedGarmentIds.includes(g.garmentId)} path={path} compact />}
               <Button
               size="sm"
-              render={<a href={`/out/${g.garmentId}?post=${postId}&source=post`} target="_blank" rel="noopener noreferrer" />}
+              render={<a href={`/out/${g.garmentId}?post=${postId}&source=post`} target="_blank" rel="nofollow noopener noreferrer" />}
               nativeButton={false}
             >
                 Tienda <ArrowUpRightIcon data-icon="inline-end" />

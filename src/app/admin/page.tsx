@@ -11,6 +11,8 @@ import { Button } from "@/components/ui/button";
 import { AdminTabs, parseAdminTab } from "./admin-tabs";
 import { PendingBrands, pendingBrandsCount } from "./pending-brands";
 import { MetricsTab, type UserLookStats } from "./_components/metrics-tab";
+import { BrandClicks } from "./_components/brand-clicks";
+import { loadClickStats, parseClickPeriod } from "@/lib/click-stats";
 import { UploadTab, parseUploadForm, type UploadData } from "./_components/upload-tab";
 import { TagsTab, type AdminTag } from "./_components/tags-tab";
 import { BrandsTab, type AdminBrand } from "./_components/brands-tab";
@@ -112,6 +114,10 @@ async function loadTags(): Promise<AdminTag[]> {
 }
 
 // Fuera del componente: react-hooks/purity prohíbe llamar Date.now() durante el render.
+function nowMs(): number {
+  return Date.now();
+}
+
 function daysAgoIso(days: number): string {
   return new Date(Date.now() - days * 864e5).toISOString();
 }
@@ -179,12 +185,12 @@ async function loadUploadData(): Promise<UploadData> {
 export default async function AdminPage({
   searchParams,
 }: {
-  searchParams: Promise<{ tab?: string; form?: string; aviso?: string; q?: string }>;
+  searchParams: Promise<{ tab?: string; form?: string; aviso?: string; q?: string; clics?: string; marca?: string }>;
 }) {
   const session = await getCurrentUser();
   if (!session) redirect("/login?next=/admin");
   if (!isStaff(session.profile)) redirect("/");
-  const { tab: tabParam, form, aviso, q } = await searchParams;
+  const { tab: tabParam, form, aviso, q, clics, marca } = await searchParams;
   const tab = parseAdminTab(tabParam);
   const [pendingCount, reportsCount] = await Promise.all([pendingBrandsCount(), openReportsCount()]);
 
@@ -219,6 +225,9 @@ export default async function AdminPage({
           {tab === "metricas" && (
             <>
               <MetricsTab {...(await loadMetrics())} />
+              <div className="mt-6">
+                <BrandClicks stats={await loadClickStats(parseClickPeriod(clics), marca ?? null, nowMs())} />
+              </div>
               <VisualIndexCard />
             </>
           )}
